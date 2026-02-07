@@ -18,8 +18,12 @@ function Home() {
               size='lg'
               onClick={() => {
                 const element = document.getElementById('categorical-agency');
+                if (!element) {
+                  console.warn('Scroll target element not found');
+                  return;
+                }
                 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                element?.scrollIntoView({ 
+                element.scrollIntoView({ 
                   behavior: prefersReducedMotion ? 'auto' : 'smooth', 
                   block: 'start' 
                 });
