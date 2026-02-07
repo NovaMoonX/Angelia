@@ -50,6 +50,12 @@ export function ComparisonTable({ className = '' }: { className?: string }) {
               <td className='text-center py-4 px-4'><EmptyCircle /></td>
             </tr>
             <tr className='border-b border-foreground/10'>
+              <td className='py-4 px-4 text-foreground/70'>Share once, reach everyone</td>
+              <td className='text-center py-4 px-4'><EmptyCircle /></td>
+              <td className='text-center py-4 px-4'><CheckMark /></td>
+              <td className='text-center py-4 px-4'><CheckMark /></td>
+            </tr>
+            <tr className='border-b border-foreground/10'>
               <td className='py-4 px-4 text-foreground/70'>Organized updates</td>
               <td className='text-center py-4 px-4'><EmptyCircle /></td>
               <td className='text-center py-4 px-4'><CheckMark /></td>

@@ -20,7 +20,7 @@ function Home() {
             Family Connection, Without the Noise.
           </h1>
           <p className='text-xl md:text-2xl text-foreground/70 max-w-3xl mx-auto leading-relaxed'>
-            A private, channel-based space where families share what matters—organized, intentional, and temporary. Updates automatically fade after six months, so you can share freely without creating a permanent archive.
+            A private, channel-based space where families share what matters—organized, intentional, and temporary.
           </p>
           <div className='pt-4'>
             <Button
@@ -47,6 +47,14 @@ function Home() {
               Get Started
             </Button>
           </div>
+        </section>
+
+        {/* Temporal Hygiene Explanation */}
+        <section className='space-y-4 max-w-3xl mx-auto text-center'>
+          <h3 className='text-2xl md:text-3xl font-semibold text-foreground'>Temporal Hygiene</h3>
+          <p className='text-base md:text-lg text-foreground/70 leading-relaxed'>
+            Updates automatically fade after six months, so you can share freely without creating a permanent archive. This mirrors how human memory works—recent moments stay vivid, while old details naturally fade. No performance pressure, just authentic connection.
+          </p>
         </section>
 
         {/* Value Proposition - Categorical Agency */}
@@ -111,8 +119,8 @@ function Home() {
           </p>
           <Button
             href='/about'
+            variant='secondary'
             size='lg'
-            className='bg-accent/10 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold'
           >
             Learn More
           </Button>
