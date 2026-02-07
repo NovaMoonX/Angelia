@@ -2,6 +2,7 @@ import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { CategoricalAgencyIllustration } from '@components/CategoricalAgencyIllustration';
+import { ComparisonTable } from '@components/ComparisonTable';
 
 function Home() {
   return (
@@ -59,6 +60,15 @@ function Home() {
             Readers subscribe to what matters to them. 
             Everyone has agency over their experience—no more thread dominance, no more conversational overload.
           </p>
+        </section>
+
+        {/* Comparison Table */}
+        <section className='space-y-8'>
+          <h2 className='text-3xl md:text-4xl font-bold text-center'>Filling the Gap</h2>
+          <p className='text-lg text-center text-foreground/70 max-w-3xl mx-auto'>
+            Angelia complements your existing communication tools by providing a dedicated space for intentional family updates.
+          </p>
+          <ComparisonTable className='max-w-4xl mx-auto' />
         </section>
 
         {/* Target Use Cases */}
