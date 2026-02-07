@@ -12,6 +12,7 @@ export interface Tiding {
   images: string[];
   timestamp: number; // Unix timestamp in ms
   isHighPriority: boolean;
+  isDaily?: boolean; // Indicates if this is from a daily channel
 }
 
 // Mock tidings data
@@ -21,13 +22,14 @@ export const mockTidings: Tiding[] = [
     authorId: 'user1',
     authorName: 'Sarah Johnson',
     authorAvatar: 'cosmic-cat',
-    channelId: 'channel1',
-    channelName: 'Family Adventures',
-    channelColor: '#f59e0b', // amber-500
+    channelId: 'user1-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
     text: 'Just got back from an amazing hike at Red Rock Canyon! The kids were troopers and made it all the way to the top. The view was absolutely breathtaking.',
     images: ['https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=600&fit=crop'],
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
     isHighPriority: false,
+    isDaily: true,
   },
   {
     id: '2',
@@ -80,13 +82,14 @@ export const mockTidings: Tiding[] = [
     authorId: 'user4',
     authorName: 'David Park',
     authorAvatar: 'planet',
-    channelId: 'channel5',
-    channelName: 'Weekend Projects',
-    channelColor: '#3b82f6', // blue-500
+    channelId: 'user4-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
     text: 'Finally finished building the treehouse! Took three weekends but it was worth it. The kids are over the moon.',
     images: ['https://images.unsplash.com/photo-1587502537745-84b86da1204f?w=800&h=600&fit=crop'],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2, // 2 days ago
     isHighPriority: false,
+    isDaily: true,
   },
   {
     id: '6',
@@ -109,13 +112,14 @@ export const mockTidings: Tiding[] = [
     authorId: 'user6',
     authorName: 'Robert Kim',
     authorAvatar: 'constellation',
-    channelId: 'channel6',
-    channelName: 'Book Club',
-    channelColor: '#8b5cf6', // violet-500
+    channelId: 'user6-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
     text: 'Just finished "The Midnight Library" - what a thought-provoking read! Highly recommend. Anyone else read it?',
     images: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
     isHighPriority: false,
+    isDaily: true,
   },
   {
     id: '8',
@@ -130,6 +134,20 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
     isHighPriority: true,
   },
+  {
+    id: '9',
+    authorId: 'user3',
+    authorName: 'Emily Rodriguez',
+    authorAvatar: 'star',
+    channelId: 'user3-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
+    text: 'Morning coffee tastes better when you know you have a great day ahead! ☕ Working on my thesis today.',
+    images: [],
+    timestamp: Date.now() - 1000 * 60 * 60 * 6, // 6 hours ago
+    isHighPriority: false,
+    isDaily: true,
+  },
 ];
 
 // Get unique channels from mock data
@@ -137,7 +155,7 @@ export const mockChannels = Array.from(
   new Map(
     mockTidings.map((tiding) => [
       tiding.channelId,
-      { id: tiding.channelId, name: tiding.channelName, color: tiding.channelColor },
+      { id: tiding.channelId, name: tiding.channelName, color: tiding.channelColor, isDaily: tiding.isDaily },
     ]),
   ).values(),
 );

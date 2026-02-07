@@ -19,7 +19,10 @@ export function Feed() {
     let filtered = mockTidings;
 
     // Filter by channel
-    if (selectedChannel !== 'all') {
+    if (selectedChannel === 'daily') {
+      // Show all daily channel posts
+      filtered = filtered.filter((tiding) => tiding.isDaily);
+    } else if (selectedChannel !== 'all') {
       filtered = filtered.filter((tiding) => tiding.channelId === selectedChannel);
     }
 
@@ -78,10 +81,13 @@ export function Feed() {
   // Channel options for Select
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
-    ...mockChannels.map((channel) => ({
-      text: channel.name,
-      value: channel.id,
-    })),
+    { text: 'Daily Updates', value: 'daily' },
+    ...mockChannels
+      .filter((channel) => !channel.isDaily)
+      .map((channel) => ({
+        text: channel.name,
+        value: channel.id,
+      })),
   ];
 
   // Sort options for Select
