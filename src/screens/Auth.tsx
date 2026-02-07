@@ -24,13 +24,9 @@ export function Auth() {
   const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
-  const [profileData, setProfileData] = useState<Partial<ProfileData>>({});
-  
-  // Form state for step 2
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarPreset>('astronaut');
-  const [funFact, setFunFact] = useState('');
+  const [profileData, setProfileData] = useState<Partial<ProfileData>>({
+    avatar: 'astronaut', // Default avatar
+  });
 
   const avatarOptions: AvatarPreset[] = [
     'astronaut',
@@ -75,6 +71,7 @@ export function Auth() {
     } else {
       // For signup, save data and move to step 2
       setProfileData({
+        ...profileData,
         email: data.email,
         password: data.password,
       });
@@ -83,22 +80,17 @@ export function Auth() {
   };
 
   const handleProfileComplete = () => {
-    const completeProfile: ProfileData = {
-      ...profileData as Pick<ProfileData, 'email' | 'password'>,
-      firstName,
-      lastName,
-      avatar: selectedAvatar,
-      funFact,
-    };
-
-    console.log('Profile complete:', completeProfile);
+    console.log('Profile complete:', profileData);
     
     // Navigate to verify email
-    navigate('/verify-email', { state: { email: completeProfile.email } });
+    navigate('/verify-email', { state: { email: profileData.email } });
   };
 
   // Check if step 2 form is complete
-  const isStep2Complete = firstName.trim() !== '' && lastName.trim() !== '' && funFact.trim() !== '';
+  const isStep2Complete = 
+    (profileData.firstName?.trim() || '') !== '' && 
+    (profileData.lastName?.trim() || '') !== '' && 
+    (profileData.funFact?.trim() || '') !== '';
 
   // Step 2: Profile completion
   if (mode === 'signup' && signupStep === 2) {
@@ -114,7 +106,7 @@ export function Auth() {
               Complete Your Profile
             </h1>
             <p className='text-foreground/70 text-center'>
-              Tell us a bit about yourself
+              We're excited to have you join our family space!
             </p>
           </div>
 
@@ -127,8 +119,8 @@ export function Auth() {
                 <Input
                   id='firstName'
                   type='text'
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={profileData.firstName || ''}
+                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                   placeholder='John'
                   className='mt-2'
                 />
@@ -139,8 +131,8 @@ export function Auth() {
                 <Input
                   id='lastName'
                   type='text'
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={profileData.lastName || ''}
+                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                   placeholder='Doe'
                   className='mt-2'
                 />
@@ -155,11 +147,11 @@ export function Auth() {
                   <button
                     key={avatar}
                     type='button'
-                    onClick={() => setSelectedAvatar(avatar)}
+                    onClick={() => setProfileData({ ...profileData, avatar })}
                     className={join(
                       'p-2 rounded-lg transition-all',
                       'hover:bg-accent/20',
-                      selectedAvatar === avatar
+                      profileData.avatar === avatar
                         ? 'bg-accent/30 ring-2 ring-accent'
                         : 'bg-muted/20'
                     )}
@@ -178,8 +170,8 @@ export function Auth() {
               </p>
               <Textarea
                 id='funFact'
-                value={funFact}
-                onChange={(e) => setFunFact(e.target.value)}
+                value={profileData.funFact || ''}
+                onChange={(e) => setProfileData({ ...profileData, funFact: e.target.value })}
                 rows={3}
                 placeholder='I once...'
                 className='resize-none'
@@ -213,17 +205,27 @@ export function Auth() {
   return (
     <div className='page flex items-center justify-center p-6'>
       <div className='w-full max-w-md space-y-8'>
-        {/* Logo */}
-        <div className='flex justify-center'>
+        {/* Logo and Welcome Text */}
+        <div className='flex flex-col items-center space-y-4'>
           <Link to='/'>
             <AngeliaLogo className='w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity' />
           </Link>
+          <div className='text-center space-y-2'>
+            <h1 className='text-3xl font-bold text-foreground'>
+              {mode === 'signup' ? 'Create Account' : 'Sign In'}
+            </h1>
+            <p className='text-foreground/70'>
+              {mode === 'signup' 
+                ? 'Join Angelia to connect with your family'
+                : 'Welcome back to Angelia'}
+            </p>
+          </div>
         </div>
 
         {/* AuthForm */}
         <AuthForm
           methods={['email']}
-          action={mode === 'signup' ? 'sign up' : 'login'}
+          action='both'
           onActionChange={handleModeChange}
           onEmailSubmit={handleAuthSubmit}
           className='space-y-6'
