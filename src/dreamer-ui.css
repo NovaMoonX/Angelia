@@ -1,0 +1,30 @@
+/** Necessary theme styles for Dreamer UI library - Customize as desired! */
+
+@theme dreamer-ui {
+	--color-primary: var(--color-white);
+	--color-primary-foreground: var(--color-black);
+	--color-secondary: var(--color-gray-100);
+	--color-secondary-foreground: var(--color-gray-900);
+
+	--color-muted: var(--color-gray-50);
+	--color-muted-foreground: var(--color-gray-600);
+
+	--color-accent: var(--color-blue-500); /* Blue accent color */
+	--color-accent-foreground: var(--color-white);
+
+	--color-success: var(--color-green-600);
+	--color-success-foreground: var(--color-white);
+	--color-warning: var(--color-amber-500);
+	--color-warning-foreground: var(--color-black);
+	--color-destructive: var(--color-red-600);
+	--color-destructive-foreground: var(--color-white);
+
+	--color-border: var(--color-gray-300); /* for input/textarea borders and dividers */
+	--color-card: var(--color-white); /* for card backgrounds */
+	--color-popover: var(--color-white); /* for popover backgrounds (popover, dropdowns, modals, etc) */
+	--color-popover-foreground: var(--color-gray-900); /* for popover text */
+
+	--color-tooltip: var(--color-gray-100);
+	--color-tooltip-foreground: var(--color-gray-900);
+}
+
