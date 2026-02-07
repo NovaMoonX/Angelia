@@ -1,10 +1,10 @@
 /** Necessary theme styles for Dreamer UI library - Customize as desired! */
 
 @theme dreamer-ui {
-	--color-primary: var(--color-white);
-	--color-primary-foreground: var(--color-black);
-	--color-secondary: var(--color-gray-100);
-	--color-secondary-foreground: var(--color-gray-900);
+	--color-primary: var(--color-amber-600); /* Warm amber for primary actions */
+	--color-primary-foreground: var(--color-white);
+	--color-secondary: var(--color-amber-100); /* Light amber for secondary elements */
+	--color-secondary-foreground: var(--color-amber-900);
 
 	--color-muted: var(--color-gray-50);
 	--color-muted-foreground: var(--color-gray-600);

@@ -51,15 +51,15 @@ function Home() {
 
         {/* Temporal Hygiene Explanation */}
         <section className='space-y-4 max-w-3xl mx-auto text-center'>
-          <h3 className='text-2xl md:text-3xl font-semibold text-foreground'>Temporal Hygiene</h3>
+          <h3 className='text-2xl md:text-3xl font-semibold text-foreground'>Why Updates Fade</h3>
           <p className='text-base md:text-lg text-foreground/70 leading-relaxed'>
-            Updates automatically fade after six months, so you can share freely without creating a permanent archive. This mirrors how human memory works—recent moments stay vivid, while old details naturally fade. No performance pressure, just authentic connection.
+            Updates automatically fade after six months, so you can share freely without creating a permanent archive. Recent moments stay vivid, while old details naturally fade—just like human memory. No performance pressure, just authentic connection.
           </p>
         </section>
 
         {/* Value Proposition - Categorical Agency */}
         <section id='categorical-agency' className='space-y-8 text-center'>
-          <h2 className='text-3xl md:text-4xl font-bold'>Categorical Agency</h2>
+          <h2 className='text-3xl md:text-4xl font-bold'>Choose What Matters</h2>
           <div className='flex justify-center py-8'>
             <CategoricalAgencyIllustration className='w-full max-w-2xl' />
           </div>
@@ -81,7 +81,7 @@ function Home() {
 
         {/* Target Use Cases */}
         <section className='space-y-12'>
-          <h2 className='text-3xl md:text-4xl font-bold text-center'>Built for Real Families</h2>
+          <h2 className='text-3xl md:text-4xl font-bold text-center'>Who It's For</h2>
           <div className='grid md:grid-cols-3 gap-8'>
             {/* Use Case 1: Long-Distance Families */}
             <div className='space-y-4 text-center md:text-left'>
