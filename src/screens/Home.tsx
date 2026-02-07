@@ -22,9 +22,22 @@ function Home() {
           <p className='text-xl md:text-2xl text-foreground/70 max-w-3xl mx-auto leading-relaxed'>
             A private, channel-based space where families share what matters—organized, intentional, and temporary.
           </p>
-          <div className='pt-4'>
+          <div className='pt-4 flex flex-col sm:flex-row gap-4 justify-center'>
+            <Button
+              href='/feed'
+              size='lg'
+              className={join(
+                'bg-accent hover:bg-accent/90 text-accent-foreground',
+                'text-lg px-8 py-6 rounded-lg font-semibold',
+                'transition-all duration-200',
+                'shadow-lg hover:shadow-xl'
+              )}
+            >
+              View Feed
+            </Button>
             <Button
               size='lg'
+              variant='secondary'
               onClick={() => {
                 const element = document.getElementById('categorical-agency');
                 if (!element) {
@@ -37,14 +50,8 @@ function Home() {
                   block: 'start' 
                 });
               }}
-              className={join(
-                'bg-accent hover:bg-accent/90 text-accent-foreground',
-                'text-lg px-8 py-6 rounded-lg font-semibold',
-                'transition-all duration-200',
-                'shadow-lg hover:shadow-xl'
-              )}
             >
-              Get Started
+              Learn More
             </Button>
           </div>
         </section>

@@ -16,6 +16,22 @@ A minimalist, high-impact landing page that introduces Angelia's core value prop
   - 💼 **Busy Professionals** - Catch up on themed updates during downtime
   - 👨‍👩‍👧‍👦 **The Saturated Parent** - Share unfiltered updates without performance pressure
 
+### 📰 Primary Feed (Tidings)
+
+A chronological feed for family updates called "Tidings":
+
+- **Dynamic Post Cards**: Each tiding features:
+  - Author avatar with preset cartoon-like icons
+  - Channel badge with color coding
+  - Rich text content
+  - Media area supporting single images or image carousels for multiple photos
+  - Relative timestamps (e.g., "30m ago", "2h ago")
+- **Filtering**: Select dropdown to filter tidings by channel (All Channels or specific subscriptions)
+- **Sorting**: Choose between "Newest First" or "Oldest First" ordering
+- **Infinite Scroll**: Automatically loads more tidings as you scroll down
+- **Loading States**: Skeleton cards provide visual feedback while loading
+- **Empty States**: Helpful messages when no tidings match filters
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)

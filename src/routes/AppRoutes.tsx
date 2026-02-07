@@ -13,6 +13,15 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
+      // Feed page (lazy loaded)
+      {
+        path: 'feed',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: Feed } = await import('@screens/Feed');
+          return { Component: Feed };
+        },
+      },
       // About page (lazy loaded)
       {
         path: 'about',
