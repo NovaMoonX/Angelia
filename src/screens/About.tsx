@@ -14,13 +14,13 @@ function About() {
           </Link>
         </header>
 
-        {/* Page Header */}
-        <section className='text-center space-y-4'>
+        {/* Page Title */}
+        <div className='text-center space-y-4'>
           <h1 className='text-4xl md:text-5xl font-bold'>The Manifesto</h1>
           <p className='text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto'>
             Why we built Angelia, and how it's different from everything else.
           </p>
-        </section>
+        </div>
 
         {/* Introduction - The Connectivity Paradox */}
         <section className='space-y-4'>
