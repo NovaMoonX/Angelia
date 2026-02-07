@@ -7,7 +7,10 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build && npm run preview",
+    "fbdeploy": "npm run build && firebase deploy",
+    "devh": "vite --host"
   },
   "dependencies": {
     "@moondreamsdev/dreamer-ui": "^1.7.26",
