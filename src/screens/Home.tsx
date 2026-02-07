@@ -18,7 +18,11 @@ function Home() {
               size='lg'
               onClick={() => {
                 const element = document.getElementById('categorical-agency');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                element?.scrollIntoView({ 
+                  behavior: prefersReducedMotion ? 'auto' : 'smooth', 
+                  block: 'start' 
+                });
               }}
               className={join(
                 'bg-accent hover:bg-accent/90 text-accent-foreground',
