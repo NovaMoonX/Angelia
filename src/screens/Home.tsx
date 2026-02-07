@@ -111,9 +111,8 @@ function Home() {
           </p>
           <Button
             href='/about'
-            variant='outline'
             size='lg'
-            className='border-2 border-accent/60 text-accent hover:bg-accent hover:text-accent-foreground hover:border-accent'
+            className='bg-accent/10 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold'
           >
             Learn More
           </Button>

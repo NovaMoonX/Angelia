@@ -17,8 +17,8 @@ export function CategoricalAgencyIllustration({ className = '' }: { className?: 
       <g id="sharer">
         {/* Person icon */}
         <circle cx="80" cy="80" r="25" fill="url(#accentGradient)" opacity="0.3" />
-        <circle cx="80" cy="70" r="15" fill="#f59e0b" opacity="0.6" />
-        <path d="M55 95 Q80 85 105 95" stroke="#f59e0b" strokeWidth="3" fill="none" opacity="0.6" />
+        <circle cx="80" cy="72" r="10" fill="#f59e0b" opacity="0.6" />
+        <path d="M60 92 Q80 85 100 92" stroke="#f59e0b" strokeWidth="2" fill="none" opacity="0.6" />
         
         {/* Channels flowing from sharer */}
         <g id="channels">
@@ -58,8 +58,8 @@ export function CategoricalAgencyIllustration({ className = '' }: { className?: 
       <g id="reader">
         {/* Person icon */}
         <circle cx="520" cy="80" r="25" fill="url(#accentGradient)" opacity="0.3" />
-        <circle cx="520" cy="70" r="15" fill="#d97706" opacity="0.6" />
-        <path d="M495 95 Q520 85 545 95" stroke="#d97706" strokeWidth="3" fill="none" opacity="0.6" />
+        <circle cx="520" cy="72" r="10" fill="#d97706" opacity="0.6" />
+        <path d="M500 92 Q520 85 540 92" stroke="#d97706" strokeWidth="2" fill="none" opacity="0.6" />
         
         {/* Subscription checkmarks */}
         <g id="subscriptions">
