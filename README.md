@@ -36,7 +36,7 @@ A minimalist, high-impact landing page that introduces Angelia's core value prop
   - 🏡 **Long-Distance Families** - Anchor yourself in the family narrative
   - 💼 **Busy Professionals** - Catch up on themed updates during downtime
   - 👨‍👩‍👧‍👦 **The Saturated Parent** - Share unfiltered updates without performance pressure
-
+- 
 ### 📖 About Page - The Manifesto
 
 A text-focused page explaining the research and philosophy behind Angelia:
@@ -48,6 +48,22 @@ A text-focused page explaining the research and philosophy behind Angelia:
   - **The Solution: Angelia** - How channel-based organization and subscription agency solve conversational overload
   - **The 180-Day Rule** - Why updates fade after six months to mirror human memory and reduce performance pressure
 - **Comparison Table**: Visual comparison of Privacy, Intentionality, and Ephemerality between traditional social media and Angelia
+
+### 📰 Primary Feed (Tidings)
+
+A chronological feed for family updates called "Tidings":
+
+- **Dynamic Post Cards**: Each tiding features:
+  - Author avatar with preset cartoon-like icons
+  - Channel badge with color coding
+  - Rich text content
+  - Media area supporting single images or image carousels for multiple photos
+  - Relative timestamps (e.g., "30m ago", "2h ago")
+- **Filtering**: Select dropdown to filter tidings by channel (All Channels or specific subscriptions)
+- **Sorting**: Choose between "Newest First" or "Oldest First" ordering
+- **Infinite Scroll**: Automatically loads more tidings as you scroll down
+- **Loading States**: Skeleton cards provide visual feedback while loading
+- **Empty States**: Helpful messages when no tidings match filters
 
 ### 🎨 Design & Visual Aesthetic
 

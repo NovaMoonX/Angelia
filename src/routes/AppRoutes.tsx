@@ -13,7 +13,14 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
-      // Auth routes (public)
+      {
+        path: 'about',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: About } = await import('@screens/About');
+          return { Component: About };
+        },
+      },
       {
         path: 'auth',
         HydrateFallback: Loading,
@@ -28,15 +35,12 @@ export const router = createBrowserRouter([
         lazy: async () => {
           const { default: VerifyEmail } = await import('@screens/VerifyEmail');
           return { Component: VerifyEmail };
-        },
-      },
-      // About page (lazy loaded)
       {
-        path: 'about',
+        path: 'feed',
         HydrateFallback: Loading,
         lazy: async () => {
-          const { default: About } = await import('@screens/About');
-          return { Component: About };
+          const { default: Feed } = await import('@screens/Feed');
+          return { Component: Feed };
         },
       },
     ],
