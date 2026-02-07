@@ -38,6 +38,18 @@ A minimalist, high-impact landing page that introduces Angelia's core value prop
   - 💼 **Busy Professionals** - Catch up on themed updates during downtime
   - 👨‍👩‍👧‍👦 **The Saturated Parent** - Share unfiltered updates without performance pressure
 
+### 📖 About Page - The Manifesto
+
+A text-focused page explaining the research and philosophy behind Angelia:
+
+- **Consumer-Friendly Content**: Warm, human language that avoids jargon and speaks directly to real people
+- **The Connectivity Paradox**: Explores how more communication channels lead to less meaningful connection
+- **Three Core Sections**:
+  - **The Crisis of Synchronous Noise** - Why group chats and social media fail to deliver meaningful family connection
+  - **The Solution: Angelia** - How channel-based organization and subscription agency solve conversational overload
+  - **The 180-Day Rule** - Why updates fade after six months to mirror human memory and reduce performance pressure
+- **Comparison Table**: Visual comparison of Privacy, Intentionality, and Ephemerality between traditional social media and Angelia
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)
