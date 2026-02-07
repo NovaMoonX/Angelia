@@ -4,7 +4,7 @@ Angelia is an intentional family connection app designed to solve "conversationa
 
 ## Features
 
-### 🏡 Landing Page (The Digital Hearth)
+### 🔥 Landing Page (The Digital Hearth)
 
 A minimalist, high-impact landing page that introduces Angelia's core value proposition:
 

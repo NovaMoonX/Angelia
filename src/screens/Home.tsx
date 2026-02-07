@@ -16,6 +16,10 @@ function Home() {
           <div className='pt-4'>
             <Button
               size='lg'
+              onClick={() => {
+                const element = document.getElementById('categorical-agency');
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
               className={join(
                 'bg-accent hover:bg-accent/90 text-accent-foreground',
                 'text-lg px-8 py-6 rounded-lg font-semibold',
@@ -29,7 +33,7 @@ function Home() {
         </section>
 
         {/* Value Proposition - Categorical Agency */}
-        <section className='space-y-6 text-center'>
+        <section id='categorical-agency' className='space-y-6 text-center'>
           <h2 className='text-3xl md:text-4xl font-bold'>Categorical Agency</h2>
           <p className='text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed'>
             Sharers categorize their updates into meaningful channels. 
