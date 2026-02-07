@@ -66,7 +66,7 @@ export function TidingCard({ tiding }: TidingCardProps) {
               loading='lazy'
             />
           ) : (
-            <Carousel className='w-full' hidePrevNext={false} hideDots={false}>
+            <Carousel className='w-full'>
               {tiding.images.map((image, index) => (
                 <div key={`${tiding.id}-image-${index}`} className='w-full'>
                   <img

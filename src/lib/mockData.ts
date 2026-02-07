@@ -125,7 +125,7 @@ export const mockTidings: Tiding[] = [
     channelId: 'channel3',
     channelName: 'Milestone Moments',
     channelColor: '#ec4899', // pink-500
-    text: 'Our little one took her first steps today! 🚶‍♀️ Can\'t believe how fast she\'s growing. Managed to catch it on video!',
+    text: "Our little one took her first steps today! 🚶‍♀️ Can't believe how fast she's growing. Managed to catch it on video!",
     images: ['https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=600&fit=crop'],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
     isHighPriority: true,
