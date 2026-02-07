@@ -10,7 +10,7 @@ function About() {
         <header className='flex items-start justify-start'>
           <Link to='/' className='flex items-center gap-3 hover:opacity-80 transition-opacity'>
             <AngeliaLogo className='w-12 h-12 md:w-14 md:h-14' />
-            <h2 className='text-2xl md:text-3xl font-bold text-foreground'>Angelia</h2>
+            <span className='text-2xl md:text-3xl font-bold text-foreground'>Angelia</span>
           </Link>
         </header>
 
