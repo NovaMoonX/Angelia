@@ -66,11 +66,6 @@ export function Feed() {
     };
   }, [hasMore, isLoadingMore]);
 
-  // Reset displayed count when filters change
-  useEffect(() => {
-    setDisplayedCount(5);
-  }, [selectedChannel, sortOrder]);
-
   // Channel options for Select
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
@@ -85,6 +80,18 @@ export function Feed() {
     { text: 'Newest First', value: 'newest' },
     { text: 'Oldest First', value: 'oldest' },
   ];
+
+  // Handler for channel change
+  const handleChannelChange = (value: string) => {
+    setSelectedChannel(value);
+    setDisplayedCount(5);
+  };
+
+  // Handler for sort change
+  const handleSortChange = (value: string) => {
+    setSortOrder(value as SortOrder);
+    setDisplayedCount(5);
+  };
 
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
@@ -101,7 +108,7 @@ export function Feed() {
             <Select
               options={channelOptions}
               value={selectedChannel}
-              onChange={(value) => setSelectedChannel(value)}
+              onChange={handleChannelChange}
               placeholder='Filter by channel'
               className='w-full'
             />
@@ -110,7 +117,7 @@ export function Feed() {
             <Select
               options={sortOptions}
               value={sortOrder}
-              onChange={(value) => setSortOrder(value as SortOrder)}
+              onChange={handleSortChange}
               placeholder='Sort by'
               className='w-full'
             />
