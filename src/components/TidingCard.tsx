@@ -1,5 +1,4 @@
 import { Avatar, Badge, Card, Carousel } from '@moondreamsdev/dreamer-ui/components';
-import { join } from '@moondreamsdev/dreamer-ui/utils';
 import type { Tiding } from '@lib/mockData';
 
 interface TidingCardProps {
@@ -42,13 +41,12 @@ export function TidingCard({ tiding }: TidingCardProps) {
               <span className='text-sm text-foreground/60'>{relativeTime}</span>
             </div>
           </div>
-          <Badge
-            variant='secondary'
-            className={join('text-xs font-medium', tiding.isHighPriority && 'border-2')}
-            style={{ borderColor: tiding.channelColor }}
-          >
-            {tiding.channelName}
-          </Badge>
+          <div className='flex items-center gap-2'>
+            {tiding.isHighPriority && <span className='text-lg'>⭐</span>}
+            <Badge variant='secondary' className='text-xs font-medium' style={{ borderColor: tiding.channelColor }}>
+              {tiding.channelName}
+            </Badge>
+          </div>
         </div>
 
         {/* Text Content */}
@@ -66,7 +64,7 @@ export function TidingCard({ tiding }: TidingCardProps) {
               loading='lazy'
             />
           ) : (
-            <Carousel className='w-full'>
+            <Carousel className='w-full' buttonPosition='interior'>
               {tiding.images.map((image, index) => (
                 <div key={`${tiding.id}-image-${index}`} className='w-full'>
                   <img

@@ -55,7 +55,7 @@ export function Feed() {
         setTimeout(() => {
           setDisplayedCount((prev) => prev + 3);
           setIsLoadingMore(false);
-        }, 800);
+        }, 2000);
       }
     };
 
