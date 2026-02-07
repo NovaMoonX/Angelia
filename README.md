@@ -8,9 +8,17 @@ Angelia is an intentional family connection app designed to solve "conversationa
 
 Mock authentication interface for the gateway experience:
 
-- **Login Page** (`/login`): Toggleable view between "Sign In" and "Create Account"
-  - Email and Password fields using FormFactories from Dreamer UI
-  - Seamless toggle between authentication modes
+- **Login Page** (`/login`): Sleek, single-page authentication
+  - **Sign In Mode**: Simple email and password login
+  - **Create Account Mode**: Comprehensive signup with essential user information
+    - First Name and Last Name (required)
+    - Email (required)
+    - Phone Number (optional) - for future SMS notifications
+    - Password (required)
+  - Seamless toggle between modes
+  - Query parameter support (`?mode=signup`) for direct navigation to signup
+  - "Get Started" button on homepage directs to Create Account mode
+  - All fields built with FormFactories from Dreamer UI
   - Clean, centered layout with brand logo
 - **Email Verification** (`/verify-email`): Post-signup verification flow
   - Confirmation message with user's email

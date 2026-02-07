@@ -1,19 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Form, FormFactories } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-interface LoginFormData {
+interface SignInFormData {
   email: string;
   password: string;
 }
 
+interface SignUpFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+}
+
 export function Login() {
+  const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
 
-  const fields = [
+  // Check for mode query parameter on mount
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') {
+      setIsSignUp(true);
+    }
+  }, [searchParams]);
+
+  const signInFields = [
     FormFactories.input({
       name: 'email',
       label: 'Email',
@@ -30,17 +47,55 @@ export function Login() {
     }),
   ];
 
-  const handleSubmit = (data: LoginFormData) => {
-    console.log('Form submitted:', data);
-    
-    // For sign up, navigate to verify email page
-    if (isSignUp) {
-      navigate('/verify-email', { state: { email: data.email } });
-    } else {
-      // For sign in, would normally authenticate and redirect
-      // For now, just log
-      console.log('Sign in attempt with:', data.email);
-    }
+  const signUpFields = [
+    FormFactories.input({
+      name: 'firstName',
+      label: 'First Name',
+      type: 'text',
+      required: true,
+      placeholder: 'John',
+    }),
+    FormFactories.input({
+      name: 'lastName',
+      label: 'Last Name',
+      type: 'text',
+      required: true,
+      placeholder: 'Doe',
+    }),
+    FormFactories.input({
+      name: 'email',
+      label: 'Email',
+      type: 'email',
+      required: true,
+      placeholder: 'you@example.com',
+    }),
+    FormFactories.input({
+      name: 'phoneNumber',
+      label: 'Phone Number (Optional)',
+      type: 'tel',
+      required: false,
+      placeholder: '+1 (555) 000-0000',
+      description: 'Opt in to receive SMS notifications (coming soon)',
+    }),
+    FormFactories.input({
+      name: 'password',
+      label: 'Password',
+      type: 'password',
+      required: true,
+      placeholder: '••••••••',
+    }),
+  ];
+
+  const handleSignInSubmit = (data: SignInFormData) => {
+    console.log('Sign in attempt:', data);
+    // For sign in, would normally authenticate and redirect
+    // For now, just log
+  };
+
+  const handleSignUpSubmit = (data: SignUpFormData) => {
+    console.log('Account created:', data);
+    // Navigate to verify email page with user's email
+    navigate('/verify-email', { state: { email: data.email } });
   };
 
   return (
@@ -60,22 +115,41 @@ export function Login() {
         </div>
 
         {/* Form */}
-        <Form<LoginFormData>
-          form={fields}
-          onSubmit={handleSubmit}
-          className='space-y-6'
-          submitButton={
-            <Button
-              type='submit'
-              className={join(
-                'w-full',
-                'bg-accent hover:bg-accent/90 text-accent-foreground'
-              )}
-            >
-              {isSignUp ? 'Create Account' : 'Sign In'}
-            </Button>
-          }
-        />
+        {isSignUp ? (
+          <Form<SignUpFormData>
+            form={signUpFields}
+            onSubmit={handleSignUpSubmit}
+            className='space-y-6'
+            submitButton={
+              <Button
+                type='submit'
+                className={join(
+                  'w-full',
+                  'bg-accent hover:bg-accent/90 text-accent-foreground'
+                )}
+              >
+                Create Account
+              </Button>
+            }
+          />
+        ) : (
+          <Form<SignInFormData>
+            form={signInFields}
+            onSubmit={handleSignInSubmit}
+            className='space-y-6'
+            submitButton={
+              <Button
+                type='submit'
+                className={join(
+                  'w-full',
+                  'bg-accent hover:bg-accent/90 text-accent-foreground'
+                )}
+              >
+                Sign In
+              </Button>
+            }
+          />
+        )}
 
         {/* Toggle Sign In/Sign Up */}
         <div className='text-center space-y-4'>

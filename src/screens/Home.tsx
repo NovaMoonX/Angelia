@@ -24,19 +24,8 @@ function Home() {
           </p>
           <div className='pt-4'>
             <Button
+              href='/login?mode=signup'
               size='lg'
-              onClick={() => {
-                const element = document.getElementById('categorical-agency');
-                if (!element) {
-                  console.warn('Scroll target element not found');
-                  return;
-                }
-                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                element.scrollIntoView({ 
-                  behavior: prefersReducedMotion ? 'auto' : 'smooth', 
-                  block: 'start' 
-                });
-              }}
               className={join(
                 'bg-accent hover:bg-accent/90 text-accent-foreground',
                 'text-lg px-8 py-6 rounded-lg font-semibold',
