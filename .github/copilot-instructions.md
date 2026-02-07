@@ -137,10 +137,23 @@ import { helper } from '@utils/helper';
 - `@ui/` → `src/ui/`
 - `@utils/` → `src/utils/`
 
+## 11. Content & Tone Guidelines
+- **ALWAYS** use consumer-friendly wording that's human and warm
+- Write for real people, not robots—avoid jargon and technical terms
+- Use conversational language that feels personal and approachable
+- Focus on benefits and feelings, not just features
+- Be empathetic to user pain points and aspirations
+- Examples:
+  - ❌ "Categorical organization paradigm for data entities"
+  - ✅ "Organize your updates the way that makes sense to you"
+  - ❌ "Temporal hygiene enforcement mechanism"
+  - ✅ "Updates fade after six months, so you can share freely"
+
 ## Quick Reference
 - Component syntax: `export function ComponentName`
 - **Indentation: Always use 2 spaces (NOT 4 spaces or tabs)**
 - **Class names: ALWAYS use `join()` for conditionals - NEVER template literals**
+- **Tone: Consumer-friendly, human, and warm - avoid jargon**
 - Check Dreamer UI first
 - Use import aliases: `@components/`, `@hooks/`, `@lib/`, `@screens/`, `@ui/`, etc.
 - Follow structured folder organization with proper separation of concerns
@@ -150,6 +163,7 @@ import { helper } from '@utils/helper';
 - **Template literals with `${` in className are FORBIDDEN**
 - **Always import and use `join` from `@moondreamsdev/dreamer-ui/utils`**
 - **Before writing any conditional className, ask: "Am I using join()?"**
+- **Use consumer-friendly, warm, human language - avoid jargon**
 
 ## 📚 Documentation Maintenance
 
