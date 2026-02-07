@@ -1,16 +1,25 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
+import { AngeliaLogo } from '@components/AngeliaLogo';
 
 function About() {
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-4xl px-6 py-16 md:py-24 space-y-16'>
+        {/* Brand Header - Top Left */}
+        <header className='flex items-start justify-start'>
+          <a href='/' className='flex items-center gap-3 hover:opacity-80 transition-opacity'>
+            <AngeliaLogo className='w-12 h-12 md:w-14 md:h-14' />
+            <h2 className='text-2xl md:text-3xl font-bold text-foreground'>Angelia</h2>
+          </a>
+        </header>
+
         {/* Page Header */}
-        <header className='text-center space-y-4'>
+        <section className='text-center space-y-4'>
           <h1 className='text-4xl md:text-5xl font-bold'>The Manifesto</h1>
           <p className='text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto'>
             Why we built Angelia, and how it's different from everything else.
           </p>
-        </header>
+        </section>
 
         {/* Introduction - The Connectivity Paradox */}
         <section className='space-y-4'>
