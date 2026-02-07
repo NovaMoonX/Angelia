@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { AuthForm, Avatar, type AuthFormOnEmailSubmit } from '@moondreamsdev/dreamer-ui/components';
+import { AuthForm, Avatar, Input, Label, Button, Textarea, type AuthFormOnEmailSubmit } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 type AuthMode = 'login' | 'signup';
 type AvatarPreset = 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
@@ -25,7 +25,12 @@ export function Auth() {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [profileData, setProfileData] = useState<Partial<ProfileData>>({});
+  
+  // Form state for step 2
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarPreset>('astronaut');
+  const [funFact, setFunFact] = useState('');
 
   const avatarOptions: AvatarPreset[] = [
     'astronaut',
@@ -42,7 +47,7 @@ export function Auth() {
     'twilight',
   ];
 
-  // Initialize mode from query params
+  // Initialize mode from query params - this ensures the AuthForm shows the right mode initially
   useEffect(() => {
     const modeParam = searchParams.get('mode');
     if (modeParam === 'signup' || modeParam === 'login') {
@@ -80,10 +85,10 @@ export function Auth() {
   const handleProfileComplete = () => {
     const completeProfile: ProfileData = {
       ...profileData as Pick<ProfileData, 'email' | 'password'>,
-      firstName: (document.getElementById('firstName') as HTMLInputElement)?.value || '',
-      lastName: (document.getElementById('lastName') as HTMLInputElement)?.value || '',
+      firstName,
+      lastName,
       avatar: selectedAvatar,
-      funFact: (document.getElementById('funFact') as HTMLTextAreaElement)?.value || '',
+      funFact,
     };
 
     console.log('Profile complete:', completeProfile);
@@ -92,6 +97,9 @@ export function Auth() {
     navigate('/verify-email', { state: { email: completeProfile.email } });
   };
 
+  // Check if step 2 form is complete
+  const isStep2Complete = firstName.trim() !== '' && lastName.trim() !== '' && funFact.trim() !== '';
+
   // Step 2: Profile completion
   if (mode === 'signup' && signupStep === 2) {
     return (
@@ -99,7 +107,9 @@ export function Auth() {
         <div className='w-full max-w-md space-y-8'>
           {/* Logo and Title */}
           <div className='flex flex-col items-center space-y-4'>
-            <AngeliaLogo className='w-20 h-20' />
+            <Link to='/'>
+              <AngeliaLogo className='w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity' />
+            </Link>
             <h1 className='text-3xl font-bold text-foreground'>
               Complete Your Profile
             </h1>
@@ -113,48 +123,34 @@ export function Auth() {
             {/* Name Fields */}
             <div className='space-y-4'>
               <div>
-                <label htmlFor='firstName' className='block text-sm font-medium text-foreground mb-2'>
-                  First Name *
-                </label>
-                <input
+                <Label htmlFor='firstName'>First Name *</Label>
+                <Input
                   id='firstName'
                   type='text'
-                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                   placeholder='John'
-                  className={join(
-                    'w-full px-4 py-2 rounded-md',
-                    'border border-border bg-background',
-                    'text-foreground placeholder:text-muted-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-primary'
-                  )}
+                  className='mt-2'
                 />
               </div>
 
               <div>
-                <label htmlFor='lastName' className='block text-sm font-medium text-foreground mb-2'>
-                  Last Name *
-                </label>
-                <input
+                <Label htmlFor='lastName'>Last Name *</Label>
+                <Input
                   id='lastName'
                   type='text'
-                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   placeholder='Doe'
-                  className={join(
-                    'w-full px-4 py-2 rounded-md',
-                    'border border-border bg-background',
-                    'text-foreground placeholder:text-muted-foreground',
-                    'focus:outline-none focus:ring-2 focus:ring-primary'
-                  )}
+                  className='mt-2'
                 />
               </div>
             </div>
 
             {/* Avatar Selection */}
             <div>
-              <label className='block text-sm font-medium text-foreground mb-4'>
-                Choose Your Avatar *
-              </label>
-              <div className='grid grid-cols-4 gap-3'>
+              <Label>Choose Your Avatar *</Label>
+              <div className='grid grid-cols-4 gap-3 mt-4'>
                 {avatarOptions.map((avatar) => (
                   <button
                     key={avatar}
@@ -176,52 +172,37 @@ export function Auth() {
 
             {/* Fun Fact */}
             <div>
-              <label htmlFor='funFact' className='block text-sm font-medium text-foreground mb-2'>
-                Share a fun fact about yourself *
-              </label>
-              <p className='text-sm text-muted-foreground mb-2'>
-                Something interesting that most people don't know about you
+              <Label htmlFor='funFact'>Share a fun fact about yourself *</Label>
+              <p className='text-sm text-muted-foreground mt-1 mb-2'>
+                Something interesting that even those close to you probably don't know about you
               </p>
-              <textarea
+              <Textarea
                 id='funFact'
-                required
+                value={funFact}
+                onChange={(e) => setFunFact(e.target.value)}
                 rows={3}
                 placeholder='I once...'
-                className={join(
-                  'w-full px-4 py-2 rounded-md',
-                  'border border-border bg-background',
-                  'text-foreground placeholder:text-muted-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-primary',
-                  'resize-none'
-                )}
+                className='resize-none'
               />
             </div>
 
             {/* Complete Button */}
-            <button
-              type='button'
+            <Button
               onClick={handleProfileComplete}
-              className={join(
-                'w-full py-3 px-4 rounded-md',
-                'bg-accent hover:bg-accent/90 text-accent-foreground',
-                'font-medium transition-colors',
-                'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2'
-              )}
+              disabled={!isStep2Complete}
+              className='w-full'
             >
               Complete Signup
-            </button>
+            </Button>
 
             {/* Back Button */}
-            <button
-              type='button'
+            <Button
+              variant='tertiary'
               onClick={() => setSignupStep(1)}
-              className={join(
-                'w-full py-2 text-sm text-foreground/70',
-                'hover:text-foreground transition-colors'
-              )}
+              className='w-full'
             >
               ← Back to email and password
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -234,13 +215,15 @@ export function Auth() {
       <div className='w-full max-w-md space-y-8'>
         {/* Logo */}
         <div className='flex justify-center'>
-          <AngeliaLogo className='w-20 h-20' />
+          <Link to='/'>
+            <AngeliaLogo className='w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity' />
+          </Link>
         </div>
 
         {/* AuthForm */}
         <AuthForm
           methods={['email']}
-          action='both'
+          action={mode === 'signup' ? 'sign up' : 'login'}
           onActionChange={handleModeChange}
           onEmailSubmit={handleAuthSubmit}
           className='space-y-6'
