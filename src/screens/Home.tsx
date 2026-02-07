@@ -1,17 +1,25 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { AngeliaLogo } from '@components/AngeliaLogo';
+import { CategoricalAgencyIllustration } from '@components/CategoricalAgencyIllustration';
 
 function Home() {
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-5xl px-6 py-16 md:py-24 space-y-24'>
+        {/* Brand Header */}
+        <header className='flex items-center justify-center gap-4'>
+          <AngeliaLogo className='w-16 h-16 md:w-20 md:h-20' />
+          <h2 className='text-3xl md:text-4xl font-bold text-foreground'>Angelia</h2>
+        </header>
+
         {/* Hero Section */}
         <section className='text-center space-y-8'>
           <h1 className='text-5xl md:text-7xl font-bold tracking-tight'>
             Family Connection, Without the Noise.
           </h1>
           <p className='text-xl md:text-2xl text-foreground/70 max-w-3xl mx-auto leading-relaxed'>
-            A private, channel-based space where families share what matters—organized, intentional, and ephemeral.
+            A private, channel-based space where families share what matters—organized, intentional, and temporary. Updates automatically fade after six months, so you can share freely without creating a permanent archive.
           </p>
           <div className='pt-4'>
             <Button
@@ -35,14 +43,17 @@ function Home() {
                 'shadow-lg hover:shadow-xl'
               )}
             >
-              Enter the Hearth
+              Get Started
             </Button>
           </div>
         </section>
 
         {/* Value Proposition - Categorical Agency */}
-        <section id='categorical-agency' className='space-y-6 text-center'>
+        <section id='categorical-agency' className='space-y-8 text-center'>
           <h2 className='text-3xl md:text-4xl font-bold'>Categorical Agency</h2>
+          <div className='flex justify-center py-8'>
+            <CategoricalAgencyIllustration className='w-full max-w-2xl' />
+          </div>
           <p className='text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed'>
             Sharers categorize their updates into meaningful channels. 
             Readers subscribe to what matters to them. 
@@ -77,7 +88,7 @@ function Home() {
               <div className='text-4xl'>👨‍👩‍👧‍👦</div>
               <h3 className='text-2xl font-semibold'>The Saturated Parent</h3>
               <p className='text-foreground/70 leading-relaxed'>
-                Share unfiltered updates without maintaining a permanent highlight reel. Six-month ephemerality means no performance pressure.
+                Share unfiltered updates without maintaining a permanent highlight reel. Updates automatically fade after six months, so there's no performance pressure.
               </p>
             </div>
           </div>
@@ -92,7 +103,7 @@ function Home() {
             href='/about'
             variant='outline'
             size='lg'
-            className='border-2 border-foreground/20 hover:border-accent hover:text-accent'
+            className='border-2 border-accent/60 text-accent hover:bg-accent hover:text-accent-foreground hover:border-accent'
           >
             Learn More
           </Button>
