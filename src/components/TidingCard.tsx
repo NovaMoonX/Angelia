@@ -30,7 +30,16 @@ export function TidingCard({ tiding }: TidingCardProps) {
   const relativeTime = getRelativeTime(tiding.timestamp);
 
   return (
-    <Card className='p-0 overflow-hidden'>
+    <Card className='p-0 overflow-hidden relative'>
+      {/* High Priority Banner */}
+      {tiding.isHighPriority && (
+        <div className='absolute top-0 left-0 w-0 h-0 border-l-[50px] border-l-red-500 border-b-[50px] border-b-transparent z-10'>
+          <span className='absolute top-[-45px] left-[-45px] text-white text-xs font-bold transform rotate-[-45deg]'>
+            !
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className='p-4 space-y-3'>
         <div className='flex items-start justify-between gap-3'>
@@ -41,12 +50,9 @@ export function TidingCard({ tiding }: TidingCardProps) {
               <span className='text-sm text-foreground/60'>{relativeTime}</span>
             </div>
           </div>
-          <div className='flex items-center gap-2'>
-            {tiding.isHighPriority && <span className='text-lg'>⭐</span>}
-            <Badge variant='secondary' className='text-xs font-medium' style={{ borderColor: tiding.channelColor }}>
-              {tiding.channelName}
-            </Badge>
-          </div>
+          <Badge variant='secondary' className='text-xs font-medium' style={{ borderColor: tiding.channelColor }}>
+            {tiding.channelName}
+          </Badge>
         </div>
 
         {/* Text Content */}

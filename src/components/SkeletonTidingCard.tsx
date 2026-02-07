@@ -23,9 +23,6 @@ export function SkeletonTidingCard() {
           <Skeleton className='w-3/4 h-4' />
         </div>
       </div>
-
-      {/* Media Area */}
-      <Skeleton className='w-full h-80 rounded-none' />
     </Card>
   );
 }
