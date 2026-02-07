@@ -9,7 +9,7 @@
 	--color-muted: var(--color-gray-50);
 	--color-muted-foreground: var(--color-gray-600);
 
-	--color-accent: var(--color-blue-500); /* Blue accent color */
+	--color-accent: var(--color-amber-600); /* Warm, domestic accent color for intentional, calm vibe */
 	--color-accent-foreground: var(--color-white);
 
 	--color-success: var(--color-green-600);
