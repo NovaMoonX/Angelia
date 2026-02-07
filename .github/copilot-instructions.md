@@ -1,5 +1,9 @@
 # GitHub AI Instructions for project
 
+## Primary Context Source (Read First)
+
+Before starting any work, always read the product context in [.context.md](../.context.md). Treat it as the primary source of truth for background, target personas, core problem/value proposition, brand description, market analysis/differentiator, and digital wellbeing goals.
+
 ## Core Development Rules
 
 ### 1. Component Creation
