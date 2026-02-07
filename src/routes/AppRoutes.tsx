@@ -12,11 +12,11 @@ export const router = createBrowserRouter([
     children: [
       // Auth routes (public)
       {
-        path: 'login',
+        path: 'auth',
         HydrateFallback: Loading,
         lazy: async () => {
-          const { default: Login } = await import('@screens/Login');
-          return { Component: Login };
+          const { default: Auth } = await import('@screens/Auth');
+          return { Component: Auth };
         },
       },
       {

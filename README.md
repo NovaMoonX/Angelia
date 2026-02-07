@@ -6,19 +6,18 @@ Angelia is an intentional family connection app designed to solve "conversationa
 
 ### 🔐 Authentication Flow (Mock)
 
-Mock authentication interface for the gateway experience:
+Multi-step authentication experience using Dreamer UI components:
 
-- **Login Page** (`/login`): Sleek, single-page authentication
-  - **Sign In Mode**: Simple email and password login
-  - **Create Account Mode**: Comprehensive signup with essential user information
-    - First Name and Last Name (required)
-    - Email (required)
-    - Phone Number (optional) - for future SMS notifications
-    - Password (required)
-  - Seamless toggle between modes
-  - Query parameter support (`?mode=signup`) for direct navigation to signup
-  - "Get Started" button on homepage directs to Create Account mode
-  - All fields built with FormFactories from Dreamer UI
+- **Auth Page** (`/auth`): Modern authentication with query parameter routing
+  - **Login Mode** (`?mode=login`): Email and password authentication using AuthForm component
+  - **Signup Mode** (`?mode=signup`): Two-step registration process
+    - **Step 1**: Email and password with confirmation (AuthForm component)
+    - **Step 2**: Profile completion with:
+      - First Name and Last Name (required)
+      - Avatar selection from 12 preset options (astronaut, moon, star, galaxy, nebula, planet, cosmic-cat, dream-cloud, rocket, constellation, comet, twilight)
+      - Fun fact about yourself (required)
+  - Seamless toggle between login/signup modes with automatic URL updates
+  - "Get Started" button on homepage directs to signup mode
   - Clean, centered layout with brand logo
 - **Email Verification** (`/verify-email`): Post-signup verification flow
   - Confirmation message with user's email

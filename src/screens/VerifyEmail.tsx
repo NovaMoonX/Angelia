@@ -82,7 +82,7 @@ export function VerifyEmail() {
           {/* Back to Login */}
           <div className='text-center'>
             <Button
-              href='/login'
+              href='/auth?mode=login'
               variant='tertiary'
               className='w-full'
             >

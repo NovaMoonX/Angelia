@@ -24,7 +24,7 @@ function Home() {
           </p>
           <div className='pt-4'>
             <Button
-              href='/login?mode=signup'
+              href='/auth?mode=signup'
               size='lg'
               className={join(
                 'bg-accent hover:bg-accent/90 text-accent-foreground',
