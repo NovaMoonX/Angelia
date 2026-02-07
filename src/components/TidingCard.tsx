@@ -33,8 +33,12 @@ export function TidingCard({ tiding }: TidingCardProps) {
     <Card className='p-0 overflow-hidden relative'>
       {/* High Priority Banner */}
       {tiding.isHighPriority && (
-        <div className='absolute top-0 left-0 w-0 h-0 border-l-[50px] border-l-red-500 border-b-[50px] border-b-transparent z-10'>
-          <span className='absolute top-[-45px] left-[-45px] text-white text-xs font-bold transform rotate-[-45deg]'>
+        <div 
+          className='absolute top-0 left-0 w-0 h-0 border-l-[50px] border-l-red-500 border-b-[50px] border-b-transparent z-10'
+          aria-label='High priority post'
+          role='img'
+        >
+          <span className='absolute top-[-45px] left-[-45px] text-white text-xs font-bold transform rotate-[-45deg]' aria-hidden='true'>
             !
           </span>
         </div>
