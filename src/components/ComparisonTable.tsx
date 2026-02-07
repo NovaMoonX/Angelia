@@ -1,6 +1,10 @@
 export function ComparisonTable({ className = '' }: { className?: string }) {
   const CheckMark = () => (
-    <span className='inline-flex items-center justify-center w-8 h-8 rounded-full bg-accent/20 text-accent'>
+    <span 
+      className='inline-flex items-center justify-center w-8 h-8 rounded-full bg-accent/20 text-accent'
+      aria-label='Supported'
+      role='img'
+    >
       <svg
         xmlns='http://www.w3.org/2000/svg'
         viewBox='0 0 24 24'
@@ -10,6 +14,7 @@ export function ComparisonTable({ className = '' }: { className?: string }) {
         strokeLinecap='round'
         strokeLinejoin='round'
         className='w-5 h-5'
+        aria-hidden='true'
       >
         <polyline points='20 6 9 17 4 12' />
       </svg>
@@ -17,7 +22,11 @@ export function ComparisonTable({ className = '' }: { className?: string }) {
   );
 
   const EmptyCircle = () => (
-    <span className='inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-foreground/20'>
+    <span 
+      className='inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-foreground/20'
+      aria-label='Not supported'
+      role='img'
+    >
     </span>
   );
 
@@ -59,7 +68,7 @@ export function ComparisonTable({ className = '' }: { className?: string }) {
               <td className='text-center py-4 px-4'><CheckMark /></td>
             </tr>
             <tr className='border-b border-foreground/10'>
-              <td className='py-4 px-4 text-foreground/70'>No permanent archive</td>
+              <td className='py-4 px-4 text-foreground/70'>Temporary updates</td>
               <td className='text-center py-4 px-4'><EmptyCircle /></td>
               <td className='text-center py-4 px-4'><EmptyCircle /></td>
               <td className='text-center py-4 px-4'><CheckMark /></td>
