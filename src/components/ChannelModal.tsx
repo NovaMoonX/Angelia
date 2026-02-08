@@ -1,4 +1,5 @@
-import { Modal, Badge, Avatar, Separator } from '@moondreamsdev/dreamer-ui/components';
+import { Modal, Badge, Avatar, Separator, Button } from '@moondreamsdev/dreamer-ui/components';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
 import type { Channel, User } from '@lib/mockData';
 import { mockCurrentUser } from '@lib/mockData';
 
@@ -17,9 +18,36 @@ export function ChannelModal({
   description,
   subscribers = [],
 }: ChannelModalProps) {
+  const { addToast } = useToast();
+  
   if (!channel) return null;
 
   const isOwner = channel.ownerId === mockCurrentUser.id;
+
+  const handleCopyInviteLink = async () => {
+    if (!channel.inviteCode) {
+      addToast({
+        title: 'Invite code not available',
+        type: 'error',
+      });
+      return;
+    }
+
+    const inviteUrl = `${window.location.origin}/invite/${channel.inviteCode}`;
+
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      addToast({
+        title: 'Link copied to clipboard',
+        type: 'info',
+      });
+    } catch (err) {
+      addToast({
+        title: 'Failed to copy link',
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <Modal
@@ -51,6 +79,28 @@ export function ChannelModal({
             <p className='text-sm text-foreground/60 italic'>You own this channel</p>
           )}
         </div>
+
+        {/* Invite Link Section - Only for owners */}
+        {isOwner && (
+          <>
+            <Separator />
+            <div className='space-y-3'>
+              <h3 className='text-lg font-semibold text-foreground'>
+                Invite People
+              </h3>
+              <p className='text-sm text-foreground/60'>
+                Share this link with others to invite them to join this channel
+              </p>
+              <Button
+                onClick={handleCopyInviteLink}
+                variant='secondary'
+                className='w-full'
+              >
+                Copy Invite Link
+              </Button>
+            </div>
+          </>
+        )}
 
         <Separator />
 

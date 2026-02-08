@@ -54,6 +54,14 @@ export const router = createBrowserRouter([
         },
       },
       {
+        path: 'invite/:inviteCode',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: InviteAccept } = await import('@screens/InviteAccept');
+          return { Component: InviteAccept };
+        },
+      },
+      {
         path: '*',
         HydrateFallback: Loading,
         lazy: async () => {

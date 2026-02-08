@@ -11,6 +11,16 @@ export interface Channel {
   isDaily?: boolean;
   ownerId: string; // User who owns/created the channel
   subscribers: string[]; // Array of user IDs who have access to this channel
+  inviteCode?: string; // Unique invite code for sharing
+}
+
+// Channel Invite interface
+export interface ChannelInvite {
+  id: string;
+  channelId: string;
+  inviteCode: string;
+  createdAt: number; // Unix timestamp in ms
+  expiresAt: number | null; // Unix timestamp in ms, null for no expiration
 }
 
 // User interface
@@ -207,6 +217,8 @@ export const mockChannels: Channel[] = Array.from(
             (id) => id !== tiding.authorId,
           )),
         ],
+        // Generate a unique invite code for each channel
+        inviteCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
       },
     ]),
   ).values(),
@@ -285,6 +297,50 @@ export const mockUsers: User[] = [
 // Helper function to get user by ID
 export function getUserById(userId: string): User | undefined {
   const result = mockUsers.find((user) => user.id === userId);
+  
+  return result;
+}
+
+// Helper function to generate invite code
+export function generateInviteCode(): string {
+  const result = Math.random().toString(36).substring(2, 10).toUpperCase();
+  
+  return result;
+}
+
+// Helper function to get channel by invite code
+export function getChannelByInviteCode(inviteCode: string): Channel | undefined {
+  const result = mockChannels.find((channel) => channel.inviteCode === inviteCode);
+  
+  return result;
+}
+
+// Mock channel invites
+export const mockInvites: ChannelInvite[] = [];
+
+// Helper function to create invite for a channel
+export function createChannelInvite(channelId: string): ChannelInvite {
+  const channel = mockChannels.find((ch) => ch.id === channelId);
+  if (!channel) {
+    throw new Error('Channel not found');
+  }
+
+  const inviteCode = channel.inviteCode || generateInviteCode();
+  
+  // Update channel with invite code if it doesn't have one
+  if (!channel.inviteCode) {
+    channel.inviteCode = inviteCode;
+  }
+
+  const invite: ChannelInvite = {
+    id: `invite-${Date.now()}`,
+    channelId,
+    inviteCode,
+    createdAt: Date.now(),
+    expiresAt: null, // No expiration for now
+  };
+
+  const result = invite;
   
   return result;
 }

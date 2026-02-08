@@ -17,6 +17,7 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   mockCurrentUser,
   mockChannels,
+  mockUsers,
   User,
   Channel,
   getUserById,
@@ -483,7 +484,13 @@ export function Account() {
               ? channelDescriptions[selectedChannel.id]
               : undefined
           }
-          subscribers={[]} // Mock - in real app would fetch subscribers
+          subscribers={
+            selectedChannel
+              ? selectedChannel.subscribers
+                  .map((id) => mockUsers.find((user) => user.id === id))
+                  .filter((user): user is User => user !== undefined)
+              : []
+          }
         />
       </div>
     </div>
