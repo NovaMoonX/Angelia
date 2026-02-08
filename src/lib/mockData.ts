@@ -1,10 +1,24 @@
 // Mock data for Tidings (posts)
 
+// Avatar presets type
+export type AvatarPreset = 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
+
+// User interface
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  bio: string;
+  avatar: AvatarPreset;
+  joinedAt: number; // Unix timestamp in ms
+}
+
 export interface Tiding {
   id: string;
   authorId: string;
   authorName: string;
-  authorAvatar: 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
+  authorAvatar: AvatarPreset;
   channelId: string;
   channelName: string;
   channelColor: string;
@@ -159,3 +173,14 @@ export const mockChannels = Array.from(
     ]),
   ).values(),
 );
+
+// Mock current user data
+export const mockCurrentUser: User = {
+  id: 'currentUser',
+  firstName: 'Alex',
+  lastName: 'Morgan',
+  email: 'alex.morgan@example.com',
+  bio: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
+  avatar: 'galaxy',
+  joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 180, // 180 days ago (~6 months)
+};

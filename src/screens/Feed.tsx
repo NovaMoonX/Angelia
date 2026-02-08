@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Select } from '@moondreamsdev/dreamer-ui/components';
+import { useNavigate } from 'react-router-dom';
+import { Select, Avatar } from '@moondreamsdev/dreamer-ui/components';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
-import { mockTidings, mockChannels } from '@lib/mockData';
+import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
 
 export function Feed() {
+  const navigate = useNavigate();
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
@@ -125,8 +127,19 @@ export function Feed() {
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
         {/* Header */}
         <div className='space-y-2'>
-          <h1 className='text-3xl font-bold text-foreground'>Tidings</h1>
-          <p className='text-foreground/60'>Stay connected with family updates</p>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h1 className='text-3xl font-bold text-foreground'>Tidings</h1>
+              <p className='text-foreground/60'>Stay connected with family updates</p>
+            </div>
+            <button
+              onClick={() => navigate('/account')}
+              aria-label='Go to account'
+              className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full'
+            >
+              <Avatar preset={mockCurrentUser.avatar} size='md' />
+            </button>
+          </div>
         </div>
 
         {/* Filters */}

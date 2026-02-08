@@ -22,6 +22,15 @@ export const router = createBrowserRouter([
           return { Component: Feed };
         },
       },
+      // Account page (lazy loaded)
+      {
+        path: 'account',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: Account } = await import('@screens/Account');
+          return { Component: Account };
+        },
+      },
       // About page (lazy loaded)
       {
         path: 'about',
