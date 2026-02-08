@@ -35,6 +35,8 @@ export const router = createBrowserRouter([
         lazy: async () => {
           const { default: VerifyEmail } = await import('@screens/VerifyEmail');
           return { Component: VerifyEmail };
+        },
+      },
       {
         path: 'feed',
         HydrateFallback: Loading,
