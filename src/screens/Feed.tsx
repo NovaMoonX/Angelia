@@ -136,9 +136,7 @@ export function Feed() {
 
   // Memoized: Check for pending invites
   const hasPendingInvites = useMemo(() => {
-    const result = mockUserInvites.some((invite) => invite.status === 'pending');
-    
-    return result;
+    return mockUserInvites.some((invite) => invite.status === 'pending');
   }, []);
 
   return (

@@ -40,14 +40,22 @@ function formatJoinDate(timestamp: number): string {
   return result;
 }
 
+// Time conversion constants
+const MS_PER_MINUTE = 1000 * 60;
+const MS_PER_HOUR = MS_PER_MINUTE * 60;
+const MS_PER_DAY = MS_PER_HOUR * 24;
+
 function formatInviteTime(timestamp: number): string {
   const now = Date.now();
   const diff = now - timestamp;
   
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const minutes = Math.floor(diff / MS_PER_MINUTE);
+  const hours = Math.floor(diff / MS_PER_HOUR);
+  const days = Math.floor(diff / MS_PER_DAY);
   
+  if (minutes < 1) {
+    return 'just now';
+  }
   if (minutes < 60) {
     return `${minutes}m ago`;
   }
@@ -338,7 +346,6 @@ export function Account() {
           : ch,
       ),
     );
-    console.log('Accepted invite:', invite.id);
   };
 
   const handleDeclineInvite = (invite: UserInvite) => {
@@ -350,7 +357,6 @@ export function Account() {
           : inv,
       ),
     );
-    console.log('Declined invite:', invite.id);
   };
 
   return (
@@ -661,7 +667,7 @@ export function Account() {
                               {channel.name}
                             </Badge>
                             <p className='text-foreground/60 text-xs'>
-                              Declined {invite.respondedAt ? formatInviteTime(invite.respondedAt) : ''}
+                              Declined {formatInviteTime(invite.respondedAt!)}
                             </p>
                           </div>
                         </Card>
