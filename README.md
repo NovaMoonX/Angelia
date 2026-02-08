@@ -59,11 +59,44 @@ A chronological feed for family updates called "Tidings":
   - Rich text content
   - Media area supporting single images or image carousels for multiple photos
   - Relative timestamps (e.g., "30m ago", "2h ago")
+  - Clickable cards that navigate to detailed post view
 - **Filtering**: Select dropdown to filter tidings by channel (All Channels or specific subscriptions)
 - **Sorting**: Choose between "Newest First" or "Oldest First" ordering
 - **Infinite Scroll**: Automatically loads more tidings as you scroll down
 - **Loading States**: Skeleton cards provide visual feedback while loading
 - **Empty States**: Helpful messages when no tidings match filters
+
+### 💬 Reactions & Conversations
+
+An innovative engagement system that encourages thoughtful interaction through progressive disclosure:
+
+- **Progressive Disclosure Flow**: 
+  - Users must react to a post before seeing others' reactions
+  - After reacting, users can see all reactions and add more
+  - Users must explicitly join a conversation to participate
+  - This design promotes authentic engagement without social pressure
+
+- **Reactions Tab** (Slack-style):
+  - Emoji reactions with user counts (e.g., "😍 2", "🎉 5")
+  - Reactions sorted by count (most popular first)
+  - Current user's reactions highlighted with a ring
+  - Click any reaction to add/remove your reaction
+  - 8 common emoji choices: ❤️ 👍 😊 🎉 😮 😢 😄 🔥
+
+- **Conversation Tab**:
+  - Opt-in conversation enrollment - users choose to participate
+  - Clean message interface with:
+    - User avatar (small, to the left)
+    - User name and timestamp
+    - Message text with proper word wrapping
+  - Real-time message sending with textarea and send button
+  - Empty state prompt: "No messages yet. Start the conversation!"
+  - Tab badges show count (e.g., "Conversation (3)")
+
+- **Reusable Components**:
+  - `ChatMessage` component can be used elsewhere in the app
+  - `ReactionDisplay` component for consistent reaction UI
+  - Both designed with consumer-friendly, warm language
 
 ### 🛠️ Channel Management (The Channel Foundry)
 
