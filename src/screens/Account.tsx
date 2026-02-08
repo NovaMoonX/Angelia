@@ -1,5 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Avatar, Badge, Card, Textarea } from '@moondreamsdev/dreamer-ui/components';
+import {
+  Avatar,
+  Badge,
+  Card,
+  Textarea,
+  Tabs,
+  Input,
+  Label,
+} from '@moondreamsdev/dreamer-ui/components';
 import { mockCurrentUser, mockChannels } from '@lib/mockData';
 
 function formatJoinDate(timestamp: number): string {
@@ -26,6 +34,9 @@ export function Account() {
     lastName: mockCurrentUser.lastName,
     funFact: mockCurrentUser.funFact,
   });
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('account');
 
   // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
@@ -72,7 +83,7 @@ export function Account() {
           <p className='text-foreground/60'>Manage your profile and preferences</p>
         </div>
 
-        {/* Profile Section */}
+        {/* Profile Section with Tabs */}
         <Card className='p-6 space-y-6'>
           {/* Avatar and Basic Info */}
           <div className='flex flex-col items-center space-y-4'>
@@ -88,81 +99,94 @@ export function Account() {
             </div>
           </div>
 
-          {/* Profile Fields */}
-          <div className='space-y-4 pt-4 border-t border-border'>
-            {/* First Name */}
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-foreground'>First Name</label>
-              <input
-                type='text'
-                value={formData.firstName}
-                onChange={(e) => handleFormChange('firstName', e.target.value)}
-                className='w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
-              />
-            </div>
+          {/* Tabs */}
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            tabsList={[
+              { label: 'Account', value: 'account' },
+              { label: 'Channels', value: 'channels' },
+            ]}
+          >
+            {/* Account Tab Content */}
+            {activeTab === 'account' && (
+              <div className='space-y-4 pt-4'>
+                {/* First Name */}
+                <div className='space-y-2'>
+                  <Label htmlFor='firstName'>First Name</Label>
+                  <Input
+                    id='firstName'
+                    type='text'
+                    value={formData.firstName}
+                    onChange={(e) => handleFormChange('firstName', e.target.value)}
+                  />
+                </div>
 
-            {/* Last Name */}
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-foreground'>Last Name</label>
-              <input
-                type='text'
-                value={formData.lastName}
-                onChange={(e) => handleFormChange('lastName', e.target.value)}
-                className='w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
-              />
-            </div>
+                {/* Last Name */}
+                <div className='space-y-2'>
+                  <Label htmlFor='lastName'>Last Name</Label>
+                  <Input
+                    id='lastName'
+                    type='text'
+                    value={formData.lastName}
+                    onChange={(e) => handleFormChange('lastName', e.target.value)}
+                  />
+                </div>
 
-            {/* Fun Facts */}
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-foreground'>Fun Facts About You</label>
-              <Textarea
-                value={formData.funFact}
-                onChange={(e) => handleFormChange('funFact', e.target.value)}
-                placeholder='Share some fun facts about yourself...'
-                rows={4}
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Channels Section */}
-        <Card className='p-6 space-y-4'>
-          <h3 className='text-xl font-semibold text-foreground'>Your Channels</h3>
-
-          {/* Daily Channel */}
-          {userDailyChannel && (
-            <div className='space-y-2'>
-              <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
-              <div className='flex items-center gap-2'>
-                <Badge
-                  variant='secondary'
-                  className='text-sm font-medium'
-                  style={{ borderColor: userDailyChannel.color }}
-                >
-                  {userDailyChannel.name}
-                </Badge>
+                {/* Fun Facts */}
+                <div className='space-y-2'>
+                  <Label htmlFor='funFact'>Fun Facts About You</Label>
+                  <Textarea
+                    id='funFact'
+                    value={formData.funFact}
+                    onChange={(e) => handleFormChange('funFact', e.target.value)}
+                    placeholder='Share some fun facts about yourself...'
+                    rows={4}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Subscribed Channels */}
-          {subscribedChannels.length > 0 && (
-            <div className='space-y-2'>
-              <p className='text-sm font-medium text-foreground/80'>Subscribed Channels</p>
-              <div className='flex flex-wrap gap-2'>
-                {subscribedChannels.map((channel) => (
-                  <Badge
-                    key={channel.id}
-                    variant='secondary'
-                    className='text-sm font-medium'
-                    style={{ borderColor: channel.color }}
-                  >
-                    {channel.name}
-                  </Badge>
-                ))}
+            {/* Channels Tab Content */}
+            {activeTab === 'channels' && (
+              <div className='space-y-4 pt-4'>
+                {/* Daily Channel */}
+                {userDailyChannel && (
+                  <div className='space-y-2'>
+                    <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
+                    <div className='flex items-center gap-2'>
+                      <Badge
+                        variant='secondary'
+                        className='text-sm font-medium'
+                        style={{ borderColor: userDailyChannel.color }}
+                      >
+                        {userDailyChannel.name}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {/* Subscribed Channels */}
+                {subscribedChannels.length > 0 && (
+                  <div className='space-y-2'>
+                    <p className='text-sm font-medium text-foreground/80'>Subscribed Channels</p>
+                    <div className='flex flex-wrap gap-2'>
+                      {subscribedChannels.map((channel) => (
+                        <Badge
+                          key={channel.id}
+                          variant='secondary'
+                          className='text-sm font-medium'
+                          style={{ borderColor: channel.color }}
+                        >
+                          {channel.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </Tabs>
         </Card>
       </div>
     </div>

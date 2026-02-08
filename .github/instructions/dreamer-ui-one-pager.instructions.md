@@ -6,6 +6,20 @@ applyTo: 'src/**/*'
 
 All components are imported from `@moondreamsdev/dreamer-ui/components`.
 
+## Important: Always Use Dreamer UI Components
+
+**When building UI, ALWAYS check if a Dreamer UI component exists for the functionality you need before creating custom components or using raw HTML elements.**
+
+Common examples:
+- Use `Input` instead of `<input>` elements
+- Use `Label` instead of `<label>` elements
+- Use `Button` instead of `<button>` elements
+- Use `Textarea` instead of `<textarea>` elements
+- Use `Tabs` for tabbed interfaces instead of custom tab implementations
+- Use `Card`, `Modal`, `Drawer` for containers instead of custom divs
+
+This ensures consistency, accessibility, and takes advantage of the design system.
+
 ## Available Components
 
 ### Display Components
