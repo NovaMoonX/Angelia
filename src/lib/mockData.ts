@@ -1,10 +1,34 @@
 // Mock data for Tidings (posts)
 
+// Avatar presets type
+export type AvatarPreset = 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
+
+// Channel interface
+export interface Channel {
+  id: string;
+  name: string;
+  color: string;
+  isDaily?: boolean;
+  ownerId: string; // User who owns/created the channel
+  subscribers: string[]; // Array of user IDs who have access to this channel
+}
+
+// User interface
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  funFact: string;
+  avatar: AvatarPreset;
+  joinedAt: number; // Unix timestamp in ms
+}
+
 export interface Tiding {
   id: string;
   authorId: string;
   authorName: string;
-  authorAvatar: 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
+  authorAvatar: AvatarPreset;
   channelId: string;
   channelName: string;
   channelColor: string;
@@ -148,14 +172,53 @@ export const mockTidings: Tiding[] = [
     isHighPriority: false,
     isDaily: true,
   },
+  {
+    id: '10',
+    authorId: 'currentUser',
+    authorName: 'Alex Morgan',
+    authorAvatar: 'galaxy',
+    channelId: 'currentUser-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
+    text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
+    images: [],
+    timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
+    isHighPriority: false,
+    isDaily: true,
+  },
 ];
 
-// Get unique channels from mock data
-export const mockChannels = Array.from(
+// Get unique channels from mock data with owner and subscribers
+export const mockChannels: Channel[] = Array.from(
   new Map(
     mockTidings.map((tiding) => [
       tiding.channelId,
-      { id: tiding.channelId, name: tiding.channelName, color: tiding.channelColor, isDaily: tiding.isDaily },
+      {
+        id: tiding.channelId,
+        name: tiding.channelName,
+        color: tiding.channelColor,
+        isDaily: tiding.isDaily,
+        ownerId: tiding.authorId,
+        // Mock subscribers - in real app this would come from database
+        subscribers: [
+          'currentUser', // Current user has access to all channels for demo
+          tiding.authorId,
+          ...(['user1', 'user2', 'user3', 'user4', 'user5', 'user6'].filter(
+            (id) => id !== tiding.authorId,
+          )),
+        ],
+      },
     ]),
   ).values(),
 );
+
+// Mock current user data
+export const mockCurrentUser: User = {
+  id: 'currentUser',
+  firstName: 'Alex',
+  lastName: 'Morgan',
+  email: 'alex.morgan@example.com',
+  funFact: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
+  avatar: 'galaxy',
+  joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 180, // 180 days ago (~6 months)
+};

@@ -6,8 +6,8 @@
 	--color-secondary: var(--color-amber-100); /* Light amber for secondary elements */
 	--color-secondary-foreground: var(--color-amber-900);
 
-	--color-muted: var(--color-gray-50);
-	--color-muted-foreground: var(--color-gray-600);
+	--color-muted: var(--color-gray-300);
+	--color-muted-foreground: var(--color-gray-800);
 
 	--color-accent: var(--color-amber-600); /* Warm, domestic accent color for intentional, calm vibe */
 	--color-accent-foreground: var(--color-white);
