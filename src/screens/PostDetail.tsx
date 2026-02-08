@@ -16,6 +16,7 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { ReactionDisplay } from '@components/ReactionDisplay';
 import { ChatMessage } from '@components/ChatMessage';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import { getRelativeTime } from '@lib/timeUtils';
 import {
   mockTidings,
   mockCurrentUser,
@@ -24,27 +25,6 @@ import {
 } from '@lib/mockData';
 
 const COMMON_EMOJIS = ['❤️', '👍', '😊', '🎉', '😮', '😢', '😄', '🔥'];
-
-function getRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days}d ago`;
-  }
-  if (hours > 0) {
-    return `${hours}h ago`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ago`;
-  }
-
-  return 'Just now';
-}
 
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -75,12 +55,10 @@ export function PostDetail() {
   const getColorPair = () => {
     const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
     
-    const result = {
+    return {
       backgroundColor: colorData?.value || '#c7d2fe',
       textColor: colorData?.textColor || '#4338ca',
     };
-    
-    return result;
   };
 
   const colors = getColorPair();
@@ -94,11 +72,9 @@ export function PostDetail() {
   );
 
   const sortedReactions = useMemo(() => {
-    const result = [...tiding.reactions].sort(
+    return [...tiding.reactions].sort(
       (a, b) => b.userIds.length - a.userIds.length
     );
-    
-    return result;
   }, [tiding.reactions]);
 
   const handleReaction = (emoji: string) => {
@@ -157,15 +133,13 @@ export function PostDetail() {
     setTiding((prev) => {
       if (!prev) return prev;
 
-      const result = {
+      return {
         ...prev,
         conversationEnrollees: [
           ...prev.conversationEnrollees,
           mockCurrentUser.id,
         ],
       };
-
-      return result;
     });
   };
 
@@ -184,12 +158,10 @@ export function PostDetail() {
     setTiding((prev) => {
       if (!prev) return prev;
 
-      const result = {
+      return {
         ...prev,
         comments: [...prev.comments, newComment],
       };
-
-      return result;
     });
 
     setNewMessage('');
