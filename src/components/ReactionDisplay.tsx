@@ -16,12 +16,12 @@ export function ReactionDisplay({
 }: ReactionDisplayProps) {
   return (
     <Button
-      variant={isUserReacted ? 'base' : 'outline'}
+      variant='outline'
       size='sm'
       onClick={onClick}
       className={join(
-        'px-3 py-1.5 gap-2 transition-all ring-2',
-        isUserReacted ? 'ring-primary/30' : 'ring-transparent'
+        'px-3 py-1.5 gap-2 transition-all',
+        isUserReacted ? 'bg-primary/10 border-primary/30' : 'bg-transparent'
       )}
     >
       <span className='text-base' role='img' aria-label={`Reaction: ${emoji}`}>

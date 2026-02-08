@@ -416,12 +416,12 @@ export function PostDetail() {
                         return (
                           <Button
                             key={emoji}
-                            variant={isUserReacted ? 'base' : 'outline'}
+                            variant='outline'
                             size='md'
                             onClick={() => handleReaction(emoji)}
                             className={join(
-                              'text-xl px-3 py-2 ring-2',
-                              isUserReacted ? 'ring-primary/30' : 'ring-transparent'
+                              'text-xl px-3 py-2 transition-all',
+                              isUserReacted ? 'bg-primary/10 border-primary/30' : 'bg-transparent'
                             )}
                           >
                             {emoji}
