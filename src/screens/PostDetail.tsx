@@ -27,6 +27,60 @@ import {
 
 const COMMON_EMOJIS = ['❤️', '👀', '😊', '🎉', '😮', '😢', '😄', '🔥'];
 
+// Fun phrases for when there are no messages yet
+const START_CONVERSATION_PHRASES = [
+  "We're all friends here!",
+  "Break the ice and say hi!",
+  "Your voice matters here.",
+  "Every great chat starts somewhere!",
+  "Be the first to share!",
+  "Kick things off with your thoughts!",
+  "Don't be shy—we want to hear from you!",
+  "Start something wonderful!",
+  "Let's get this conversation rolling!",
+  "Your story could inspire someone today.",
+  "Speak your heart!",
+  "We're listening—share away!",
+  "Make this space come alive!",
+  "Every word counts!",
+  "Lead the way with your message!",
+  "No judgment, just connection!",
+  "Say what's on your mind!",
+  "Your perspective is valuable!",
+  "Light up this conversation!",
+  "The first word is always the hardest—you got this!",
+];
+
+// Fun phrases for when there are already messages
+const JOIN_CONVERSATION_PHRASES = [
+  "Aren't you curious what they're saying?",
+  "The conversation is heating up!",
+  "Jump in—everyone's welcome!",
+  "See what the buzz is about!",
+  "Don't miss out on the fun!",
+  "Your thoughts could add so much!",
+  "They're waiting to hear from you!",
+  "Add your voice to the mix!",
+  "Join the chat—it's lively in here!",
+  "Curious minds unite!",
+  "There's room for you in this conversation!",
+  "See what everyone's talking about!",
+  "Be part of something special!",
+  "Your input could spark something great!",
+  "The more, the merrier!",
+  "Dive into the discussion!",
+  "Connect with your people!",
+  "Everyone has something to share—including you!",
+  "Don't just watch—participate!",
+  "Peek inside and join the chat!",
+];
+
+// Utility function to get a random phrase from an array
+function getRandomPhrase(phrases: string[]): string {
+  const randomIndex = Math.floor(Math.random() * phrases.length);
+  return phrases[randomIndex];
+}
+
 // Utility function to validate if a string is a single emoji
 function isValidEmoji(str: string): boolean {
   if (!str || str.length === 0) return false;
@@ -475,14 +529,25 @@ export function PostDetail() {
                 {!isEnrolledInConversation ? (
                   <div className='space-y-4 text-center py-8'>
                     <h3 className='text-lg font-semibold text-foreground'>
-                      Join the conversation
+                      {tiding.comments.length === 0
+                        ? 'Start the conversation'
+                        : 'Join the conversation'}
                     </h3>
                     <p className='text-foreground/60 text-sm'>
-                      Enroll to see messages and share your thoughts
+                      {tiding.comments.length === 0
+                        ? 'Enroll to share your thoughts'
+                        : 'Enroll to see messages and share your thoughts'}
                     </p>
                     <Button onClick={handleJoinConversation}>
-                      Join Conversation
+                      {tiding.comments.length === 0
+                        ? 'Start Conversation'
+                        : 'Join Conversation'}
                     </Button>
+                    <p className='text-foreground/70 text-sm italic mt-2'>
+                      {tiding.comments.length === 0
+                        ? getRandomPhrase(START_CONVERSATION_PHRASES)
+                        : getRandomPhrase(JOIN_CONVERSATION_PHRASES)}
+                    </p>
                   </div>
                 ) : (
                   <div className='space-y-4'>
