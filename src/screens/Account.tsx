@@ -563,7 +563,7 @@ export function Account() {
         </Card>
 
         {/* Notifications Section - Separate Card */}
-        <Card className='space-y-6 p-6'>
+        <div className='space-y-4'>
           <div>
             <h2 className='text-foreground text-2xl font-semibold'>
               Notifications
@@ -578,7 +578,7 @@ export function Account() {
             </p>
           </div>
 
-          <div className='space-y-4'>
+          <Card className='space-y-4 p-6'>
             {/* Pending Invites Section */}
             {pendingInvites.length > 0 && (
               <div className='space-y-2'>
@@ -724,8 +724,8 @@ export function Account() {
                 you'll see it here.
               </p>
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         {/* Channel Form Modal */}
         <ChannelFormModal
