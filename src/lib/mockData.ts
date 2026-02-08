@@ -172,6 +172,20 @@ export const mockTidings: Tiding[] = [
     isHighPriority: false,
     isDaily: true,
   },
+  {
+    id: '10',
+    authorId: 'currentUser',
+    authorName: 'Alex Morgan',
+    authorAvatar: 'galaxy',
+    channelId: 'currentUser-daily',
+    channelName: 'Daily',
+    channelColor: '#6366f1', // indigo-500
+    text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
+    images: [],
+    timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
+    isHighPriority: false,
+    isDaily: true,
+  },
 ];
 
 // Get unique channels from mock data with owner and subscribers

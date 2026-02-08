@@ -12,8 +12,7 @@ import {
   Label,
   Button,
 } from '@moondreamsdev/dreamer-ui/components';
-import { mockCurrentUser, mockChannels } from '@lib/mockData';
-import { router } from '@routes/AppRoutes';
+import { mockCurrentUser, mockChannels, User } from '@lib/mockData';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -26,11 +25,7 @@ function formatJoinDate(timestamp: number): string {
   return result;
 }
 
-interface AccountFormData {
-  firstName: string;
-  lastName: string;
-  funFact: string;
-}
+type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
 
 export function Account() {
   // Combined form state
@@ -87,11 +82,11 @@ export function Account() {
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
         {/* Header */}
-        <div className='space-y-2'>
-          <div className='flex items-center gap-4'>
+        <div className='space-y-2 mt-4'>
+          <div className='flex items-center gap-4 mb-10'>
             <Button
               variant='link'
-              onClick={() => router.navigate('/')}
+              href='/feed'
               className='text-foreground/60 hover:text-foreground'
             >
               ← Back to Feed
@@ -118,7 +113,7 @@ export function Account() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue='account' tabsWidth='full'>
+          <Tabs defaultValue='account' tabsWidth='full' className='mt-5'>
             <TabsList>
               <TabsTrigger value='account'>Account</TabsTrigger>
               <TabsTrigger value='my-channels'>My Channels</TabsTrigger>
