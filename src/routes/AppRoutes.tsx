@@ -46,6 +46,14 @@ export const router = createBrowserRouter([
         },
       },
       {
+        path: 'tiding/:id',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: PostDetail } = await import('@screens/PostDetail');
+          return { Component: PostDetail };
+        },
+      },
+      {
         path: 'account',
         HydrateFallback: Loading,
         lazy: async () => {

@@ -6,6 +6,7 @@ import {
   Card,
   Carousel,
 } from '@moondreamsdev/dreamer-ui/components';
+import { useNavigate } from 'react-router-dom';
 
 interface TidingCardProps {
   tiding: Tiding;
@@ -33,6 +34,7 @@ function getRelativeTime(timestamp: number): string {
 }
 
 export function TidingCard({ tiding }: TidingCardProps) {
+  const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
 
   const getColorPair = () => {
@@ -45,8 +47,16 @@ export function TidingCard({ tiding }: TidingCardProps) {
 
   const colors = getColorPair();
 
+  const handleClick = () => {
+    navigate(`/tiding/${tiding.id}`);
+  };
+
   return (
-    <Card className='relative overflow-hidden p-0'>
+    <div
+      className='cursor-pointer transition-all hover:shadow-lg'
+      onClick={handleClick}
+    >
+      <Card className='relative overflow-hidden p-0'>
       {/* High Priority Banner */}
       {tiding.isHighPriority && (
         <div
@@ -121,5 +131,6 @@ export function TidingCard({ tiding }: TidingCardProps) {
         </div>
       )}
     </Card>
+    </div>
   );
 }
