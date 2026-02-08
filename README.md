@@ -157,6 +157,55 @@ An intuitive system for inviting others to join your channels:
   - Seamless integration with existing channel subscription system
   - Toast notifications for all key actions
 
+### 🔔 Notifications & Invite Management
+
+A streamlined notification system for managing channel invitations:
+
+- **Bell Icon with Badge**: Located in the Feed header next to the user avatar
+  - Shows a red notification dot when there are pending invites
+  - Clicking navigates to the Notifications tab on the Account page
+  - Accessible design with proper ARIA labels
+  
+- **Notifications Tab**: Dedicated section in the Account page for invite management
+  - **Tab Badge**: Displays count of pending invites (e.g., "Notifications (2)")
+  - **Pending Invites Section**:
+    - Shows active channel invitations awaiting response
+    - Each invite card displays:
+      - Inviter's name
+      - Channel name badge
+      - Time since invitation (e.g., "12h ago", "1d ago")
+      - Accept/Decline action buttons
+    - **Accept Action**: 
+      - Subscribes user to the channel
+      - Updates invite status to "accepted"
+      - Removes from pending list
+      - User gains access to channel content
+    - **Decline Action**:
+      - Updates invite status to "declined"
+      - Moves invite to Declined section
+      - No channel subscription created
+  
+  - **Declined Invites Section**:
+    - Shows previously declined invitations
+    - Read-only view with inviter, channel, and decline timestamp
+    - Reduced opacity to indicate inactive status
+    - No action buttons available
+  
+  - **Empty State**: Friendly message when no invites exist
+    - "No notifications yet. When someone invites you to a channel, you'll see it here."
+  
+- **Data Model**: `UserInvite` interface tracks:
+  - Channel ID and inviter user ID
+  - Invitation timestamp
+  - Status (pending/accepted/declined)
+  - Response timestamp for accepted/declined invites
+  
+- **Consumer-Friendly Design**:
+  - Human-readable timestamps
+  - Clear action buttons with primary/secondary styling
+  - Organized separation between pending and declined invites
+  - Visual hierarchy with count badges and sections
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)

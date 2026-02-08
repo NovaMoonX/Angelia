@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { Select, Avatar, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
-import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
+import { BellIcon } from '@components/BellIcon';
+import { mockTidings, mockChannels, mockCurrentUser, mockUserInvites } from '@lib/mockData';
 import { Link } from 'react-router-dom';
 
 type SortOrder = 'newest' | 'oldest';
@@ -133,6 +134,13 @@ export function Feed() {
     setIsCalloutDismissed(true);
   };
 
+  // Memoized: Check for pending invites
+  const hasPendingInvites = useMemo(() => {
+    const result = mockUserInvites.some((invite) => invite.status === 'pending');
+    
+    return result;
+  }, []);
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
@@ -143,13 +151,22 @@ export function Feed() {
               <h1 className='text-3xl font-bold text-foreground'>Tidings</h1>
               <p className='text-foreground/60'>Stay connected with family updates</p>
             </div>
-            <Link
-              to='/account'
-              aria-label='Go to account'
-              className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full'
-            >
-              <Avatar preset={mockCurrentUser.avatar} size='md' />
-            </Link>
+            <div className='flex items-center gap-3'>
+              <Link
+                to='/account?tab=notifications'
+                aria-label='View notifications'
+                className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-2 hover:bg-foreground/5 transition-colors'
+              >
+                <BellIcon hasNotification={hasPendingInvites} className='text-foreground' />
+              </Link>
+              <Link
+                to='/account'
+                aria-label='Go to account'
+                className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full'
+              >
+                <Avatar preset={mockCurrentUser.avatar} size='md' />
+              </Link>
+            </div>
           </div>
         </div>
 

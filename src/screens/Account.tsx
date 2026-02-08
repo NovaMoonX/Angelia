@@ -12,14 +12,17 @@ import {
   Label,
   Button,
   Separator,
+  Badge,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   mockCurrentUser,
   mockChannels,
   mockUsers,
+  mockUserInvites,
   User,
   Channel,
+  UserInvite,
   getUserById,
 } from '@lib/mockData';
 import { ChannelCard } from '@components/ChannelCard';
@@ -37,8 +40,28 @@ function formatJoinDate(timestamp: number): string {
   return result;
 }
 
+function formatInviteTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  
+  const result = `${days}d ago`;
+  
+  return result;
+}
+
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
-type AccountTab = 'account' | 'my-channels' | 'subscribed';
+type AccountTab = 'account' | 'my-channels' | 'subscribed' | 'notifications';
 
 interface ChannelFormData {
   name: string;
@@ -66,8 +89,8 @@ export function Account() {
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') || '';
-    const channelTabs: AccountTab[] = ['my-channels', 'subscribed'];
-    const result = channelTabs.includes(tab as AccountTab) ? tab : 'account';
+    const validTabs: AccountTab[] = ['my-channels', 'subscribed', 'notifications'];
+    const result = validTabs.includes(tab as AccountTab) ? tab : 'account';
 
     return result;
   }, [searchParams]);
@@ -87,6 +110,7 @@ export function Account() {
     'create',
   );
   const [channels, setChannels] = useState(mockChannels);
+  const [userInvites, setUserInvites] = useState(mockUserInvites);
 
   // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
@@ -141,6 +165,27 @@ export function Account() {
 
     return result;
   }, [selectedChannel]);
+
+  // Memoized: Get pending invites
+  const pendingInvites = useMemo(() => {
+    const result = userInvites.filter((invite) => invite.status === 'pending');
+    
+    return result;
+  }, [userInvites]);
+
+  // Memoized: Get declined invites
+  const declinedInvites = useMemo(() => {
+    const result = userInvites.filter((invite) => invite.status === 'declined');
+    
+    return result;
+  }, [userInvites]);
+
+  // Memoized: Count of pending invites for badge
+  const pendingInviteCount = useMemo(() => {
+    const result = pendingInvites.length;
+    
+    return result;
+  }, [pendingInvites]);
 
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
 
@@ -275,6 +320,39 @@ export function Account() {
     }
   };
 
+  // Invite handlers
+  const handleAcceptInvite = (invite: UserInvite) => {
+    // Mock accept - in real app would call API
+    setUserInvites((prev) =>
+      prev.map((inv) =>
+        inv.id === invite.id
+          ? { ...inv, status: 'accepted' as const, respondedAt: Date.now() }
+          : inv,
+      ),
+    );
+    // Add current user to channel subscribers
+    setChannels((prev) =>
+      prev.map((ch) =>
+        ch.id === invite.channelId
+          ? { ...ch, subscribers: [...ch.subscribers, mockCurrentUser.id] }
+          : ch,
+      ),
+    );
+    console.log('Accepted invite:', invite.id);
+  };
+
+  const handleDeclineInvite = (invite: UserInvite) => {
+    // Mock decline - in real app would call API
+    setUserInvites((prev) =>
+      prev.map((inv) =>
+        inv.id === invite.id
+          ? { ...inv, status: 'declined' as const, respondedAt: Date.now() }
+          : inv,
+      ),
+    );
+    console.log('Declined invite:', invite.id);
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl space-y-6 px-4 py-6'>
@@ -324,6 +402,9 @@ export function Account() {
               <TabsTrigger value='account'>Account</TabsTrigger>
               <TabsTrigger value='my-channels'>My Channels</TabsTrigger>
               <TabsTrigger value='subscribed'>Subscribed Channels</TabsTrigger>
+              <TabsTrigger value='notifications'>
+                Notifications {pendingInviteCount > 0 && `(${pendingInviteCount})`}
+              </TabsTrigger>
             </TabsList>
 
             {/* Account Tab Content */}
@@ -471,6 +552,130 @@ export function Account() {
               ) : (
                 <p className='text-foreground/60 text-sm'>
                   You are not subscribed to any channels yet.
+                </p>
+              )}
+            </TabsContent>
+
+            {/* Notifications Tab Content */}
+            <TabsContent value='notifications' className='mt-4 space-y-4'>
+              {/* Pending Invites Section */}
+              {pendingInvites.length > 0 && (
+                <div className='space-y-2'>
+                  <p className='text-foreground/80 text-sm font-medium'>
+                    Pending Invites ({pendingInvites.length})
+                  </p>
+                  <div className='space-y-2'>
+                    {pendingInvites.map((invite) => {
+                      const channel = channels.find(
+                        (ch) => ch.id === invite.channelId,
+                      );
+                      const inviter = getUserById(invite.invitedBy);
+                      
+                      if (!channel || !inviter) {
+                        return null;
+                      }
+
+                      return (
+                        <Card key={invite.id} className='p-4'>
+                          <div className='space-y-3'>
+                            <div className='flex items-start justify-between gap-3'>
+                              <div className='flex-1 space-y-1'>
+                                <div className='flex items-center gap-2'>
+                                  <p className='text-foreground text-sm font-medium'>
+                                    {inviter.firstName} {inviter.lastName}
+                                  </p>
+                                  <span className='text-foreground/40 text-xs'>
+                                    invited you to
+                                  </span>
+                                </div>
+                                <Badge
+                                  variant='base'
+                                  className='text-sm font-medium'
+                                >
+                                  {channel.name}
+                                </Badge>
+                                <p className='text-foreground/60 text-xs'>
+                                  {formatInviteTime(invite.invitedAt)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className='flex gap-2'>
+                              <Button
+                                size='sm'
+                                onClick={() => handleAcceptInvite(invite)}
+                                className='flex-1'
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                variant='secondary'
+                                size='sm'
+                                onClick={() => handleDeclineInvite(invite)}
+                                className='flex-1'
+                              >
+                                Decline
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Separator between pending and declined */}
+              {pendingInvites.length > 0 && declinedInvites.length > 0 && (
+                <Separator />
+              )}
+
+              {/* Declined Invites Section */}
+              {declinedInvites.length > 0 && (
+                <div className='space-y-2'>
+                  <p className='text-foreground/80 text-sm font-medium'>
+                    Declined Invites ({declinedInvites.length})
+                  </p>
+                  <div className='space-y-2'>
+                    {declinedInvites.map((invite) => {
+                      const channel = channels.find(
+                        (ch) => ch.id === invite.channelId,
+                      );
+                      const inviter = getUserById(invite.invitedBy);
+                      
+                      if (!channel || !inviter) {
+                        return null;
+                      }
+
+                      return (
+                        <Card key={invite.id} className='p-4 opacity-60'>
+                          <div className='space-y-1'>
+                            <div className='flex items-center gap-2'>
+                              <p className='text-foreground text-sm font-medium'>
+                                {inviter.firstName} {inviter.lastName}
+                              </p>
+                              <span className='text-foreground/40 text-xs'>
+                                invited you to
+                              </span>
+                            </div>
+                            <Badge variant='base' className='text-sm font-medium'>
+                              {channel.name}
+                            </Badge>
+                            <p className='text-foreground/60 text-xs'>
+                              Declined {invite.respondedAt ? formatInviteTime(invite.respondedAt) : ''}
+                            </p>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {pendingInvites.length === 0 && declinedInvites.length === 0 && (
+                <p className='text-foreground/60 text-sm text-center py-8'>
+                  No notifications yet. When someone invites you to a channel,
+                  you'll see it here.
                 </p>
               )}
             </TabsContent>

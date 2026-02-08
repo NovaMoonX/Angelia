@@ -23,6 +23,16 @@ export interface ChannelInvite {
   expiresAt: number | null; // Unix timestamp in ms, null for no expiration
 }
 
+// User Invite interface - for tracking invites sent to a user
+export interface UserInvite {
+  id: string;
+  channelId: string;
+  invitedBy: string; // User ID who sent the invite
+  invitedAt: number; // Unix timestamp in ms
+  status: 'pending' | 'accepted' | 'declined';
+  respondedAt: number | null; // Unix timestamp in ms when accepted/declined
+}
+
 // User interface
 export interface User {
   id: string;
@@ -431,3 +441,34 @@ export function createChannelInvite(channelId: string): ChannelInvite {
   
   return result;
 }
+
+// Mock user invites - invites sent to the current user
+export const mockUserInvites: UserInvite[] = [
+  // Pending invite to Photography Club from Sarah
+  {
+    id: 'user-invite-1',
+    channelId: 'test-invite-channel', // Photography Club
+    invitedBy: 'user1', // Sarah Johnson
+    invitedAt: Date.now() - 1000 * 60 * 60 * 12, // 12 hours ago
+    status: 'pending',
+    respondedAt: null,
+  },
+  // Pending invite to Family Updates from Michael
+  {
+    id: 'user-invite-2',
+    channelId: 'demo-channel', // Family Updates
+    invitedBy: 'user2', // Michael Chen
+    invitedAt: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
+    status: 'pending',
+    respondedAt: null,
+  },
+  // Declined invite to Garden Updates from Sarah (older)
+  {
+    id: 'user-invite-3',
+    channelId: 'channel4', // Garden Updates
+    invitedBy: 'user1', // Sarah Johnson
+    invitedAt: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
+    status: 'declined',
+    respondedAt: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
+  },
+];
