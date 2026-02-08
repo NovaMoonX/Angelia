@@ -65,6 +65,36 @@ A chronological feed for family updates called "Tidings":
 - **Loading States**: Skeleton cards provide visual feedback while loading
 - **Empty States**: Helpful messages when no tidings match filters
 
+### 🛠️ Channel Management (The Channel Foundry)
+
+A comprehensive interface for creating and managing channels to organize your updates:
+
+- **My Channels Tab**: Manage your created channels
+  - **Daily Channel**: Every user has a built-in daily channel for everyday updates (cannot be deleted)
+  - **Custom Channels**: Create up to 3 additional channels with:
+    - Custom name and description
+    - Color-coded badges from 12 pre-defined colors
+    - Edit and delete capabilities
+  - **Channel Cards**: Clean UI showing channel name, description preview, and action buttons
+  - **3-Channel Limit**: Enforces intentionality by limiting custom channels (excluding daily channel)
+  - **Visual Separation**: Separator between daily and custom channels with clear labels
+  - **Channel Counter**: "X / 3 channels" indicator showing your usage
+- **Subscribed Channels Tab**: View all channels you follow from other users
+  - Browse channel cards with descriptions
+  - Click to view full channel details and subscribers
+- **Create/Edit Modal**: FormFactories-powered forms for channel management
+  - Required channel name field
+  - Optional description field
+  - Visual color picker with 12 vibrant options (Indigo, Amber, Emerald, Pink, Lime, Purple, Rose, Cyan, Orange, Teal, Blue, Violet)
+- **Channel Detail Modal**: View comprehensive channel information
+  - Full channel description
+  - Ownership indicator
+  - Subscriber list with avatars and names
+- **Delete Protection**: Confirmation dialog for destructive actions using ActionModal
+  - Clear warning message
+  - Cannot delete daily channel
+  - Immediate UI update after deletion
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)
