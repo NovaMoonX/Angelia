@@ -8,10 +8,19 @@ function Home() {
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-5xl px-6 py-16 md:py-24 space-y-24'>
-        {/* Brand Header */}
-        <header className='flex items-center justify-center gap-4'>
-          <AngeliaLogo className='w-16 h-16 md:w-20 md:h-20' />
-          <h2 className='text-3xl md:text-4xl font-bold text-foreground'>Angelia</h2>
+        {/* Brand Header with Login */}
+        <header className='flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
+            <AngeliaLogo className='w-16 h-16 md:w-20 md:h-20' />
+            <h2 className='text-3xl md:text-4xl font-bold text-foreground'>Angelia</h2>
+          </div>
+          <Button
+            href='/auth?mode=login'
+            variant='tertiary'
+            className='text-sm md:text-base'
+          >
+            Login
+          </Button>
         </header>
 
         {/* Hero Section */}
@@ -24,19 +33,8 @@ function Home() {
           </p>
           <div className='pt-4'>
             <Button
+              href='/auth?mode=signup'
               size='lg'
-              onClick={() => {
-                const element = document.getElementById('categorical-agency');
-                if (!element) {
-                  console.warn('Scroll target element not found');
-                  return;
-                }
-                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                element.scrollIntoView({ 
-                  behavior: prefersReducedMotion ? 'auto' : 'smooth', 
-                  block: 'start' 
-                });
-              }}
               className={join(
                 'bg-accent hover:bg-accent/90 text-accent-foreground',
                 'text-lg px-8 py-6 rounded-lg font-semibold',
