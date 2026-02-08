@@ -1,5 +1,4 @@
-import { Modal, Badge, Avatar, Separator, Button } from '@moondreamsdev/dreamer-ui/components';
-import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { Modal, Badge, Avatar, Separator, CopyButton } from '@moondreamsdev/dreamer-ui/components';
 import type { Channel, User } from '@lib/mockData';
 import { mockCurrentUser } from '@lib/mockData';
 
@@ -18,36 +17,13 @@ export function ChannelModal({
   description,
   subscribers = [],
 }: ChannelModalProps) {
-  const { addToast } = useToast();
-  
   if (!channel) return null;
 
   const isOwner = channel.ownerId === mockCurrentUser.id;
 
-  const handleCopyInviteLink = async () => {
-    if (!channel.inviteCode) {
-      addToast({
-        title: 'Invite code not available',
-        type: 'error',
-      });
-      return;
-    }
-
-    const inviteUrl = `${window.location.origin}/invite/${channel.inviteCode}`;
-
-    try {
-      await navigator.clipboard.writeText(inviteUrl);
-      addToast({
-        title: 'Link copied to clipboard',
-        type: 'info',
-      });
-    } catch (err) {
-      addToast({
-        title: 'Failed to copy link',
-        type: 'error',
-      });
-    }
-  };
+  const inviteUrl = channel.inviteCode
+    ? `${window.location.origin}/invite/${channel.inviteCode}`
+    : '';
 
   return (
     <Modal
@@ -91,13 +67,14 @@ export function ChannelModal({
               <p className='text-sm text-foreground/60'>
                 Share this link with others to invite them to join this channel
               </p>
-              <Button
-                onClick={handleCopyInviteLink}
+              <CopyButton
+                textToCopy={inviteUrl}
                 variant='secondary'
                 className='w-full'
+                disabled={!channel.inviteCode}
               >
                 Copy Invite Link
-              </Button>
+              </CopyButton>
             </div>
           </>
         )}
