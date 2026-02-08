@@ -11,28 +11,12 @@ import {
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { type AvatarPreset, type User } from '@lib/mockData';
 
 type AuthMode = 'login' | 'signup';
-type AvatarPreset =
-  | 'astronaut'
-  | 'moon'
-  | 'star'
-  | 'galaxy'
-  | 'nebula'
-  | 'planet'
-  | 'cosmic-cat'
-  | 'dream-cloud'
-  | 'rocket'
-  | 'constellation'
-  | 'comet'
-  | 'twilight';
 
-interface ProfileData {
-  email: string;
+interface ProfileData extends Omit<User, 'id' | 'bio' | 'joinedAt'> {
   password: string;
-  firstName: string;
-  lastName: string;
-  avatar: AvatarPreset;
   funFact: string;
 }
 
