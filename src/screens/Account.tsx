@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Avatar,
-  Badge,
   Card,
   Textarea,
   Tabs,
@@ -12,8 +11,13 @@ import {
   Input,
   Label,
   Button,
+  Separator,
 } from '@moondreamsdev/dreamer-ui/components';
-import { mockCurrentUser, mockChannels, User } from '@lib/mockData';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { mockCurrentUser, mockChannels, User, Channel } from '@lib/mockData';
+import { ChannelCard } from '@components/ChannelCard';
+import { ChannelFormModal } from '@components/ChannelFormModal';
+import { ChannelModal } from '@components/ChannelModal';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -29,8 +33,28 @@ function formatJoinDate(timestamp: number): string {
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
 type AccountTab = 'account' | 'my-channels' | 'subscribed';
 
+interface ChannelFormData {
+  name: string;
+  description: string;
+  color: string;
+}
+
+// Mock channel descriptions (in real app, this would come from database)
+const channelDescriptions: Record<string, string> = {
+  'user1-daily': 'Daily updates and life moments',
+  'channel2': 'Sharing delicious recipes and cooking adventures',
+  'channel3': 'Celebrating big achievements and special moments',
+  'channel4': 'Updates from the garden and growing tips',
+  'user4-daily': 'Daily thoughts and experiences',
+  'channel1': 'Family trips, vacations, and adventures together',
+  'user6-daily': 'Daily reflections and musings',
+  'user3-daily': 'Day-to-day life and casual updates',
+  'currentUser-daily': 'My daily updates and life moments',
+};
+
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const actionModal = useActionModal();
   
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
@@ -48,14 +72,21 @@ export function Account() {
     funFact: mockCurrentUser.funFact,
   });
 
+  // Channel modal states
+  const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
+  const [isChannelDetailOpen, setIsChannelDetailOpen] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [channelFormMode, setChannelFormMode] = useState<'create' | 'edit'>('create');
+  const [channels, setChannels] = useState(mockChannels);
+
   // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
-    const result = mockChannels.filter(
+    const result = channels.filter(
       (channel) => channel.ownerId === mockCurrentUser.id,
     );
     
     return result;
-  }, []);
+  }, [channels]);
 
   // Memoized: Find user's daily channel (from owned channels)
   const userDailyChannel = useMemo(() => {
@@ -66,14 +97,21 @@ export function Account() {
 
   // Memoized: Find channels the user has access to (subscribed)
   const subscribedChannels = useMemo(() => {
-    const result = mockChannels.filter(
+    const result = channels.filter(
       (channel) =>
         channel.subscribers.includes(mockCurrentUser.id) &&
         channel.ownerId !== mockCurrentUser.id,
     );
     
     return result;
-  }, []);
+  }, [channels]);
+
+  // Memoized: Count non-daily channels owned by user
+  const nonDailyChannelCount = useMemo(() => {
+    const result = userOwnedChannels.filter((ch) => !ch.isDaily).length;
+    
+    return result;
+  }, [userOwnedChannels]);
 
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
 
@@ -105,6 +143,68 @@ export function Account() {
     setSearchParams({ tab: value }, {
       replace: true,
     });
+  };
+
+  // Channel handlers
+  const handleCreateChannel = () => {
+    setChannelFormMode('create');
+    setSelectedChannel(null);
+    setIsChannelFormOpen(true);
+  };
+
+  const handleEditChannel = (channel: Channel) => {
+    setChannelFormMode('edit');
+    setSelectedChannel(channel);
+    setIsChannelFormOpen(true);
+  };
+
+  const handleDeleteChannel = async (channel: Channel) => {
+    const confirmed = await actionModal.confirm({
+      title: 'Delete Channel',
+      message: `Are you sure you want to delete "${channel.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      // Mock delete - in real app would call API
+      setChannels((prev) => prev.filter((ch) => ch.id !== channel.id));
+      console.log('Deleting channel:', channel.id);
+    }
+  };
+
+  const handleViewChannel = (channel: Channel) => {
+    setSelectedChannel(channel);
+    setIsChannelDetailOpen(true);
+  };
+
+  const handleChannelFormSubmit = (data: ChannelFormData) => {
+    if (channelFormMode === 'create') {
+      // Mock create - in real app would call API
+      const newChannel: Channel = {
+        id: `channel-${Date.now()}`,
+        name: data.name,
+        color: data.color,
+        isDaily: false,
+        ownerId: mockCurrentUser.id,
+        subscribers: [mockCurrentUser.id],
+      };
+      setChannels((prev) => [...prev, newChannel]);
+      channelDescriptions[newChannel.id] = data.description;
+      console.log('Creating channel:', newChannel);
+    } else if (selectedChannel) {
+      // Mock update - in real app would call API
+      setChannels((prev) =>
+        prev.map((ch) =>
+          ch.id === selectedChannel.id
+            ? { ...ch, name: data.name, color: data.color }
+            : ch
+        )
+      );
+      channelDescriptions[selectedChannel.id] = data.description;
+      console.log('Updating channel:', selectedChannel.id, data);
+    }
   };
 
   return (
@@ -200,57 +300,87 @@ export function Account() {
 
             {/* My Channels Tab Content */}
             <TabsContent value='my-channels' className='space-y-4 mt-4'>
+              {/* Daily Channel Section */}
               {userDailyChannel && (
-                <div className='space-y-2'>
-                  <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
-                  <div className='flex items-center gap-2'>
-                    <Badge
-                      variant='secondary'
-                      className='text-sm font-medium'
-                      style={{ borderColor: userDailyChannel.color }}
-                    >
-                      {userDailyChannel.name}
-                    </Badge>
+                <>
+                  <div className='space-y-2'>
+                    <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
+                    <ChannelCard
+                      channel={userDailyChannel}
+                      description={channelDescriptions[userDailyChannel.id]}
+                      onClick={handleViewChannel}
+                      onEdit={handleEditChannel}
+                      isOwner={true}
+                    />
                   </div>
-                </div>
+                  {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
+                    <Separator />
+                  )}
+                </>
               )}
 
+              {/* Other Channels Section */}
               {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-foreground/80'>Other Channels</p>
-                  <div className='flex flex-wrap gap-2'>
+                  <div className='flex items-center justify-between'>
+                    <p className='text-sm font-medium text-foreground/80'>Other Channels</p>
+                    <p className='text-xs text-foreground/60'>
+                      {nonDailyChannelCount} / 3 channels
+                    </p>
+                  </div>
+                  <div className='space-y-2'>
                     {userOwnedChannels
                       .filter((ch) => !ch.isDaily)
                       .map((channel) => (
-                        <Badge
+                        <ChannelCard
                           key={channel.id}
-                          variant='secondary'
-                          className='text-sm font-medium'
-                          style={{ borderColor: channel.color }}
-                        >
-                          {channel.name}
-                        </Badge>
+                          channel={channel}
+                          description={channelDescriptions[channel.id]}
+                          onClick={handleViewChannel}
+                          onEdit={handleEditChannel}
+                          onDelete={handleDeleteChannel}
+                          isOwner={true}
+                        />
                       ))}
                   </div>
                 </div>
               )}
+
+              {/* Create Channel Button */}
+              <div className='pt-2'>
+                <Button
+                  onClick={handleCreateChannel}
+                  disabled={nonDailyChannelCount >= 3}
+                  className='w-full'
+                >
+                  {nonDailyChannelCount >= 3
+                    ? 'Maximum Channels Reached (3/3)'
+                    : 'Create New Channel'}
+                </Button>
+                {nonDailyChannelCount >= 3 && (
+                  <p className='text-xs text-foreground/60 text-center mt-2'>
+                    You can create up to 3 custom channels to encourage intentionality
+                  </p>
+                )}
+              </div>
             </TabsContent>
 
             {/* Subscribed Channels Tab Content */}
             <TabsContent value='subscribed' className='space-y-4 mt-4'>
               {subscribedChannels.length > 0 ? (
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-foreground/80'>Channels You Follow</p>
-                  <div className='flex flex-wrap gap-2'>
+                  <p className='text-sm font-medium text-foreground/80'>
+                    Channels You Follow ({subscribedChannels.length})
+                  </p>
+                  <div className='space-y-2'>
                     {subscribedChannels.map((channel) => (
-                      <Badge
+                      <ChannelCard
                         key={channel.id}
-                        variant='secondary'
-                        className='text-sm font-medium'
-                        style={{ borderColor: channel.color }}
-                      >
-                        {channel.name}
-                      </Badge>
+                        channel={channel}
+                        description={channelDescriptions[channel.id]}
+                        onClick={handleViewChannel}
+                        isOwner={false}
+                      />
                     ))}
                   </div>
                 </div>
@@ -260,6 +390,24 @@ export function Account() {
             </TabsContent>
           </Tabs>
         </Card>
+
+        {/* Channel Form Modal */}
+        <ChannelFormModal
+          isOpen={isChannelFormOpen}
+          onClose={() => setIsChannelFormOpen(false)}
+          onSubmit={handleChannelFormSubmit}
+          channel={selectedChannel}
+          mode={channelFormMode}
+        />
+
+        {/* Channel Detail Modal */}
+        <ChannelModal
+          isOpen={isChannelDetailOpen}
+          onClose={() => setIsChannelDetailOpen(false)}
+          channel={selectedChannel}
+          description={selectedChannel ? channelDescriptions[selectedChannel.id] : undefined}
+          subscribers={[]} // Mock - in real app would fetch subscribers
+        />
       </div>
     </div>
   );
