@@ -1,14 +1,19 @@
 import { ErrorBoundary } from '@moondreamsdev/dreamer-ui/components';
-import { DreamerUIProvider } from '@moondreamsdev/dreamer-ui/providers';
-import { RouterProvider } from 'react-router-dom';
+import {
+  ActionModalProvider,
+  ToastProvider,
+} from '@moondreamsdev/dreamer-ui/providers';
 import { router } from '@routes/AppRoutes';
+import { RouterProvider } from 'react-router-dom';
 
 function App() {
   return (
     <ErrorBoundary>
-      <DreamerUIProvider>
-        <RouterProvider router={router} />
-      </DreamerUIProvider>
+      <ToastProvider>
+        <ActionModalProvider>
+          <RouterProvider router={router} />
+        </ActionModalProvider>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
