@@ -76,7 +76,7 @@ export function ChannelCard({
 
         {isOwner && (
           <div className='flex items-center gap-2'>
-            {onEdit && (
+            {onEdit && !channel.isDaily && (
               <Button
                 variant='tertiary'
                 size='sm'
