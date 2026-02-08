@@ -97,10 +97,14 @@ export function Account() {
       setSearchParams((prev) => {
         prev.delete('tab');
         return prev;
+      }, {
+        replace: true,
       });
       return;
     }
-    setSearchParams({ tab: value });
+    setSearchParams({ tab: value }, {
+      replace: true,
+    });
   };
 
   return (
