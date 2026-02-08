@@ -34,7 +34,7 @@ function Home() {
             A private, channel-based space where families share what
             matters—organized, intentional, and temporary.
           </p>
-          <div className='pt-4'>
+          <div className='flex flex-col items-center gap-3 pt-4'>
             <Button
               href='/auth?mode=signup'
               size='lg'
@@ -46,6 +46,9 @@ function Home() {
               )}
             >
               Get Started
+            </Button>
+            <Button href='/feed' variant='tertiary' size='md'>
+              View Demo Feed →
             </Button>
           </div>
         </section>

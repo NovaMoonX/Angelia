@@ -6,6 +6,7 @@ import {
   Label,
   Button,
   Textarea,
+  Callout,
   type AuthFormOnEmailSubmit,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
@@ -224,6 +225,26 @@ export function Auth() {
                 : 'Welcome back to Angelia'}
             </p>
           </div>
+          <Callout
+            variant='info'
+            icon='👀'
+            description={
+              <>
+                <span className='text-black'>
+                  Want to see the app in action?{' '}
+                </span>
+                <Link
+                  to='/feed'
+                  className={join(
+                    'text-accent hover:text-accent/80',
+                    'font-medium underline transition-colors',
+                  )}
+                >
+                  Head straight to the demo feed →
+                </Link>
+              </>
+            }
+          />
         </div>
 
         {/* AuthForm */}
