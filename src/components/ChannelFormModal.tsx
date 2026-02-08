@@ -22,6 +22,7 @@ interface ChannelFormModalProps {
   onSubmit: (data: ChannelFormData) => void;
   channel?: Channel | null;
   mode: 'create' | 'edit';
+  existingChannelNames?: string[];
 }
 
 export function ChannelFormModal({
@@ -30,15 +31,18 @@ export function ChannelFormModal({
   onSubmit,
   channel,
   mode,
+  existingChannelNames = [],
 }: ChannelFormModalProps) {
   const [selectedColor, setSelectedColor] = useState(
     channel?.color || DEFAULT_CHANNEL_COLOR
   );
+  const [nameError, setNameError] = useState<string | null>(null);
 
   // Reset form when channel changes or modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedColor(channel?.color || DEFAULT_CHANNEL_COLOR);
+      setNameError(null);
     }
   }, [isOpen, channel]);
 
@@ -71,8 +75,21 @@ export function ChannelFormModal({
   );
 
   const handleFormSubmit = (formData: Record<string, string>) => {
+    const channelName = formData.name.trim();
+    
+    // Check for duplicate names (case-insensitive)
+    const isDuplicate = existingChannelNames.some(
+      (name) => name.toLowerCase() === channelName.toLowerCase() &&
+      (mode === 'create' || name.toLowerCase() !== channel?.name.toLowerCase())
+    );
+
+    if (isDuplicate) {
+      setNameError(`A channel named "${channelName}" already exists. Please choose a different name.`);
+      return;
+    }
+
     const data: ChannelFormData = {
-      name: formData.name,
+      name: channelName,
       description: formData.description || '',
       color: selectedColor,
     };
@@ -88,6 +105,11 @@ export function ChannelFormModal({
       title={mode === 'create' ? 'Create New Channel' : 'Edit Channel'}
     >
       <div className='space-y-6'>
+        {nameError && (
+          <div className='bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm'>
+            {nameError}
+          </div>
+        )}
         <Form
           form={formFields}
           initialData={initialData}

@@ -6,18 +6,18 @@ export interface ChannelColorOption {
 }
 
 export const CHANNEL_COLORS: ChannelColorOption[] = [
-  { name: 'Indigo', value: '#6366f1', tailwindClass: 'bg-indigo-500' },
-  { name: 'Amber', value: '#f59e0b', tailwindClass: 'bg-amber-500' },
-  { name: 'Emerald', value: '#10b981', tailwindClass: 'bg-emerald-500' },
-  { name: 'Pink', value: '#ec4899', tailwindClass: 'bg-pink-500' },
-  { name: 'Lime', value: '#84cc16', tailwindClass: 'bg-lime-500' },
-  { name: 'Purple', value: '#a855f7', tailwindClass: 'bg-purple-500' },
-  { name: 'Rose', value: '#f43f5e', tailwindClass: 'bg-rose-500' },
-  { name: 'Cyan', value: '#06b6d4', tailwindClass: 'bg-cyan-500' },
-  { name: 'Orange', value: '#f97316', tailwindClass: 'bg-orange-500' },
-  { name: 'Teal', value: '#14b8a6', tailwindClass: 'bg-teal-500' },
-  { name: 'Blue', value: '#3b82f6', tailwindClass: 'bg-blue-500' },
-  { name: 'Violet', value: '#8b5cf6', tailwindClass: 'bg-violet-500' },
+  { name: 'Indigo', value: '#c7d2fe', tailwindClass: 'bg-indigo-200' },
+  { name: 'Amber', value: '#fde68a', tailwindClass: 'bg-amber-200' },
+  { name: 'Emerald', value: '#a7f3d0', tailwindClass: 'bg-emerald-200' },
+  { name: 'Pink', value: '#fbcfe8', tailwindClass: 'bg-pink-200' },
+  { name: 'Lime', value: '#d9f99d', tailwindClass: 'bg-lime-200' },
+  { name: 'Purple', value: '#e9d5ff', tailwindClass: 'bg-purple-200' },
+  { name: 'Rose', value: '#fecdd3', tailwindClass: 'bg-rose-200' },
+  { name: 'Cyan', value: '#a5f3fc', tailwindClass: 'bg-cyan-200' },
+  { name: 'Orange', value: '#fed7aa', tailwindClass: 'bg-orange-200' },
+  { name: 'Teal', value: '#99f6e4', tailwindClass: 'bg-teal-200' },
+  { name: 'Blue', value: '#bfdbfe', tailwindClass: 'bg-blue-200' },
+  { name: 'Violet', value: '#ddd6fe', tailwindClass: 'bg-violet-200' },
 ];
 
 export const DEFAULT_CHANNEL_COLOR = CHANNEL_COLORS[0].value; // Indigo

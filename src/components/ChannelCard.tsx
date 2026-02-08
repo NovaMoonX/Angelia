@@ -1,13 +1,15 @@
 import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import type { Channel } from '@lib/mockData';
+import type { Channel, User } from '@lib/mockData';
 
 interface ChannelCardProps {
   channel: Channel;
   description?: string;
+  owner?: User;
   onEdit?: (channel: Channel) => void;
   onDelete?: (channel: Channel) => void;
+  onUnsubscribe?: (channel: Channel) => void;
   onClick?: (channel: Channel) => void;
   isOwner?: boolean;
 }
@@ -15,8 +17,10 @@ interface ChannelCardProps {
 export function ChannelCard({
   channel,
   description,
+  owner,
   onEdit,
   onDelete,
+  onUnsubscribe,
   onClick,
   isOwner = false,
 }: ChannelCardProps) {
@@ -47,7 +51,7 @@ export function ChannelCard({
             <Badge
               variant='secondary'
               className='text-sm font-medium'
-              style={{ borderColor: channel.color }}
+              style={{ backgroundColor: channel.color, borderColor: channel.color }}
             >
               {channel.name}
             </Badge>
@@ -56,6 +60,11 @@ export function ChannelCard({
             )}
           </div>
           <p className='text-sm text-foreground/70'>{truncatedDescription}</p>
+          {owner && (
+            <p className='text-xs text-foreground/50'>
+              by {owner.firstName} {owner.lastName}
+            </p>
+          )}
         </div>
 
         {isOwner && (
@@ -86,6 +95,22 @@ export function ChannelCard({
                 <Trash className='w-4 h-4' />
               </Button>
             )}
+          </div>
+        )}
+
+        {!isOwner && onUnsubscribe && (
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='link'
+              size='sm'
+              onClick={(e) => {
+                e.stopPropagation();
+                onUnsubscribe(channel);
+              }}
+              className='text-foreground/60 hover:text-foreground'
+            >
+              Unsubscribe
+            </Button>
           </div>
         )}
       </div>

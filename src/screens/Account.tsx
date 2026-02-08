@@ -14,7 +14,7 @@ import {
   Separator,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { mockCurrentUser, mockChannels, User, Channel } from '@lib/mockData';
+import { mockCurrentUser, mockChannels, User, Channel, getUserById } from '@lib/mockData';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
@@ -113,6 +113,13 @@ export function Account() {
     return result;
   }, [userOwnedChannels]);
 
+  // Memoized: Get all existing channel names owned by user
+  const existingChannelNames = useMemo(() => {
+    const result = userOwnedChannels.map((ch) => ch.name);
+    
+    return result;
+  }, [userOwnedChannels]);
+
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
@@ -171,6 +178,31 @@ export function Account() {
       // Mock delete - in real app would call API
       setChannels((prev) => prev.filter((ch) => ch.id !== channel.id));
       console.log('Deleting channel:', channel.id);
+    }
+  };
+
+  const handleUnsubscribe = async (channel: Channel) => {
+    const confirmed = await actionModal.confirm({
+      title: 'Unsubscribe from Channel',
+      message: `Are you sure you want to unsubscribe from "${channel.name}"? You can always subscribe again later.`,
+      confirmText: 'Unsubscribe',
+      cancelText: 'Cancel',
+      destructive: false,
+    });
+
+    if (confirmed) {
+      // Mock unsubscribe - in real app would call API
+      setChannels((prev) =>
+        prev.map((ch) =>
+          ch.id === channel.id
+            ? {
+                ...ch,
+                subscribers: ch.subscribers.filter((id) => id !== mockCurrentUser.id),
+              }
+            : ch
+        )
+      );
+      console.log('Unsubscribing from channel:', channel.id);
     }
   };
 
@@ -373,15 +405,20 @@ export function Account() {
                     Channels You Follow ({subscribedChannels.length})
                   </p>
                   <div className='space-y-2'>
-                    {subscribedChannels.map((channel) => (
-                      <ChannelCard
-                        key={channel.id}
-                        channel={channel}
-                        description={channelDescriptions[channel.id]}
-                        onClick={handleViewChannel}
-                        isOwner={false}
-                      />
-                    ))}
+                    {subscribedChannels.map((channel) => {
+                      const owner = getUserById(channel.ownerId);
+                      return (
+                        <ChannelCard
+                          key={channel.id}
+                          channel={channel}
+                          description={channelDescriptions[channel.id]}
+                          owner={owner}
+                          onClick={handleViewChannel}
+                          onUnsubscribe={handleUnsubscribe}
+                          isOwner={false}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
@@ -398,6 +435,7 @@ export function Account() {
           onSubmit={handleChannelFormSubmit}
           channel={selectedChannel}
           mode={channelFormMode}
+          existingChannelNames={existingChannelNames}
         />
 
         {/* Channel Detail Modal */}
