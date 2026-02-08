@@ -1,6 +1,11 @@
-import { Avatar, Badge, Card, Carousel } from '@moondreamsdev/dreamer-ui/components';
-import type { Tiding } from '@lib/mockData';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import type { Tiding } from '@lib/mockData';
+import {
+  Avatar,
+  Badge,
+  Card,
+  Carousel,
+} from '@moondreamsdev/dreamer-ui/components';
 
 interface TidingCardProps {
   tiding: Tiding;
@@ -41,37 +46,42 @@ export function TidingCard({ tiding }: TidingCardProps) {
   const colors = getColorPair();
 
   return (
-    <Card className='p-0 overflow-hidden relative'>
+    <Card className='relative overflow-hidden p-0'>
       {/* High Priority Banner */}
       {tiding.isHighPriority && (
-        <div 
-          className='absolute top-0 left-0 w-0 h-0 border-l-[50px] border-l-red-500 border-b-[50px] border-b-transparent z-10'
+        <div
+          className='absolute top-0 left-0 z-10 h-0 w-0 border-b-50 border-l-50 border-b-transparent border-l-red-500'
           aria-label='High priority post'
           role='img'
         >
-          <span className='absolute top-[-45px] left-[-45px] text-white text-xs font-bold transform rotate-[-45deg]' aria-hidden='true'>
+          <span
+            className='absolute -top-11.25 -left-11.25 -rotate-45 transform text-xs font-bold text-white'
+            aria-hidden='true'
+          >
             !
           </span>
         </div>
       )}
 
       {/* Header */}
-      <div className='p-4 space-y-3'>
+      <div className='space-y-3 p-4'>
         <div className='flex items-start justify-between gap-3'>
           <div className='flex items-center gap-3'>
             <Avatar preset={tiding.authorAvatar} size='md' />
             <div className='flex flex-col'>
-              <span className='font-semibold text-foreground'>{tiding.authorName}</span>
-              <span className='text-sm text-foreground/60'>{relativeTime}</span>
+              <span className='text-foreground font-semibold'>
+                {tiding.authorName}
+              </span>
+              <span className='text-foreground/60 text-sm'>{relativeTime}</span>
             </div>
           </div>
-          <Badge 
-            variant='base' 
-            className='text-xs font-medium' 
-            style={{ 
+          <Badge
+            variant='base'
+            className='text-xs font-medium'
+            style={{
               backgroundColor: colors.backgroundColor,
               borderColor: colors.backgroundColor,
-              color: colors.textColor
+              color: colors.textColor,
             }}
           >
             {tiding.channelName}
@@ -79,7 +89,9 @@ export function TidingCard({ tiding }: TidingCardProps) {
         </div>
 
         {/* Text Content */}
-        <p className='text-foreground leading-relaxed whitespace-pre-wrap'>{tiding.text}</p>
+        <p className='text-foreground leading-relaxed whitespace-pre-wrap'>
+          {tiding.text}
+        </p>
       </div>
 
       {/* Media Area */}
@@ -89,7 +101,7 @@ export function TidingCard({ tiding }: TidingCardProps) {
             <img
               src={tiding.images[0]}
               alt='Post content'
-              className='w-full h-auto object-cover'
+              className='h-auto w-full object-cover'
               loading='lazy'
             />
           ) : (
@@ -99,7 +111,7 @@ export function TidingCard({ tiding }: TidingCardProps) {
                   <img
                     src={image}
                     alt={`Post content ${index + 1}`}
-                    className='w-full h-auto object-cover'
+                    className='h-auto w-full object-cover'
                     loading='lazy'
                   />
                 </div>
