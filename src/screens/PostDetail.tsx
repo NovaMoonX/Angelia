@@ -420,8 +420,8 @@ export function PostDetail() {
                             size='md'
                             onClick={() => handleReaction(emoji)}
                             className={join(
-                              'text-xl px-3 py-2',
-                              isUserReacted && 'ring-2 ring-primary/30'
+                              'text-xl px-3 py-2 ring-2',
+                              isUserReacted ? 'ring-primary/30' : 'ring-transparent'
                             )}
                           >
                             {emoji}

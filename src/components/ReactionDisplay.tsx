@@ -20,8 +20,8 @@ export function ReactionDisplay({
       size='sm'
       onClick={onClick}
       className={join(
-        'px-3 py-1.5 gap-2 transition-all',
-        isUserReacted && 'ring-2 ring-primary/30'
+        'px-3 py-1.5 gap-2 transition-all ring-2',
+        isUserReacted ? 'ring-primary/30' : 'ring-transparent'
       )}
     >
       <span className='text-base' role='img' aria-label={`Reaction: ${emoji}`}>
