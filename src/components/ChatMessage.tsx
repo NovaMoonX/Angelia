@@ -1,35 +1,63 @@
 import { Avatar } from '@moondreamsdev/dreamer-ui/components';
-import type { AvatarPreset } from '@lib/mockData';
+import { getUserById } from '@lib/mockData';
 import { getRelativeTime } from '@lib/timeUtils';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 
 interface ChatMessageProps {
-  authorName: string;
-  authorAvatar: AvatarPreset;
+  authorId: string;
   text: string;
   timestamp: number;
+  isCurrentUser?: boolean;
 }
 
 export function ChatMessage({
-  authorName,
-  authorAvatar,
+  authorId,
   text,
   timestamp,
+  isCurrentUser = false,
 }: ChatMessageProps) {
   const relativeTime = getRelativeTime(timestamp);
+  const author = getUserById(authorId);
+
+  if (!author) {
+    return null;
+  }
 
   return (
-    <div className='flex gap-3 py-3'>
-      <Avatar preset={authorAvatar} size='sm' />
-      <div className='flex-1 min-w-0'>
-        <div className='flex items-baseline gap-2'>
-          <span className='text-foreground font-semibold text-sm'>
-            {authorName}
+    <div
+      className={join(
+        'flex gap-3 py-2',
+        isCurrentUser ? 'flex-row-reverse' : 'flex-row'
+      )}
+    >
+      <Avatar preset={author.avatar} size='sm' className='shrink-0' />
+      <div
+        className={join(
+          'flex flex-col gap-1 max-w-[70%]',
+          isCurrentUser ? 'items-end' : 'items-start'
+        )}
+      >
+        <div
+          className={join(
+            'flex items-baseline gap-2 text-xs',
+            isCurrentUser ? 'flex-row-reverse' : 'flex-row'
+          )}
+        >
+          <span className='text-foreground font-semibold'>
+            {author.firstName} {author.lastName}
           </span>
-          <span className='text-foreground/40 text-xs'>{relativeTime}</span>
+          <span className='text-foreground/40'>{relativeTime}</span>
         </div>
-        <p className='text-foreground/80 text-sm mt-1 whitespace-pre-wrap break-words'>
-          {text}
-        </p>
+        <div
+          className={join(
+            'px-4 py-2 rounded-2xl break-words',
+            isCurrentUser
+              ? 'bg-primary text-primary-foreground rounded-tr-sm'
+              : 'bg-muted text-foreground rounded-tl-sm'
+          )}
+        >
+          <p className='text-sm whitespace-pre-wrap'>{text}</p>
+        </div>
       </div>
     </div>
   );

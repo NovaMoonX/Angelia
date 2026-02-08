@@ -34,8 +34,6 @@ export interface Reaction {
 export interface Comment {
   id: string;
   authorId: string;
-  authorName: string;
-  authorAvatar: AvatarPreset;
   text: string;
   timestamp: number; // Unix timestamp in ms
 }
@@ -103,8 +101,6 @@ export const mockTidings: Tiding[] = [
       {
         id: 'c1',
         authorId: 'currentUser',
-        authorName: 'Alex Morgan',
-        authorAvatar: 'galaxy',
         text: 'This looks amazing! Would love the recipe!',
         timestamp: Date.now() - 1000 * 60 * 60 * 1.5, // 1.5 hours ago
       },

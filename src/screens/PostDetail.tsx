@@ -149,8 +149,6 @@ export function PostDetail() {
     const newComment: Comment = {
       id: `c${Date.now()}`,
       authorId: mockCurrentUser.id,
-      authorName: `${mockCurrentUser.firstName} ${mockCurrentUser.lastName}`,
-      authorAvatar: mockCurrentUser.avatar,
       text: newMessage,
       timestamp: Date.now(),
     };
@@ -389,14 +387,14 @@ export function PostDetail() {
                         </p>
                       </div>
                     ) : (
-                      <div className='space-y-0 divide-y divide-foreground/10'>
+                      <div className='space-y-2'>
                         {tiding.comments.map((comment) => (
                           <ChatMessage
                             key={comment.id}
-                            authorName={comment.authorName}
-                            authorAvatar={comment.authorAvatar}
+                            authorId={comment.authorId}
                             text={comment.text}
                             timestamp={comment.timestamp}
+                            isCurrentUser={comment.authorId === mockCurrentUser.id}
                           />
                         ))}
                       </div>
