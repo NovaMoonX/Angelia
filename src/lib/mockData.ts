@@ -3,6 +3,16 @@
 // Avatar presets type
 export type AvatarPreset = 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
 
+// Channel interface
+export interface Channel {
+  id: string;
+  name: string;
+  color: string;
+  isDaily?: boolean;
+  ownerId: string; // User who owns/created the channel
+  subscribers: string[]; // Array of user IDs who have access to this channel
+}
+
 // User interface
 export interface User {
   id: string;
@@ -164,12 +174,26 @@ export const mockTidings: Tiding[] = [
   },
 ];
 
-// Get unique channels from mock data
-export const mockChannels = Array.from(
+// Get unique channels from mock data with owner and subscribers
+export const mockChannels: Channel[] = Array.from(
   new Map(
     mockTidings.map((tiding) => [
       tiding.channelId,
-      { id: tiding.channelId, name: tiding.channelName, color: tiding.channelColor, isDaily: tiding.isDaily },
+      {
+        id: tiding.channelId,
+        name: tiding.channelName,
+        color: tiding.channelColor,
+        isDaily: tiding.isDaily,
+        ownerId: tiding.authorId,
+        // Mock subscribers - in real app this would come from database
+        subscribers: [
+          'currentUser', // Current user has access to all channels for demo
+          tiding.authorId,
+          ...(['user1', 'user2', 'user3', 'user4', 'user5', 'user6'].filter(
+            (id) => id !== tiding.authorId,
+          )),
+        ],
+      },
     ]),
   ).values(),
 );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Avatar, Badge, Card, Textarea } from '@moondreamsdev/dreamer-ui/components';
 import { mockCurrentUser, mockChannels } from '@lib/mockData';
 
@@ -13,18 +13,55 @@ function formatJoinDate(timestamp: number): string {
   return result;
 }
 
+interface AccountFormData {
+  firstName: string;
+  lastName: string;
+  funFact: string;
+}
+
 export function Account() {
-  const [funFact, setFunFact] = useState(mockCurrentUser.funFact);
-  const [firstName, setFirstName] = useState(mockCurrentUser.firstName);
-  const [lastName, setLastName] = useState(mockCurrentUser.lastName);
+  // Combined form state
+  const [formData, setFormData] = useState<AccountFormData>({
+    firstName: mockCurrentUser.firstName,
+    lastName: mockCurrentUser.lastName,
+    funFact: mockCurrentUser.funFact,
+  });
 
-  // Get user's daily channel
-  const userDailyChannel = mockChannels.find((channel) => channel.isDaily);
+  // Memoized: Find channels owned by the current user
+  const userOwnedChannels = useMemo(() => {
+    const result = mockChannels.filter(
+      (channel) => channel.ownerId === mockCurrentUser.id,
+    );
+    
+    return result;
+  }, []);
 
-  // Get user's subscribed channels (non-daily channels)
-  const subscribedChannels = mockChannels.filter((channel) => !channel.isDaily);
+  // Memoized: Find user's daily channel (from owned channels)
+  const userDailyChannel = useMemo(() => {
+    const result = userOwnedChannels.find((channel) => channel.isDaily);
+    
+    return result;
+  }, [userOwnedChannels]);
+
+  // Memoized: Find channels the user has access to (subscribed)
+  const subscribedChannels = useMemo(() => {
+    const result = mockChannels.filter(
+      (channel) =>
+        channel.subscribers.includes(mockCurrentUser.id) &&
+        channel.ownerId !== mockCurrentUser.id,
+    );
+    
+    return result;
+  }, []);
 
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
+
+  const handleFormChange = (field: keyof AccountFormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
@@ -42,7 +79,7 @@ export function Account() {
             <Avatar preset={mockCurrentUser.avatar} size='xl' />
             <div className='text-center'>
               <h2 className='text-2xl font-semibold text-foreground'>
-                {firstName} {lastName}
+                {formData.firstName} {formData.lastName}
               </h2>
               <p className='text-sm text-foreground/60'>{mockCurrentUser.email}</p>
               <p className='text-xs text-foreground/40 mt-2'>
@@ -51,15 +88,15 @@ export function Account() {
             </div>
           </div>
 
-          {/* Editable Fields */}
+          {/* Profile Fields */}
           <div className='space-y-4 pt-4 border-t border-border'>
             {/* First Name */}
             <div className='space-y-2'>
               <label className='text-sm font-medium text-foreground'>First Name</label>
               <input
                 type='text'
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                value={formData.firstName}
+                onChange={(e) => handleFormChange('firstName', e.target.value)}
                 className='w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
               />
             </div>
@@ -69,8 +106,8 @@ export function Account() {
               <label className='text-sm font-medium text-foreground'>Last Name</label>
               <input
                 type='text'
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                value={formData.lastName}
+                onChange={(e) => handleFormChange('lastName', e.target.value)}
                 className='w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
               />
             </div>
@@ -79,8 +116,8 @@ export function Account() {
             <div className='space-y-2'>
               <label className='text-sm font-medium text-foreground'>Fun Facts About You</label>
               <Textarea
-                value={funFact}
-                onChange={(e) => setFunFact(e.target.value)}
+                value={formData.funFact}
+                onChange={(e) => handleFormChange('funFact', e.target.value)}
                 placeholder='Share some fun facts about yourself...'
                 rows={4}
               />
