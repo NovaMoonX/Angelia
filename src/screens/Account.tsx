@@ -14,7 +14,7 @@ function formatJoinDate(timestamp: number): string {
 }
 
 export function Account() {
-  const [bio, setBio] = useState(mockCurrentUser.bio);
+  const [funFact, setFunFact] = useState(mockCurrentUser.funFact);
   const [firstName, setFirstName] = useState(mockCurrentUser.firstName);
   const [lastName, setLastName] = useState(mockCurrentUser.lastName);
 
@@ -75,12 +75,12 @@ export function Account() {
               />
             </div>
 
-            {/* Bio */}
+            {/* Fun Facts */}
             <div className='space-y-2'>
               <label className='text-sm font-medium text-foreground'>Fun Facts About You</label>
               <Textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                value={funFact}
+                onChange={(e) => setFunFact(e.target.value)}
                 placeholder='Share some fun facts about yourself...'
                 rows={4}
               />

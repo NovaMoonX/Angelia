@@ -9,7 +9,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  bio: string;
+  funFact: string;
   avatar: AvatarPreset;
   joinedAt: number; // Unix timestamp in ms
 }
@@ -180,7 +180,7 @@ export const mockCurrentUser: User = {
   firstName: 'Alex',
   lastName: 'Morgan',
   email: 'alex.morgan@example.com',
-  bio: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
+  funFact: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
   avatar: 'galaxy',
   joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 180, // 180 days ago (~6 months)
 };

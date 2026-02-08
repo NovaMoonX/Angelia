@@ -15,9 +15,8 @@ import { type AvatarPreset, type User } from '@lib/mockData';
 
 type AuthMode = 'login' | 'signup';
 
-interface ProfileData extends Omit<User, 'id' | 'bio' | 'joinedAt'> {
+interface ProfileData extends Omit<User, 'id' | 'joinedAt'> {
   password: string;
-  funFact: string;
 }
 
 export function Auth() {
