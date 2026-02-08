@@ -13,6 +13,7 @@ import {
   Button,
 } from '@moondreamsdev/dreamer-ui/components';
 import { mockCurrentUser, mockChannels } from '@lib/mockData';
+import { router } from '@routes/AppRoutes';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -87,6 +88,15 @@ export function Account() {
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
         {/* Header */}
         <div className='space-y-2'>
+          <div className='flex items-center gap-4'>
+            <Button
+              variant='link'
+              onClick={() => router.navigate('/')}
+              className='text-foreground/60 hover:text-foreground'
+            >
+              ← Back to Feed
+            </Button>
+          </div>
           <h1 className='text-3xl font-bold text-foreground'>Account</h1>
           <p className='text-foreground/60'>Manage your profile and preferences</p>
         </div>
