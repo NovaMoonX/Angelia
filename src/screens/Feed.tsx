@@ -378,10 +378,10 @@ export function Feed() {
         <Button
           variant='primary'
           onClick={scrollToTop}
-          className='fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full p-0 shadow-lg transition-all hover:shadow-xl hover:scale-110'
+          className='fixed bottom-6 right-6 z-50 h-14 w-14 !rounded-3xl p-0 shadow-lg transition-all hover:shadow-xl hover:scale-110'
           aria-label='Scroll to top'
         >
-          <ChevronUp className='h-6 w-6' />
+          <ChevronUp className='h-8 w-8' />
         </Button>
       )}
     </div>
