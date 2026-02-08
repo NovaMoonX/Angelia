@@ -1,11 +1,31 @@
-import { useState, useEffect } from 'react';
-import { AuthForm, Avatar, Input, Label, Button, Textarea, type AuthFormOnEmailSubmit } from '@moondreamsdev/dreamer-ui/components';
+import { useState } from 'react';
+import {
+  AuthForm,
+  Avatar,
+  Input,
+  Label,
+  Button,
+  Textarea,
+  type AuthFormOnEmailSubmit,
+} from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 type AuthMode = 'login' | 'signup';
-type AvatarPreset = 'astronaut' | 'moon' | 'star' | 'galaxy' | 'nebula' | 'planet' | 'cosmic-cat' | 'dream-cloud' | 'rocket' | 'constellation' | 'comet' | 'twilight';
+type AvatarPreset =
+  | 'astronaut'
+  | 'moon'
+  | 'star'
+  | 'galaxy'
+  | 'nebula'
+  | 'planet'
+  | 'cosmic-cat'
+  | 'dream-cloud'
+  | 'rocket'
+  | 'constellation'
+  | 'comet'
+  | 'twilight';
 
 interface ProfileData {
   email: string;
@@ -19,10 +39,9 @@ interface ProfileData {
 export function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   // Get initial mode from query params, default to login
-  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [profileData, setProfileData] = useState<Partial<ProfileData>>({
     avatar: 'astronaut', // Default avatar
@@ -43,18 +62,10 @@ export function Auth() {
     'twilight',
   ];
 
-  // Initialize mode from query params - this ensures the AuthForm shows the right mode initially
-  useEffect(() => {
-    const modeParam = searchParams.get('mode');
-    if (modeParam === 'signup' || modeParam === 'login') {
-      setMode(modeParam);
-    }
-  }, [searchParams]);
-
   // Update query params when mode changes
   const handleModeChange = (newMode: 'login' | 'sign up') => {
     const authMode: AuthMode = newMode === 'sign up' ? 'signup' : 'login';
-    setMode(authMode);
+    setSearchParams({ mode: authMode });
     // Update URL in next tick to avoid React warning
     setTimeout(() => {
       setSearchParams({ mode: authMode });
@@ -81,28 +92,28 @@ export function Auth() {
 
   const handleProfileComplete = () => {
     console.log('Profile complete:', profileData);
-    
+
     // Navigate to verify email
     navigate('/verify-email', { state: { email: profileData.email } });
   };
 
   // Check if step 2 form is complete
-  const isStep2Complete = 
-    (profileData.firstName?.trim() || '') !== '' && 
-    (profileData.lastName?.trim() || '') !== '' && 
+  const isStep2Complete =
+    (profileData.firstName?.trim() || '') !== '' &&
+    (profileData.lastName?.trim() || '') !== '' &&
     (profileData.funFact?.trim() || '') !== '';
 
   // Step 2: Profile completion
-  if (mode === 'signup' && signupStep === 2) {
+  if (authMode === 'signup' && signupStep === 2) {
     return (
       <div className='page flex items-center justify-center p-6'>
         <div className='w-full max-w-md space-y-8'>
           {/* Logo and Title */}
           <div className='flex flex-col items-center space-y-4'>
             <Link to='/'>
-              <AngeliaLogo className='w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity' />
+              <AngeliaLogo className='h-20 w-20 cursor-pointer transition-opacity hover:opacity-80' />
             </Link>
-            <h1 className='text-3xl font-bold text-foreground'>
+            <h1 className='text-foreground text-3xl font-bold'>
               Complete Your Profile
             </h1>
             <p className='text-foreground/70 text-center'>
@@ -120,7 +131,12 @@ export function Auth() {
                   id='firstName'
                   type='text'
                   value={profileData.firstName || ''}
-                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({
+                      ...profileData,
+                      firstName: e.target.value,
+                    })
+                  }
                   placeholder='John'
                   className='mt-2'
                 />
@@ -132,7 +148,9 @@ export function Auth() {
                   id='lastName'
                   type='text'
                   value={profileData.lastName || ''}
-                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, lastName: e.target.value })
+                  }
                   placeholder='Doe'
                   className='mt-2'
                 />
@@ -142,18 +160,18 @@ export function Auth() {
             {/* Avatar Selection */}
             <div>
               <Label>Choose Your Avatar *</Label>
-              <div className='grid grid-cols-4 gap-3 mt-4'>
+              <div className='mt-4 grid grid-cols-4 gap-3'>
                 {avatarOptions.map((avatar) => (
                   <button
                     key={avatar}
                     type='button'
                     onClick={() => setProfileData({ ...profileData, avatar })}
                     className={join(
-                      'p-2 rounded-lg transition-all',
+                      'rounded-lg p-2 transition-all',
                       'hover:bg-accent/20',
                       profileData.avatar === avatar
-                        ? 'bg-accent/30 ring-2 ring-accent'
-                        : 'bg-muted/20'
+                        ? 'bg-accent/30 ring-accent ring-2'
+                        : 'bg-muted/20',
                     )}
                   >
                     <Avatar preset={avatar} size='lg' shape='circle' />
@@ -165,13 +183,16 @@ export function Auth() {
             {/* Fun Fact */}
             <div>
               <Label htmlFor='funFact'>Share a fun fact about yourself *</Label>
-              <p className='text-sm text-muted-foreground mt-1 mb-2'>
-                Something interesting that even those close to you probably don't know about you
+              <p className='text-muted-foreground mt-1 mb-2 text-sm'>
+                Something interesting that even those close to you probably
+                don't know about you
               </p>
               <Textarea
                 id='funFact'
                 value={profileData.funFact || ''}
-                onChange={(e) => setProfileData({ ...profileData, funFact: e.target.value })}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, funFact: e.target.value })
+                }
                 rows={3}
                 placeholder='I once...'
                 className='resize-none'
@@ -208,14 +229,14 @@ export function Auth() {
         {/* Logo and Welcome Text */}
         <div className='flex flex-col items-center space-y-4'>
           <Link to='/'>
-            <AngeliaLogo className='w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity' />
+            <AngeliaLogo className='h-20 w-20 cursor-pointer transition-opacity hover:opacity-80' />
           </Link>
-          <div className='text-center space-y-2'>
-            <h1 className='text-3xl font-bold text-foreground'>
-              {mode === 'signup' ? 'Create Account' : 'Sign In'}
+          <div className='space-y-2 text-center'>
+            <h1 className='text-foreground text-3xl font-bold'>
+              {authMode === 'signup' ? 'Create Account' : 'Sign In'}
             </h1>
             <p className='text-foreground/70'>
-              {mode === 'signup' 
+              {authMode === 'signup'
                 ? 'Join Angelia to connect with your family'
                 : 'Welcome back to Angelia'}
             </p>
