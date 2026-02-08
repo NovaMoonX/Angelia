@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Avatar,
   Badge,
@@ -26,8 +27,20 @@ function formatJoinDate(timestamp: number): string {
 }
 
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
+type AccountTab = 'account' | 'my-channels' | 'subscribed';
 
 export function Account() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get active tab from query params, default to 'account'
+  const activeTab = useMemo(() => {
+    const tab = searchParams.get('tab') || '';
+    const channelTabs: AccountTab[] = ['my-channels', 'subscribed'];
+    const result = channelTabs.includes(tab as AccountTab) ? tab : 'account';
+    
+    return result;
+  }, [searchParams]);
+
   // Combined form state
   const [formData, setFormData] = useState<AccountFormData>({
     firstName: mockCurrentUser.firstName,
@@ -78,6 +91,18 @@ export function Account() {
     alert('Account updated successfully!');
   };
 
+  const handleTabChange = (value: string) => {
+    const valueAsTab = value as AccountTab;
+    if (valueAsTab === 'account') {
+      setSearchParams((prev) => {
+        prev.delete('tab');
+        return prev;
+      });
+      return;
+    }
+    setSearchParams({ tab: value });
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
@@ -113,7 +138,12 @@ export function Account() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue='account' tabsWidth='full' className='mt-5'>
+          <Tabs
+            value={activeTab} 
+            onValueChange={handleTabChange} 
+            tabsWidth='full' 
+            className='mt-5'
+          >
             <TabsList>
               <TabsTrigger value='account'>Account</TabsTrigger>
               <TabsTrigger value='my-channels'>My Channels</TabsTrigger>
