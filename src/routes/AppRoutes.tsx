@@ -53,6 +53,14 @@ export const router = createBrowserRouter([
           return { Component: Account };
         },
       },
+      {
+        path: '*',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: NotFound } = await import('@screens/NotFound');
+          return { Component: NotFound };
+        },
+      },
     ],
   },
 ]);
