@@ -1,103 +1,36 @@
-import { useState, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  Card,
-  Carousel,
-  Badge,
-  Avatar,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  Button,
-  Textarea,
-  Input,
-} from '@moondreamsdev/dreamer-ui/components';
-import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { ReactionDisplay } from '@components/ReactionDisplay';
 import { ChatMessage } from '@components/ChatMessage';
+import { ReactionDisplay } from '@components/ReactionDisplay';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import {
+  mockCurrentUser,
+  mockTidings,
+  type Comment,
+  type Reaction,
+} from '@lib/mockData';
+import {
+  COMMON_EMOJIS,
+  JOIN_CONVERSATION_PHRASES,
+  START_CONVERSATION_PHRASES,
+  getRandomPhrase,
+  isValidEmoji,
+} from '@lib/post/post.constants';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
-  mockTidings,
-  mockCurrentUser,
-  type Reaction,
-  type Comment,
-} from '@lib/mockData';
-
-const COMMON_EMOJIS = ['❤️', '👀', '😊', '🎉', '😮', '😢', '😄', '🔥'];
-
-// Fun phrases for when there are no messages yet
-const START_CONVERSATION_PHRASES = [
-  "We're all friends here!",
-  "Break the ice and say hi!",
-  "Your voice matters here.",
-  "Every great chat starts somewhere!",
-  "Be the first to share!",
-  "Kick things off with your thoughts!",
-  "Don't be shy—we want to hear from you!",
-  "Start something wonderful!",
-  "Let's get this conversation rolling!",
-  "Your story could inspire someone today.",
-  "Speak your heart!",
-  "We're listening—share away!",
-  "Make this space come alive!",
-  "Every word counts!",
-  "Lead the way with your message!",
-  "No judgment, just connection!",
-  "Say what's on your mind!",
-  "Your perspective is valuable!",
-  "Light up this conversation!",
-  "The first word is always the hardest—you got this!",
-];
-
-// Fun phrases for when there are already messages
-const JOIN_CONVERSATION_PHRASES = [
-  "Aren't you curious what they're saying?",
-  "The conversation is heating up!",
-  "Jump in—everyone's welcome!",
-  "See what the buzz is about!",
-  "Don't miss out on the fun!",
-  "Your thoughts could add so much!",
-  "They're waiting to hear from you!",
-  "Add your voice to the mix!",
-  "Join the chat—it's lively in here!",
-  "Curious minds unite!",
-  "There's room for you in this conversation!",
-  "See what everyone's talking about!",
-  "Be part of something special!",
-  "Your input could spark something great!",
-  "The more, the merrier!",
-  "Dive into the discussion!",
-  "Connect with your people!",
-  "Everyone has something to share—including you!",
-  "Don't just watch—participate!",
-  "Peek inside and join the chat!",
-];
-
-// Utility function to get a random phrase from an array
-function getRandomPhrase(phrases: string[]): string {
-  const randomIndex = Math.floor(Math.random() * phrases.length);
-  return phrases[randomIndex];
-}
-
-// Utility function to validate if a string is a single emoji
-function isValidEmoji(str: string): boolean {
-  if (!str || str.length === 0) return false;
-  
-  // Check if it's a single character (or emoji sequence)
-  // Using Array.from to handle multi-byte characters properly
-  const chars = Array.from(str);
-  if (chars.length > 2) return false; // Allow up to 2 chars for some emojis with modifiers
-  
-  // Emoji regex pattern - matches most common emoji ranges
-  const emojiRegex = /^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}]+$/u;
-  
-  // Also check that it's not just a regular character, number, or symbol
-  const notTextRegex = /^[a-zA-Z0-9\s\p{P}]+$/u;
-  
-  return emojiRegex.test(str) && !notTextRegex.test(str);
-}
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Carousel,
+  Input,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+} from '@moondreamsdev/dreamer-ui/components';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -112,13 +45,18 @@ export function PostDetail() {
   const [customEmoji, setCustomEmoji] = useState('');
   const [emojiError, setEmojiError] = useState('');
 
+  const sortedReactions = useMemo(() => {
+    if (!tiding?.reactions) return [];
+    return [...(tiding?.reactions ?? [])].sort(
+      (a, b) => b.userIds.length - a.userIds.length,
+    );
+  }, [tiding?.reactions]);
+
   if (!tiding) {
     return (
       <div className='page flex flex-col items-center justify-center'>
-        <div className='text-center space-y-4'>
-          <h1 className='text-2xl font-bold text-foreground'>
-            Post not found
-          </h1>
+        <div className='space-y-4 text-center'>
+          <h1 className='text-foreground text-2xl font-bold'>Post not found</h1>
           <Button onClick={() => navigate('/feed')}>Back to Feed</Button>
         </div>
       </div>
@@ -129,7 +67,7 @@ export function PostDetail() {
 
   const getColorPair = () => {
     const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
-    
+
     return {
       backgroundColor: colorData?.value || '#c7d2fe',
       textColor: colorData?.textColor || '#4338ca',
@@ -139,41 +77,38 @@ export function PostDetail() {
   const colors = getColorPair();
 
   const hasUserReacted = tiding.reactions.some((reaction) =>
-    reaction.userIds.includes(mockCurrentUser.id)
+    reaction.userIds.includes(mockCurrentUser.id),
   );
 
   const isEnrolledInConversation = tiding.conversationEnrollees.includes(
-    mockCurrentUser.id
+    mockCurrentUser.id,
   );
-
-  const sortedReactions = useMemo(() => {
-    return [...tiding.reactions].sort(
-      (a, b) => b.userIds.length - a.userIds.length
-    );
-  }, [tiding.reactions]);
 
   const handleReaction = (emoji: string) => {
     setTiding((prev) => {
       if (!prev) return prev;
 
       const existingReactionIndex = prev.reactions.findIndex(
-        (r) => r.emoji === emoji
+        (r) => r.emoji === emoji,
       );
 
       let newReactions: Reaction[];
 
       if (existingReactionIndex !== -1) {
         const existingReaction = prev.reactions[existingReactionIndex];
-        const userHasReacted =
-          existingReaction.userIds.includes(mockCurrentUser.id);
+        const userHasReacted = existingReaction.userIds.includes(
+          mockCurrentUser.id,
+        );
 
         if (userHasReacted) {
           const updatedUserIds = existingReaction.userIds.filter(
-            (userId) => userId !== mockCurrentUser.id
+            (userId) => userId !== mockCurrentUser.id,
           );
 
           if (updatedUserIds.length === 0) {
-            newReactions = prev.reactions.filter((_, i) => i !== existingReactionIndex);
+            newReactions = prev.reactions.filter(
+              (_, i) => i !== existingReactionIndex,
+            );
           } else {
             newReactions = [...prev.reactions];
             newReactions[existingReactionIndex] = {
@@ -220,17 +155,17 @@ export function PostDetail() {
 
   const handleCustomEmojiSubmit = () => {
     setEmojiError('');
-    
+
     if (!customEmoji.trim()) {
       setEmojiError('Please enter an emoji');
       return;
     }
-    
+
     if (!isValidEmoji(customEmoji)) {
       setEmojiError('Please enter a valid emoji (not text or numbers)');
       return;
     }
-    
+
     // Add the custom emoji as a reaction
     handleReaction(customEmoji);
     setCustomEmoji('');
@@ -260,7 +195,7 @@ export function PostDetail() {
 
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
-      <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
+      <div className='w-full max-w-2xl space-y-6 px-4 py-6'>
         <div className='flex items-center gap-3'>
           <Button
             variant='tertiary'
@@ -273,7 +208,7 @@ export function PostDetail() {
           <Link
             to='/account'
             aria-label='Go to account'
-            className='ml-auto focus:outline-none focus:ring-2 focus:ring-primary rounded-full'
+            className='focus:ring-primary ml-auto rounded-full focus:ring-2 focus:outline-none'
           >
             <Avatar preset={mockCurrentUser.avatar} size='md' />
           </Link>
@@ -356,69 +291,57 @@ export function PostDetail() {
         {!hasUserReacted ? (
           <Card>
             <div className='space-y-4'>
-              <div className='text-center space-y-2'>
-                <h3 className='text-lg font-semibold text-foreground'>
+              <div className='space-y-2 text-center'>
+                <h3 className='text-foreground text-lg font-semibold'>
                   React to see what others think
                 </h3>
                 <p className='text-foreground/60 text-sm'>
                   Share your reaction to unlock the conversation
                 </p>
               </div>
-              <div className='flex flex-wrap gap-2 justify-center'>
+              <div className='flex flex-wrap justify-center gap-2'>
                 {COMMON_EMOJIS.map((emoji) => (
                   <Button
                     key={emoji}
                     variant='outline'
                     size='lg'
                     onClick={() => handleReaction(emoji)}
-                    className='text-2xl px-4 py-2'
+                    className='px-4 py-2 text-2xl'
                   >
                     {emoji}
                   </Button>
                 ))}
+                <Input
+                  value={customEmoji}
+                  onChange={(e) => {
+                    setCustomEmoji(e.target.value);
+                    setEmojiError('');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCustomEmojiSubmit();
+                    }
+                  }}
+                  placeholder='Custom'
+                  className='h-12 w-20 text-center text-2xl'
+                  maxLength={1}
+                  autoComplete='off'
+                />
               </div>
-              
-              <div className='border-t border-foreground/10 pt-4'>
-                <p className='text-foreground/60 text-sm mb-2 text-center'>
-                  Or use a custom emoji
+              {emojiError && (
+                <p className='mt-2 text-center text-xs text-red-500'>
+                  {emojiError}
                 </p>
-                <div className='flex gap-2 max-w-xs mx-auto'>
-                  <Input
-                    value={customEmoji}
-                    onChange={(e) => {
-                      setCustomEmoji(e.target.value);
-                      setEmojiError('');
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleCustomEmojiSubmit();
-                      }
-                    }}
-                    placeholder='Enter emoji'
-                    className='text-center text-2xl'
-                    maxLength={2}
-                  />
-                  <Button
-                    onClick={handleCustomEmojiSubmit}
-                    variant='outline'
-                    disabled={!customEmoji.trim()}
-                  >
-                    Add
-                  </Button>
-                </div>
-                {emojiError && (
-                  <p className='text-red-500 text-xs mt-2 text-center'>
-                    {emojiError}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
           </Card>
         ) : (
           <Tabs defaultValue='reactions' tabsWidth='full'>
             <TabsList>
               <TabsTrigger value='reactions'>
-                Reactions ({sortedReactions.reduce((sum, r) => sum + r.userIds.length, 0)})
+                Reactions (
+                {sortedReactions.reduce((sum, r) => sum + r.userIds.length, 0)})
               </TabsTrigger>
               <TabsTrigger value='conversation'>
                 Conversation ({tiding.comments.length})
@@ -428,15 +351,16 @@ export function PostDetail() {
             <TabsContent value='reactions' className='mt-4'>
               <Card>
                 <div className='space-y-4'>
-                  <h3 className='text-lg font-semibold text-foreground'>
+                  <h3 className='text-foreground text-lg font-semibold'>
                     Reactions
                   </h3>
                   {sortedReactions.length > 0 ? (
                     <div className='flex flex-wrap gap-2'>
                       {sortedReactions.map((reaction) => {
-                        const isUserReacted =
-                          reaction.userIds.includes(mockCurrentUser.id);
-                        
+                        const isUserReacted = reaction.userIds.includes(
+                          mockCurrentUser.id,
+                        );
+
                         return (
                           <ReactionDisplay
                             key={reaction.emoji}
@@ -454,18 +378,19 @@ export function PostDetail() {
                     </p>
                   )}
 
-                  <div className='border-t border-foreground/10 pt-4'>
-                    <p className='text-foreground/60 text-sm mb-3'>
+                  <div className='border-foreground/10 border-t pt-4'>
+                    <p className='text-foreground/60 mb-3 text-sm'>
                       Add another reaction
                     </p>
                     <div className='flex flex-wrap gap-2'>
                       {COMMON_EMOJIS.map((emoji) => {
                         const existingReaction = tiding.reactions.find(
-                          (r) => r.emoji === emoji
+                          (r) => r.emoji === emoji,
                         );
-                        const isUserReacted = existingReaction?.userIds.includes(
-                          mockCurrentUser.id
-                        );
+                        const isUserReacted =
+                          existingReaction?.userIds.includes(
+                            mockCurrentUser.id,
+                          );
 
                         return (
                           <Button
@@ -474,51 +399,37 @@ export function PostDetail() {
                             size='md'
                             onClick={() => handleReaction(emoji)}
                             className={join(
-                              'text-xl px-3 py-2 transition-all',
-                              isUserReacted ? 'bg-primary/10 border-primary/30' : 'bg-transparent'
+                              'px-3 py-2 text-xl transition-all',
+                              isUserReacted
+                                ? 'bg-primary/10 border-primary/30'
+                                : 'bg-transparent',
                             )}
                           >
                             {emoji}
                           </Button>
                         );
                       })}
+                      <Input
+                        value={customEmoji}
+                        onChange={(e) => {
+                          setCustomEmoji(e.target.value);
+                          setEmojiError('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleCustomEmojiSubmit();
+                          }
+                        }}
+                        placeholder='Custom'
+                        className='h-10 w-20 text-center text-xl'
+                        maxLength={2}
+                        autoComplete='off'
+                      />
                     </div>
-                    
-                    <div className='mt-4 pt-4 border-t border-foreground/10'>
-                      <p className='text-foreground/60 text-xs mb-2'>
-                        Or use a custom emoji
-                      </p>
-                      <div className='flex gap-2'>
-                        <Input
-                          value={customEmoji}
-                          onChange={(e) => {
-                            setCustomEmoji(e.target.value);
-                            setEmojiError('');
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleCustomEmojiSubmit();
-                            }
-                          }}
-                          placeholder='Enter emoji'
-                          className='text-center text-xl'
-                          maxLength={2}
-                        />
-                        <Button
-                          onClick={handleCustomEmojiSubmit}
-                          size='sm'
-                          variant='outline'
-                          disabled={!customEmoji.trim()}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      {emojiError && (
-                        <p className='text-red-500 text-xs mt-1'>
-                          {emojiError}
-                        </p>
-                      )}
-                    </div>
+                    {emojiError && (
+                      <p className='mt-2 text-xs text-red-500'>{emojiError}</p>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -527,8 +438,8 @@ export function PostDetail() {
             <TabsContent value='conversation' className='mt-4'>
               <Card>
                 {!isEnrolledInConversation ? (
-                  <div className='space-y-4 text-center py-8'>
-                    <h3 className='text-lg font-semibold text-foreground'>
+                  <div className='space-y-4 py-8 text-center'>
+                    <h3 className='text-foreground text-lg font-semibold'>
                       {tiding.comments.length === 0
                         ? 'Start the conversation'
                         : 'Join the conversation'}
@@ -543,7 +454,7 @@ export function PostDetail() {
                         ? 'Start Conversation'
                         : 'Join Conversation'}
                     </Button>
-                    <p className='text-foreground/70 text-sm italic mt-2'>
+                    <p className='text-foreground/70 mt-2 text-sm italic'>
                       {tiding.comments.length === 0
                         ? getRandomPhrase(START_CONVERSATION_PHRASES)
                         : getRandomPhrase(JOIN_CONVERSATION_PHRASES)}
@@ -551,7 +462,7 @@ export function PostDetail() {
                   </div>
                 ) : (
                   <div className='space-y-4'>
-                    <h3 className='text-lg font-semibold text-foreground'>
+                    <h3 className='text-foreground text-lg font-semibold'>
                       Conversation
                     </h3>
 
@@ -569,13 +480,15 @@ export function PostDetail() {
                             authorId={comment.authorId}
                             text={comment.text}
                             timestamp={comment.timestamp}
-                            isCurrentUser={comment.authorId === mockCurrentUser.id}
+                            isCurrentUser={
+                              comment.authorId === mockCurrentUser.id
+                            }
                           />
                         ))}
                       </div>
                     )}
 
-                    <div className='border-t border-foreground/10 pt-4'>
+                    <div className='border-foreground/10 border-t pt-4'>
                       <div className='space-y-3'>
                         <Textarea
                           value={newMessage}

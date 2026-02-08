@@ -188,7 +188,7 @@ export function Feed() {
         {!isCalloutDismissed && (
           <Callout
             variant='info'
-            description='Click on any post to see more details, react with emojis, and join the conversation!'
+            description={<span className='text-blue-500'>Click on any post to see more details, react with emojis, and join the conversation!</span>}
             dismissible
             onDismiss={handleCalloutDismiss}
           />
