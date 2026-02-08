@@ -125,13 +125,13 @@ export function InviteAccept() {
       <div className='w-full max-w-md px-4'>
         <Card className='p-8 space-y-6'>
           {/* Header */}
-          <div className='text-center space-y-4'>
+          <div className='text-center space-y-4 pb-4'>
             {channelOwner && (
               <div className='flex justify-center'>
                 <Avatar preset={channelOwner.avatar} size='lg' />
               </div>
             )}
-            <div className='space-y-2'>
+            <div className='space-y-3'>
               <h1 className='text-2xl font-bold text-foreground'>
                 You've been invited!
               </h1>
@@ -141,7 +141,7 @@ export function InviteAccept() {
                   : 'You have been invited to join '}
                 <Badge
                   variant='secondary'
-                  className='inline-flex mx-1'
+                  className='inline-flex mx-1 text-lg font-semibold px-3 py-1'
                   style={{ borderColor: channel.color }}
                 >
                   {channel.name}
