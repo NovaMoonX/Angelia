@@ -11,6 +11,7 @@ import {
   TabsContent,
   Button,
   Textarea,
+  Input,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { ReactionDisplay } from '@components/ReactionDisplay';
@@ -24,7 +25,25 @@ import {
   type Comment,
 } from '@lib/mockData';
 
-const COMMON_EMOJIS = ['❤️', '👍', '😊', '🎉', '😮', '😢', '😄', '🔥'];
+const COMMON_EMOJIS = ['❤️', '👀', '😊', '🎉', '😮', '😢', '😄', '🔥'];
+
+// Utility function to validate if a string is a single emoji
+function isValidEmoji(str: string): boolean {
+  if (!str || str.length === 0) return false;
+  
+  // Check if it's a single character (or emoji sequence)
+  // Using Array.from to handle multi-byte characters properly
+  const chars = Array.from(str);
+  if (chars.length > 2) return false; // Allow up to 2 chars for some emojis with modifiers
+  
+  // Emoji regex pattern - matches most common emoji ranges
+  const emojiRegex = /^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}]+$/u;
+  
+  // Also check that it's not just a regular character, number, or symbol
+  const notTextRegex = /^[a-zA-Z0-9\s\p{P}]+$/u;
+  
+  return emojiRegex.test(str) && !notTextRegex.test(str);
+}
 
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +55,8 @@ export function PostDetail() {
   });
 
   const [newMessage, setNewMessage] = useState('');
+  const [customEmoji, setCustomEmoji] = useState('');
+  const [emojiError, setEmojiError] = useState('');
 
   if (!tiding) {
     return (
@@ -141,6 +162,24 @@ export function PostDetail() {
         ],
       };
     });
+  };
+
+  const handleCustomEmojiSubmit = () => {
+    setEmojiError('');
+    
+    if (!customEmoji.trim()) {
+      setEmojiError('Please enter an emoji');
+      return;
+    }
+    
+    if (!isValidEmoji(customEmoji)) {
+      setEmojiError('Please enter a valid emoji (not text or numbers)');
+      return;
+    }
+    
+    // Add the custom emoji as a reaction
+    handleReaction(customEmoji);
+    setCustomEmoji('');
   };
 
   const handleSendMessage = () => {
@@ -284,6 +323,41 @@ export function PostDetail() {
                   </Button>
                 ))}
               </div>
+              
+              <div className='border-t border-foreground/10 pt-4'>
+                <p className='text-foreground/60 text-sm mb-2 text-center'>
+                  Or use a custom emoji
+                </p>
+                <div className='flex gap-2 max-w-xs mx-auto'>
+                  <Input
+                    value={customEmoji}
+                    onChange={(e) => {
+                      setCustomEmoji(e.target.value);
+                      setEmojiError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCustomEmojiSubmit();
+                      }
+                    }}
+                    placeholder='Enter emoji'
+                    className='text-center text-2xl'
+                    maxLength={2}
+                  />
+                  <Button
+                    onClick={handleCustomEmojiSubmit}
+                    variant='outline'
+                    disabled={!customEmoji.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {emojiError && (
+                  <p className='text-red-500 text-xs mt-2 text-center'>
+                    {emojiError}
+                  </p>
+                )}
+              </div>
             </div>
           </Card>
         ) : (
@@ -354,6 +428,42 @@ export function PostDetail() {
                           </Button>
                         );
                       })}
+                    </div>
+                    
+                    <div className='mt-4 pt-4 border-t border-foreground/10'>
+                      <p className='text-foreground/60 text-xs mb-2'>
+                        Or use a custom emoji
+                      </p>
+                      <div className='flex gap-2'>
+                        <Input
+                          value={customEmoji}
+                          onChange={(e) => {
+                            setCustomEmoji(e.target.value);
+                            setEmojiError('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleCustomEmojiSubmit();
+                            }
+                          }}
+                          placeholder='Enter emoji'
+                          className='text-center text-xl'
+                          maxLength={2}
+                        />
+                        <Button
+                          onClick={handleCustomEmojiSubmit}
+                          size='sm'
+                          variant='outline'
+                          disabled={!customEmoji.trim()}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {emojiError && (
+                        <p className='text-red-500 text-xs mt-1'>
+                          {emojiError}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
