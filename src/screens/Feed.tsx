@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Select, Avatar, Callout } from '@moondreamsdev/dreamer-ui/components';
+import { Select, Avatar, Callout, Button } from '@moondreamsdev/dreamer-ui/components';
+import { ChevronUp } from '@moondreamsdev/dreamer-ui/symbols';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
@@ -374,24 +375,14 @@ export function Feed() {
 
       {/* Scroll to Top Button */}
       {showScrollToTop && (
-        <button
+        <Button
+          variant='primary'
           onClick={scrollToTop}
-          className='fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:shadow-xl hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+          className='fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full p-0 shadow-lg transition-all hover:shadow-xl hover:scale-110'
           aria-label='Scroll to top'
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='h-6 w-6'
-          >
-            <polyline points='18 15 12 9 6 15' />
-          </svg>
-        </button>
+          <ChevronUp className='h-6 w-6' />
+        </Button>
       )}
     </div>
   );
