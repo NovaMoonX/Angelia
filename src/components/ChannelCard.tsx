@@ -24,13 +24,6 @@ export function ChannelCard({
   onClick,
   isOwner = false,
 }: ChannelCardProps) {
-  // Truncate description to first line
-  const truncatedDescription = description
-    ? description.split('\n')[0].length > 80
-      ? description.split('\n')[0].substring(0, 80) + '...'
-      : description.split('\n')[0]
-    : 'No description provided';
-
   const handleClick = () => {
     if (onClick) {
       onClick(channel);
@@ -59,7 +52,9 @@ export function ChannelCard({
               <span className='text-xs text-foreground/40'>Daily</span>
             )}
           </div>
-          <p className='text-sm text-foreground/70'>{truncatedDescription}</p>
+          <p className='text-sm text-foreground/70 line-clamp-1'>
+            {description || 'No description provided'}
+          </p>
           {owner && (
             <p className='text-xs text-foreground/50'>
               by {owner.firstName} {owner.lastName}
