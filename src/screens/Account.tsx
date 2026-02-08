@@ -109,13 +109,13 @@ export function Account() {
   useEffect(() => {
     const view = searchParams.get('view');
     if (view === 'notifications' && notificationsRef.current) {
-      // Small delay to ensure the page is fully rendered
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure DOM is fully rendered before scrolling
+      requestAnimationFrame(() => {
         notificationsRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start' 
         });
-      }, 100);
+      });
     }
   }, [searchParams]);
 
