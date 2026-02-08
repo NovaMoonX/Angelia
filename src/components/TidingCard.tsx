@@ -1,5 +1,6 @@
 import { Avatar, Badge, Card, Carousel } from '@moondreamsdev/dreamer-ui/components';
 import type { Tiding } from '@lib/mockData';
+import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 
 interface TidingCardProps {
   tiding: Tiding;
@@ -29,6 +30,16 @@ function getRelativeTime(timestamp: number): string {
 export function TidingCard({ tiding }: TidingCardProps) {
   const relativeTime = getRelativeTime(tiding.timestamp);
 
+  const getColorPair = () => {
+    const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
+    return {
+      backgroundColor: colorData?.value || '#c7d2fe',
+      textColor: colorData?.textColor || '#4338ca',
+    };
+  };
+
+  const colors = getColorPair();
+
   return (
     <Card className='p-0 overflow-hidden relative'>
       {/* High Priority Banner */}
@@ -54,7 +65,15 @@ export function TidingCard({ tiding }: TidingCardProps) {
               <span className='text-sm text-foreground/60'>{relativeTime}</span>
             </div>
           </div>
-          <Badge variant='secondary' className='text-xs font-medium' style={{ borderColor: tiding.channelColor }}>
+          <Badge 
+            variant='base' 
+            className='text-xs font-medium' 
+            style={{ 
+              backgroundColor: colors.backgroundColor,
+              borderColor: colors.backgroundColor,
+              color: colors.textColor
+            }}
+          >
             {tiding.channelName}
           </Badge>
         </div>

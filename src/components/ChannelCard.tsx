@@ -2,6 +2,7 @@ import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import type { Channel, User } from '@lib/mockData';
+import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 
 interface ChannelCardProps {
   channel: Channel;
@@ -30,6 +31,16 @@ export function ChannelCard({
     }
   };
 
+  const getColorPair = () => {
+    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
+    return {
+      backgroundColor: colorData?.value || '#c7d2fe',
+      textColor: colorData?.textColor || '#4338ca',
+    };
+  };
+
+  const colors = getColorPair();
+
   return (
     <Card className='p-4 transition-all'>
       <div 
@@ -42,15 +53,16 @@ export function ChannelCard({
         <div className='flex-1 space-y-2'>
           <div className='flex items-center gap-2'>
             <Badge
-              variant='secondary'
+              variant='base'
               className='text-sm font-medium'
-              style={{ backgroundColor: channel.color, borderColor: channel.color }}
+              style={{ 
+                backgroundColor: colors.backgroundColor, 
+                borderColor: colors.backgroundColor,
+                color: colors.textColor
+              }}
             >
               {channel.name}
             </Badge>
-            {channel.isDaily && (
-              <span className='text-xs text-foreground/40'>Daily</span>
-            )}
           </div>
           <p className='text-sm text-foreground/70 line-clamp-1'>
             {description || 'No description provided'}
