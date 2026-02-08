@@ -108,10 +108,11 @@ export function Account() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue='account' className='w-full'>
-            <TabsList className='grid w-full grid-cols-2'>
+          <Tabs defaultValue='account' tabsWidth='full'>
+            <TabsList>
               <TabsTrigger value='account'>Account</TabsTrigger>
-              <TabsTrigger value='channels'>Channels</TabsTrigger>
+              <TabsTrigger value='my-channels'>My Channels</TabsTrigger>
+              <TabsTrigger value='subscribed'>Subscribed Channels</TabsTrigger>
             </TabsList>
 
             {/* Account Tab Content */}
@@ -158,9 +159,8 @@ export function Account() {
               </div>
             </TabsContent>
 
-            {/* Channels Tab Content */}
-            <TabsContent value='channels' className='space-y-4 mt-4'>
-              {/* Daily Channel */}
+            {/* My Channels Tab Content */}
+            <TabsContent value='my-channels' className='space-y-4 mt-4'>
               {userDailyChannel && (
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
@@ -176,10 +176,32 @@ export function Account() {
                 </div>
               )}
 
-              {/* Subscribed Channels */}
-              {subscribedChannels.length > 0 && (
+              {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-foreground/80'>Subscribed Channels</p>
+                  <p className='text-sm font-medium text-foreground/80'>Other Channels</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {userOwnedChannels
+                      .filter((ch) => !ch.isDaily)
+                      .map((channel) => (
+                        <Badge
+                          key={channel.id}
+                          variant='secondary'
+                          className='text-sm font-medium'
+                          style={{ borderColor: channel.color }}
+                        >
+                          {channel.name}
+                        </Badge>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Subscribed Channels Tab Content */}
+            <TabsContent value='subscribed' className='space-y-4 mt-4'>
+              {subscribedChannels.length > 0 ? (
+                <div className='space-y-2'>
+                  <p className='text-sm font-medium text-foreground/80'>Channels You Follow</p>
                   <div className='flex flex-wrap gap-2'>
                     {subscribedChannels.map((channel) => (
                       <Badge
@@ -193,6 +215,8 @@ export function Account() {
                     ))}
                   </div>
                 </div>
+              ) : (
+                <p className='text-sm text-foreground/60'>You are not subscribed to any channels yet.</p>
               )}
             </TabsContent>
           </Tabs>
