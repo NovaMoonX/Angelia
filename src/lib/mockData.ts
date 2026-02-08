@@ -11,6 +11,16 @@ export interface Channel {
   isDaily?: boolean;
   ownerId: string; // User who owns/created the channel
   subscribers: string[]; // Array of user IDs who have access to this channel
+  inviteCode?: string; // Unique invite code for sharing
+}
+
+// Channel Invite interface
+export interface ChannelInvite {
+  id: string;
+  channelId: string;
+  inviteCode: string;
+  createdAt: number; // Unix timestamp in ms
+  expiresAt: number | null; // Unix timestamp in ms, null for no expiration
 }
 
 // User interface
@@ -253,28 +263,53 @@ export const mockTidings: Tiding[] = [
 ];
 
 // Get unique channels from mock data with owner and subscribers
-export const mockChannels: Channel[] = Array.from(
-  new Map(
-    mockTidings.map((tiding) => [
-      tiding.channelId,
-      {
-        id: tiding.channelId,
-        name: tiding.channelName,
-        color: tiding.channelColor,
-        isDaily: tiding.isDaily,
-        ownerId: tiding.authorId,
-        // Mock subscribers - in real app this would come from database
-        subscribers: [
-          'currentUser', // Current user has access to all channels for demo
-          tiding.authorId,
-          ...(['user1', 'user2', 'user3', 'user4', 'user5', 'user6'].filter(
-            (id) => id !== tiding.authorId,
-          )),
-        ],
-      },
-    ]),
-  ).values(),
-);
+export const mockChannels: Channel[] = [
+  ...Array.from(
+    new Map(
+      mockTidings.map((tiding) => [
+        tiding.channelId,
+        {
+          id: tiding.channelId,
+          name: tiding.channelName,
+          color: tiding.channelColor,
+          isDaily: tiding.isDaily,
+          ownerId: tiding.authorId,
+          // Mock subscribers - in real app this would come from database
+          subscribers: [
+            'currentUser', // Current user has access to all channels for demo
+            tiding.authorId,
+            ...(['user1', 'user2', 'user3', 'user4', 'user5', 'user6'].filter(
+              (id) => id !== tiding.authorId,
+            )),
+          ],
+          // Generate a unique invite code for each channel
+          // Use fixed code for testing: channel2 = "TESTCODE" (Cooking Corner by Michael Chen)
+          inviteCode: tiding.channelId === 'channel2' ? 'TESTCODE' : Math.random().toString(36).substring(2, 10).toUpperCase(),
+        },
+      ]),
+    ).values(),
+  ),
+  // Add a test channel for invite testing where currentUser is NOT subscribed
+  {
+    id: 'test-invite-channel',
+    name: 'Photography Club',
+    color: '#8b5cf6', // Purple
+    isDaily: false,
+    ownerId: 'user1',
+    subscribers: ['user1', 'user2', 'user3'], // currentUser is NOT in this list
+    inviteCode: 'INVITE2024',
+  },
+  // Add a demo channel with fixed invite code for testing
+  {
+    id: 'demo-channel',
+    name: 'Family Updates',
+    color: '#f59e0b', // Amber
+    isDaily: false,
+    ownerId: 'user2',
+    subscribers: ['user2', 'user3', 'user4'], // currentUser is NOT in this list
+    inviteCode: '6BP6VZWX',
+  },
+];
 
 // Mock current user data
 export const mockCurrentUser: User = {
@@ -349,6 +384,50 @@ export const mockUsers: User[] = [
 // Helper function to get user by ID
 export function getUserById(userId: string): User | undefined {
   const result = mockUsers.find((user) => user.id === userId);
+  
+  return result;
+}
+
+// Helper function to generate invite code
+export function generateInviteCode(): string {
+  const result = Math.random().toString(36).substring(2, 10).toUpperCase();
+  
+  return result;
+}
+
+// Helper function to get channel by invite code
+export function getChannelByInviteCode(inviteCode: string): Channel | undefined {
+  const result = mockChannels.find((channel) => channel.inviteCode === inviteCode);
+  
+  return result;
+}
+
+// Mock channel invites
+export const mockInvites: ChannelInvite[] = [];
+
+// Helper function to create invite for a channel
+export function createChannelInvite(channelId: string): ChannelInvite {
+  const channel = mockChannels.find((ch) => ch.id === channelId);
+  if (!channel) {
+    throw new Error('Channel not found');
+  }
+
+  const inviteCode = channel.inviteCode || generateInviteCode();
+  
+  // Update channel with invite code if it doesn't have one
+  if (!channel.inviteCode) {
+    channel.inviteCode = inviteCode;
+  }
+
+  const invite: ChannelInvite = {
+    id: `invite-${Date.now()}`,
+    channelId,
+    inviteCode,
+    createdAt: Date.now(),
+    expiresAt: null, // No expiration for now
+  };
+
+  const result = invite;
   
   return result;
 }

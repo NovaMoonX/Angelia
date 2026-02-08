@@ -1,4 +1,4 @@
-import { Modal, Badge, Avatar, Separator } from '@moondreamsdev/dreamer-ui/components';
+import { Modal, Badge, Avatar, Separator, CopyButton } from '@moondreamsdev/dreamer-ui/components';
 import type { Channel, User } from '@lib/mockData';
 import { mockCurrentUser } from '@lib/mockData';
 
@@ -20,6 +20,10 @@ export function ChannelModal({
   if (!channel) return null;
 
   const isOwner = channel.ownerId === mockCurrentUser.id;
+
+  const inviteUrl = channel.inviteCode
+    ? `${window.location.origin}/invite/${channel.inviteCode}`
+    : '';
 
   return (
     <Modal
@@ -51,6 +55,29 @@ export function ChannelModal({
             <p className='text-sm text-foreground/60 italic'>You own this channel</p>
           )}
         </div>
+
+        {/* Invite Link Section - Only for owners */}
+        {isOwner && (
+          <>
+            <Separator />
+            <div className='space-y-3'>
+              <h3 className='text-lg font-semibold text-foreground'>
+                Invite People
+              </h3>
+              <p className='text-sm text-foreground/60'>
+                Share this link with others to invite them to join this channel
+              </p>
+              <CopyButton
+                textToCopy={inviteUrl}
+                variant='secondary'
+                className='w-full'
+                disabled={!channel.inviteCode}
+              >
+                Copy Invite Link
+              </CopyButton>
+            </div>
+          </>
+        )}
 
         <Separator />
 

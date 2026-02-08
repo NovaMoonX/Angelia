@@ -17,6 +17,7 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   mockCurrentUser,
   mockChannels,
+  mockUsers,
   User,
   Channel,
   getUserById,
@@ -127,6 +128,19 @@ export function Account() {
 
     return result;
   }, [userOwnedChannels]);
+
+  // Memoized: Get subscribers for selected channel
+  const selectedChannelSubscribers = useMemo(() => {
+    if (!selectedChannel) {
+      return [];
+    }
+
+    const result = selectedChannel.subscribers
+      .map((id) => mockUsers.find((user) => user.id === id))
+      .filter((user): user is User => user !== undefined);
+
+    return result;
+  }, [selectedChannel]);
 
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
 
@@ -483,7 +497,7 @@ export function Account() {
               ? channelDescriptions[selectedChannel.id]
               : undefined
           }
-          subscribers={[]} // Mock - in real app would fetch subscribers
+          subscribers={selectedChannelSubscribers}
         />
       </div>
     </div>

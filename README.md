@@ -128,6 +128,35 @@ A comprehensive interface for creating and managing channels to organize your up
   - Cannot delete daily channel
   - Immediate UI update after deletion
 
+### 🔗 Channel Invite Flow
+
+An intuitive system for inviting others to join your channels:
+
+- **For Channel Owners (Inviter)**:
+  - **Copy Invite Link Button**: Available in the Channel Detail Modal for owned channels
+  - **Clipboard Integration**: One-click copy of shareable invite URL
+  - **Success Feedback**: Toast notification confirms "Link copied to clipboard"
+  - **Unique Invite Codes**: Each channel has a unique, shareable invite code
+  - **Owner-Only Feature**: Invite section only visible to channel owners
+
+- **For Invitees (Recipients)**:
+  - **Dedicated Invite Page** (`/invite/:inviteCode`): Beautiful landing page for invite acceptance
+  - **Personalized Invitation**: Shows inviter's name, avatar, and channel name
+  - **Smart State Handling**:
+    - **New Subscriber**: "Join Channel" button to accept invitation
+    - **Already Subscribed**: "Go to Channel" button with notification
+    - **Invalid/Expired**: Clear error message with option to return to feed
+  - **Action Buttons**:
+    - **Join Channel**: Subscribes user and redirects to feed with success toast
+    - **Decline**: Returns to feed without joining
+  - **Authentication Support**: Ready for future integration to handle logged-in and non-logged-in states
+
+- **User Experience**:
+  - Loading state while fetching invitation details
+  - Consumer-friendly messaging throughout
+  - Seamless integration with existing channel subscription system
+  - Toast notifications for all key actions
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)

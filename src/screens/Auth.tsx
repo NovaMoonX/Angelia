@@ -26,6 +26,8 @@ export function Auth() {
 
   // Get initial mode from query params, default to login
   const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
+  // Get redirect URL from query params
+  const redirectUrl = searchParams.get('redirect') || null;
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [profileData, setProfileData] = useState<Partial<ProfileData>>({
     avatar: 'astronaut', // Default avatar
@@ -49,10 +51,17 @@ export function Auth() {
   // Update query params when mode changes
   const handleModeChange = (newMode: 'login' | 'sign up') => {
     const authMode: AuthMode = newMode === 'sign up' ? 'signup' : 'login';
-    setSearchParams({ mode: authMode });
+    const params: Record<string, string> = { mode: authMode };
+    
+    // Preserve redirect parameter if it exists
+    if (redirectUrl) {
+      params.redirect = redirectUrl;
+    }
+    
+    setSearchParams(params);
     // Update URL in next tick to avoid React warning
     setTimeout(() => {
-      setSearchParams({ mode: authMode });
+      setSearchParams(params);
     }, 0);
     setSignupStep(1); // Reset to step 1 when switching modes
   };
@@ -63,6 +72,9 @@ export function Auth() {
     if (action === 'login') {
       // Mock login - would normally authenticate here
       console.log('Login attempt with:', data.email);
+      
+      // After successful login, redirect to the specified URL or default to feed
+      navigate(redirectUrl || '/feed');
     } else {
       // For signup, save data and move to step 2
       setProfileData({
@@ -77,8 +89,13 @@ export function Auth() {
   const handleProfileComplete = () => {
     console.log('Profile complete:', profileData);
 
-    // Navigate to verify email
-    navigate('/verify-email', { state: { email: profileData.email } });
+    // If there's a redirect URL, navigate there directly after signup
+    // Otherwise, navigate to verify email
+    if (redirectUrl) {
+      navigate(redirectUrl);
+    } else {
+      navigate('/verify-email', { state: { email: profileData.email } });
+    }
   };
 
   // Check if step 2 form is complete
