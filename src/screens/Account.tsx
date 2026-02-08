@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Avatar,
@@ -94,6 +94,7 @@ const channelDescriptions: Record<string, string> = {
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const actionModal = useActionModal();
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
@@ -102,6 +103,20 @@ export function Account() {
     const result = validTabs.includes(tab as AccountTab) ? tab : 'account';
 
     return result;
+  }, [searchParams]);
+
+  // Scroll to notifications if view=notifications
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'notifications' && notificationsRef.current) {
+      // Small delay to ensure the page is fully rendered
+      setTimeout(() => {
+        notificationsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
   }, [searchParams]);
 
   // Combined form state
@@ -563,7 +578,7 @@ export function Account() {
         </Card>
 
         {/* Notifications Section - Separate Card */}
-        <div className='space-y-4'>
+        <div className='space-y-4' ref={notificationsRef}>
           <div>
             <h2 className='text-foreground text-2xl font-semibold'>
               Notifications

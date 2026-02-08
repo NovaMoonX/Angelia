@@ -151,7 +151,7 @@ export function Feed() {
             </div>
             <div className='flex items-center gap-3'>
               <Link
-                to='/account'
+                to='/account?view=notifications'
                 aria-label='View notifications'
                 className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full p-2 hover:bg-foreground/5 transition-colors'
               >
