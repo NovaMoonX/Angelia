@@ -6,33 +6,15 @@ import {
   Card,
   Carousel,
 } from '@moondreamsdev/dreamer-ui/components';
+import { useNavigate } from 'react-router-dom';
+import { getRelativeTime } from '@lib/timeUtils';
 
 interface TidingCardProps {
   tiding: Tiding;
 }
 
-function getRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days}d ago`;
-  }
-  if (hours > 0) {
-    return `${hours}h ago`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ago`;
-  }
-
-  return 'Just now';
-}
-
 export function TidingCard({ tiding }: TidingCardProps) {
+  const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
 
   const getColorPair = () => {
@@ -45,8 +27,16 @@ export function TidingCard({ tiding }: TidingCardProps) {
 
   const colors = getColorPair();
 
+  const handleClick = () => {
+    navigate(`/tiding/${tiding.id}`);
+  };
+
   return (
-    <Card className='relative overflow-hidden p-0'>
+    <div
+      className='cursor-pointer transition-all hover:shadow-lg'
+      onClick={handleClick}
+    >
+      <Card className='relative overflow-hidden p-0'>
       {/* High Priority Banner */}
       {tiding.isHighPriority && (
         <div
@@ -121,5 +111,6 @@ export function TidingCard({ tiding }: TidingCardProps) {
         </div>
       )}
     </Card>
+    </div>
   );
 }

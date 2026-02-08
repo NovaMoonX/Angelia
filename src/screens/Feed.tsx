@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Select, Avatar } from '@moondreamsdev/dreamer-ui/components';
+import { Select, Avatar, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
@@ -8,12 +8,18 @@ import { Link } from 'react-router-dom';
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
 
+const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
+
 export function Feed() {
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
   const [displayedCount, setDisplayedCount] = useState(5);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isCalloutDismissed, setIsCalloutDismissed] = useState(() => {
+    const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
+    return dismissed === 'true';
+  });
 
   // Filter and sort tidings
   const filteredAndSortedTidings = useMemo(() => {
@@ -121,6 +127,12 @@ export function Feed() {
     setDisplayedCount(5);
   };
 
+  // Handler for callout dismiss
+  const handleCalloutDismiss = () => {
+    localStorage.setItem(CALLOUT_DISMISSED_KEY, 'true');
+    setIsCalloutDismissed(true);
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
@@ -171,6 +183,16 @@ export function Feed() {
             />
           </div>
         </div>
+
+        {/* Helpful Callout */}
+        {!isCalloutDismissed && (
+          <Callout
+            variant='info'
+            description={<span className='text-blue-500'>Click on any post to see more details, react with emojis, and join the conversation!</span>}
+            dismissible
+            onDismiss={handleCalloutDismiss}
+          />
+        )}
 
         {/* Feed */}
         <div className='space-y-4'>

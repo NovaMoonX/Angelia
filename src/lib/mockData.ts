@@ -34,6 +34,20 @@ export interface User {
   joinedAt: number; // Unix timestamp in ms
 }
 
+// Reaction interface
+export interface Reaction {
+  emoji: string; // Single character emoji
+  userIds: string[]; // Array of user IDs who reacted with this emoji
+}
+
+// Comment/Message interface
+export interface Comment {
+  id: string;
+  authorId: string;
+  text: string;
+  timestamp: number; // Unix timestamp in ms
+}
+
 export interface Tiding {
   id: string;
   authorId: string;
@@ -47,6 +61,9 @@ export interface Tiding {
   timestamp: number; // Unix timestamp in ms
   isHighPriority: boolean;
   isDaily?: boolean; // Indicates if this is from a daily channel
+  reactions: Reaction[]; // Array of reactions
+  comments: Comment[]; // Array of comments/messages
+  conversationEnrollees: string[]; // User IDs who have joined the conversation
 }
 
 // Mock tidings data
@@ -64,6 +81,12 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
     isHighPriority: false,
     isDaily: true,
+    reactions: [
+      { emoji: '😍', userIds: ['user2', 'user3'] },
+      { emoji: '🏔️', userIds: ['user4'] },
+    ],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '2',
@@ -80,6 +103,19 @@ export const mockTidings: Tiding[] = [
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
     isHighPriority: false,
+    reactions: [
+      { emoji: '🤤', userIds: ['currentUser', 'user1', 'user5'] },
+      { emoji: '👨‍🍳', userIds: ['user3'] },
+    ],
+    comments: [
+      {
+        id: 'c1',
+        authorId: 'currentUser',
+        text: 'This looks amazing! Would love the recipe!',
+        timestamp: Date.now() - 1000 * 60 * 60 * 1.5, // 1.5 hours ago
+      },
+    ],
+    conversationEnrollees: ['currentUser'],
   },
   {
     id: '3',
@@ -93,6 +129,13 @@ export const mockTidings: Tiding[] = [
     images: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 5, // 5 hours ago
     isHighPriority: true,
+    reactions: [
+      { emoji: '🎉', userIds: ['user1', 'user2', 'user4', 'user5', 'user6'] },
+      { emoji: '👏', userIds: ['currentUser'] },
+      { emoji: '🎓', userIds: ['user1', 'user4'] },
+    ],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '4',
@@ -110,6 +153,9 @@ export const mockTidings: Tiding[] = [
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
     isHighPriority: false,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '5',
@@ -124,6 +170,9 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2, // 2 days ago
     isHighPriority: false,
     isDaily: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '6',
@@ -140,6 +189,9 @@ export const mockTidings: Tiding[] = [
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3, // 3 days ago
     isHighPriority: false,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '7',
@@ -154,6 +206,9 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
     isHighPriority: false,
     isDaily: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '8',
@@ -167,6 +222,9 @@ export const mockTidings: Tiding[] = [
     images: ['https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=600&fit=crop'],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
     isHighPriority: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '9',
@@ -181,6 +239,9 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 60 * 6, // 6 hours ago
     isHighPriority: false,
     isDaily: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
   {
     id: '10',
@@ -195,6 +256,9 @@ export const mockTidings: Tiding[] = [
     timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
     isHighPriority: false,
     isDaily: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
   },
 ];
 
