@@ -235,6 +235,16 @@ export const mockChannels: Channel[] = [
     subscribers: ['user1', 'user2', 'user3'], // currentUser is NOT in this list
     inviteCode: 'INVITE2024',
   },
+  // Add a demo channel with fixed invite code for testing
+  {
+    id: 'demo-channel',
+    name: 'Family Updates',
+    color: '#f59e0b', // Amber
+    isDaily: false,
+    ownerId: 'user2',
+    subscribers: ['user2', 'user3', 'user4'], // currentUser is NOT in this list
+    inviteCode: '6BP6VZWX',
+  },
 ];
 
 // Mock current user data
