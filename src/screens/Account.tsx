@@ -129,6 +129,19 @@ export function Account() {
     return result;
   }, [userOwnedChannels]);
 
+  // Memoized: Get subscribers for selected channel
+  const selectedChannelSubscribers = useMemo(() => {
+    if (!selectedChannel) {
+      return [];
+    }
+
+    const result = selectedChannel.subscribers
+      .map((id) => mockUsers.find((user) => user.id === id))
+      .filter((user): user is User => user !== undefined);
+
+    return result;
+  }, [selectedChannel]);
+
   const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
@@ -484,13 +497,7 @@ export function Account() {
               ? channelDescriptions[selectedChannel.id]
               : undefined
           }
-          subscribers={
-            selectedChannel
-              ? selectedChannel.subscribers
-                  .map((id) => mockUsers.find((user) => user.id === id))
-                  .filter((user): user is User => user !== undefined)
-              : []
-          }
+          subscribers={selectedChannelSubscribers}
         />
       </div>
     </div>
