@@ -5,8 +5,12 @@ import {
   Card,
   Textarea,
   Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
   Input,
   Label,
+  Button,
 } from '@moondreamsdev/dreamer-ui/components';
 import { mockCurrentUser, mockChannels } from '@lib/mockData';
 
@@ -34,9 +38,6 @@ export function Account() {
     lastName: mockCurrentUser.lastName,
     funFact: mockCurrentUser.funFact,
   });
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState('account');
 
   // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
@@ -74,6 +75,13 @@ export function Account() {
     }));
   };
 
+  const handleUpdateAccount = () => {
+    // Mock update function - in real app would call API
+    console.log('Updating account with:', formData);
+    // Show success feedback (could use toast notification)
+    alert('Account updated successfully!');
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
@@ -100,92 +108,93 @@ export function Account() {
           </div>
 
           {/* Tabs */}
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            tabsList={[
-              { label: 'Account', value: 'account' },
-              { label: 'Channels', value: 'channels' },
-            ]}
-          >
+          <Tabs defaultValue='account' className='w-full'>
+            <TabsList className='grid w-full grid-cols-2'>
+              <TabsTrigger value='account'>Account</TabsTrigger>
+              <TabsTrigger value='channels'>Channels</TabsTrigger>
+            </TabsList>
+
             {/* Account Tab Content */}
-            {activeTab === 'account' && (
-              <div className='space-y-4 pt-4'>
-                {/* First Name */}
-                <div className='space-y-2'>
-                  <Label htmlFor='firstName'>First Name</Label>
-                  <Input
-                    id='firstName'
-                    type='text'
-                    value={formData.firstName}
-                    onChange={(e) => handleFormChange('firstName', e.target.value)}
-                  />
-                </div>
-
-                {/* Last Name */}
-                <div className='space-y-2'>
-                  <Label htmlFor='lastName'>Last Name</Label>
-                  <Input
-                    id='lastName'
-                    type='text'
-                    value={formData.lastName}
-                    onChange={(e) => handleFormChange('lastName', e.target.value)}
-                  />
-                </div>
-
-                {/* Fun Facts */}
-                <div className='space-y-2'>
-                  <Label htmlFor='funFact'>Fun Facts About You</Label>
-                  <Textarea
-                    id='funFact'
-                    value={formData.funFact}
-                    onChange={(e) => handleFormChange('funFact', e.target.value)}
-                    placeholder='Share some fun facts about yourself...'
-                    rows={4}
-                  />
-                </div>
+            <TabsContent value='account' className='space-y-4 mt-4'>
+              {/* First Name */}
+              <div className='space-y-2'>
+                <Label htmlFor='firstName'>First Name</Label>
+                <Input
+                  id='firstName'
+                  type='text'
+                  value={formData.firstName}
+                  onChange={(e) => handleFormChange('firstName', e.target.value)}
+                />
               </div>
-            )}
+
+              {/* Last Name */}
+              <div className='space-y-2'>
+                <Label htmlFor='lastName'>Last Name</Label>
+                <Input
+                  id='lastName'
+                  type='text'
+                  value={formData.lastName}
+                  onChange={(e) => handleFormChange('lastName', e.target.value)}
+                />
+              </div>
+
+              {/* Fun Facts */}
+              <div className='space-y-2'>
+                <Label htmlFor='funFact'>Fun Facts About You</Label>
+                <Textarea
+                  id='funFact'
+                  value={formData.funFact}
+                  onChange={(e) => handleFormChange('funFact', e.target.value)}
+                  placeholder='Share some fun facts about yourself...'
+                  rows={4}
+                />
+              </div>
+
+              {/* Update Button */}
+              <div className='pt-2'>
+                <Button onClick={handleUpdateAccount} className='w-full'>
+                  Update Account
+                </Button>
+              </div>
+            </TabsContent>
 
             {/* Channels Tab Content */}
-            {activeTab === 'channels' && (
-              <div className='space-y-4 pt-4'>
-                {/* Daily Channel */}
-                {userDailyChannel && (
-                  <div className='space-y-2'>
-                    <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
-                    <div className='flex items-center gap-2'>
+            <TabsContent value='channels' className='space-y-4 mt-4'>
+              {/* Daily Channel */}
+              {userDailyChannel && (
+                <div className='space-y-2'>
+                  <p className='text-sm font-medium text-foreground/80'>Daily Channel</p>
+                  <div className='flex items-center gap-2'>
+                    <Badge
+                      variant='secondary'
+                      className='text-sm font-medium'
+                      style={{ borderColor: userDailyChannel.color }}
+                    >
+                      {userDailyChannel.name}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Subscribed Channels */}
+              {subscribedChannels.length > 0 && (
+                <div className='space-y-2'>
+                  <p className='text-sm font-medium text-foreground/80'>Subscribed Channels</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {subscribedChannels.map((channel) => (
                       <Badge
+                        key={channel.id}
                         variant='secondary'
                         className='text-sm font-medium'
-                        style={{ borderColor: userDailyChannel.color }}
+                        style={{ borderColor: channel.color }}
                       >
-                        {userDailyChannel.name}
+                        {channel.name}
                       </Badge>
-                    </div>
+                    ))}
                   </div>
-                )}
-
-                {/* Subscribed Channels */}
-                {subscribedChannels.length > 0 && (
-                  <div className='space-y-2'>
-                    <p className='text-sm font-medium text-foreground/80'>Subscribed Channels</p>
-                    <div className='flex flex-wrap gap-2'>
-                      {subscribedChannels.map((channel) => (
-                        <Badge
-                          key={channel.id}
-                          variant='secondary'
-                          className='text-sm font-medium'
-                          style={{ borderColor: channel.color }}
-                        >
-                          {channel.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </Card>
       </div>
