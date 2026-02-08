@@ -25,6 +25,11 @@ export function Feed() {
   });
   
   const hasRestoredScroll = useRef(false);
+  const firstPostRef = useRef<HTMLDivElement>(null);
+  const secondPostRef = useRef<HTMLDivElement>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [firstPostVisible, setFirstPostVisible] = useState(true);
+  const [secondPostVisible, setSecondPostVisible] = useState(true);
 
   // Filter and sort tidings
   const filteredAndSortedTidings = useMemo(() => {
@@ -102,6 +107,110 @@ export function Feed() {
     };
   }, [hasMore, isLoadingMore]);
 
+  // Intersection Observer to track when first two posts are out of view
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.target === firstPostRef.current) {
+          setFirstPostVisible(entry.isIntersecting);
+        }
+        if (entry.target === secondPostRef.current) {
+          setSecondPostVisible(entry.isIntersecting);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe first two posts after media loads
+    const observePostsWithMediaLoad = () => {
+      if (firstPostRef.current) {
+        const firstPostImages = firstPostRef.current.querySelectorAll('img, video');
+        if (firstPostImages.length > 0) {
+          // Wait for all media to load before observing
+          const mediaPromises = Array.from(firstPostImages).map((media) => {
+            return new Promise((resolve) => {
+              if (media instanceof HTMLImageElement) {
+                if (media.complete) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('load', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              } else if (media instanceof HTMLVideoElement) {
+                if (media.readyState >= 2) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              }
+            });
+          });
+
+          Promise.all(mediaPromises).then(() => {
+            if (firstPostRef.current) {
+              observer.observe(firstPostRef.current);
+            }
+          });
+        } else {
+          observer.observe(firstPostRef.current);
+        }
+      }
+
+      if (secondPostRef.current) {
+        const secondPostImages = secondPostRef.current.querySelectorAll('img, video');
+        if (secondPostImages.length > 0) {
+          const mediaPromises = Array.from(secondPostImages).map((media) => {
+            return new Promise((resolve) => {
+              if (media instanceof HTMLImageElement) {
+                if (media.complete) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('load', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              } else if (media instanceof HTMLVideoElement) {
+                if (media.readyState >= 2) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              }
+            });
+          });
+
+          Promise.all(mediaPromises).then(() => {
+            if (secondPostRef.current) {
+              observer.observe(secondPostRef.current);
+            }
+          });
+        } else {
+          observer.observe(secondPostRef.current);
+        }
+      }
+    };
+
+    // Use setTimeout to ensure DOM is ready
+    setTimeout(observePostsWithMediaLoad, 100);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [displayedTidings]);
+
+  // Show/hide scroll to top button based on visibility of first two posts
+  useEffect(() => {
+    setShowScrollToTop(!firstPostVisible && !secondPostVisible);
+  }, [firstPostVisible, secondPostVisible]);
+
   // Channel options for Select
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
@@ -156,6 +265,11 @@ export function Feed() {
     // Store in sessionStorage as backup
     sessionStorage.setItem('feedScrollPosition', String(scrollPosition));
     sessionStorage.setItem('feedDisplayedCount', String(displayedCount));
+  };
+
+  // Scroll to top handler
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -221,12 +335,16 @@ export function Feed() {
 
         {/* Feed */}
         <div className='space-y-4'>
-          {displayedTidings.map((tiding) => (
-            <TidingCard 
-              key={tiding.id} 
-              tiding={tiding} 
-              onNavigate={saveScrollPosition}
-            />
+          {displayedTidings.map((tiding, index) => (
+            <div
+              key={tiding.id}
+              ref={index === 0 ? firstPostRef : index === 1 ? secondPostRef : null}
+            >
+              <TidingCard 
+                tiding={tiding} 
+                onNavigate={saveScrollPosition}
+              />
+            </div>
           ))}
 
           {/* Loading skeletons */}
@@ -253,6 +371,28 @@ export function Feed() {
           )}
         </div>
       </div>
+
+      {/* Scroll to Top Button */}
+      {showScrollToTop && (
+        <button
+          onClick={scrollToTop}
+          className='fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:shadow-xl hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+          aria-label='Scroll to top'
+        >
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            className='h-6 w-6'
+          >
+            <polyline points='18 15 12 9 6 15' />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
