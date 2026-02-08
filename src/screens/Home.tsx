@@ -23,6 +23,10 @@ function Home() {
           </Button>
         </header>
 
+        <img src='https://angelia-020726.firebaseapp.com/social-banner.png' alt='Angelia - Family Connection, Without the Noise' className='w-full rounded-lg shadow-lg' />
+
+        <img src='https://akyl-8a410.firebaseapp.com/social-media-banner.png' alt='Angelia - Family Connection, Without the Noise' className='w-full rounded-lg shadow-lg' />
+
         {/* Hero Section */}
         <section className='text-center space-y-8'>
           <h1 className='text-5xl md:text-7xl font-bold tracking-tight'>
