@@ -28,6 +28,7 @@ import {
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
+import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -69,7 +70,7 @@ function formatInviteTime(timestamp: number): string {
 }
 
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
-type AccountTab = 'account' | 'my-channels' | 'subscribed' | 'notifications';
+type AccountTab = 'account' | 'my-channels' | 'subscribed';
 
 interface ChannelFormData {
   name: string;
@@ -97,7 +98,7 @@ export function Account() {
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') || '';
-    const validTabs: AccountTab[] = ['my-channels', 'subscribed', 'notifications'];
+    const validTabs: AccountTab[] = ['my-channels', 'subscribed'];
     const result = validTabs.includes(tab as AccountTab) ? tab : 'account';
 
     return result;
@@ -408,9 +409,6 @@ export function Account() {
               <TabsTrigger value='account'>Account</TabsTrigger>
               <TabsTrigger value='my-channels'>My Channels</TabsTrigger>
               <TabsTrigger value='subscribed'>Subscribed Channels</TabsTrigger>
-              <TabsTrigger value='notifications'>
-                Notifications {pendingInviteCount > 0 && `(${pendingInviteCount})`}
-              </TabsTrigger>
             </TabsList>
 
             {/* Account Tab Content */}
@@ -561,131 +559,172 @@ export function Account() {
                 </p>
               )}
             </TabsContent>
-
-            {/* Notifications Tab Content */}
-            <TabsContent value='notifications' className='mt-4 space-y-4'>
-              {/* Pending Invites Section */}
-              {pendingInvites.length > 0 && (
-                <div className='space-y-2'>
-                  <p className='text-foreground/80 text-sm font-medium'>
-                    Pending Invites ({pendingInvites.length})
-                  </p>
-                  <div className='space-y-2'>
-                    {pendingInvites.map((invite) => {
-                      const channel = channels.find(
-                        (ch) => ch.id === invite.channelId,
-                      );
-                      const inviter = getUserById(invite.invitedBy);
-                      
-                      if (!channel || !inviter) {
-                        return null;
-                      }
-
-                      return (
-                        <Card key={invite.id} className='p-4'>
-                          <div className='space-y-3'>
-                            <div className='flex items-start justify-between gap-3'>
-                              <div className='flex-1 space-y-1'>
-                                <div className='flex items-center gap-2'>
-                                  <p className='text-foreground text-sm font-medium'>
-                                    {inviter.firstName} {inviter.lastName}
-                                  </p>
-                                  <span className='text-foreground/40 text-xs'>
-                                    invited you to
-                                  </span>
-                                </div>
-                                <Badge
-                                  variant='base'
-                                  className='text-sm font-medium'
-                                >
-                                  {channel.name}
-                                </Badge>
-                                <p className='text-foreground/60 text-xs'>
-                                  {formatInviteTime(invite.invitedAt)}
-                                </p>
-                              </div>
-                            </div>
-                            <div className='flex gap-2'>
-                              <Button
-                                size='sm'
-                                onClick={() => handleAcceptInvite(invite)}
-                                className='flex-1'
-                              >
-                                Accept
-                              </Button>
-                              <Button
-                                variant='secondary'
-                                size='sm'
-                                onClick={() => handleDeclineInvite(invite)}
-                                className='flex-1'
-                              >
-                                Decline
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Separator between pending and declined */}
-              {pendingInvites.length > 0 && declinedInvites.length > 0 && (
-                <Separator />
-              )}
-
-              {/* Declined Invites Section */}
-              {declinedInvites.length > 0 && (
-                <div className='space-y-2'>
-                  <p className='text-foreground/80 text-sm font-medium'>
-                    Declined Invites ({declinedInvites.length})
-                  </p>
-                  <div className='space-y-2'>
-                    {declinedInvites.map((invite) => {
-                      const channel = channels.find(
-                        (ch) => ch.id === invite.channelId,
-                      );
-                      const inviter = getUserById(invite.invitedBy);
-                      
-                      if (!channel || !inviter) {
-                        return null;
-                      }
-
-                      return (
-                        <Card key={invite.id} className='p-4 opacity-60'>
-                          <div className='space-y-1'>
-                            <div className='flex items-center gap-2'>
-                              <p className='text-foreground text-sm font-medium'>
-                                {inviter.firstName} {inviter.lastName}
-                              </p>
-                              <span className='text-foreground/40 text-xs'>
-                                invited you to
-                              </span>
-                            </div>
-                            <Badge variant='base' className='text-sm font-medium'>
-                              {channel.name}
-                            </Badge>
-                            <p className='text-foreground/60 text-xs'>
-                              Declined {formatInviteTime(invite.respondedAt!)}
-                            </p>
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Empty State */}
-              {pendingInvites.length === 0 && declinedInvites.length === 0 && (
-                <p className='text-foreground/60 text-sm text-center py-8'>
-                  No notifications yet. When someone invites you to a channel,
-                  you'll see it here.
-                </p>
-              )}
-            </TabsContent>
           </Tabs>
+        </Card>
+
+        {/* Notifications Section - Separate Card */}
+        <Card className='space-y-6 p-6'>
+          <div>
+            <h2 className='text-foreground text-2xl font-semibold'>
+              Notifications
+              {pendingInviteCount > 0 && (
+                <span className='text-foreground/60 text-xl ml-2'>
+                  ({pendingInviteCount})
+                </span>
+              )}
+            </h2>
+            <p className='text-foreground/60 text-sm mt-1'>
+              Manage your channel invitations
+            </p>
+          </div>
+
+          <div className='space-y-4'>
+            {/* Pending Invites Section */}
+            {pendingInvites.length > 0 && (
+              <div className='space-y-2'>
+                <p className='text-foreground/80 text-sm font-medium'>
+                  Pending Invites ({pendingInvites.length})
+                </p>
+                <div className='space-y-2'>
+                  {pendingInvites.map((invite) => {
+                    const channel = channels.find(
+                      (ch) => ch.id === invite.channelId,
+                    );
+                    const inviter = getUserById(invite.invitedBy);
+                    
+                    if (!channel || !inviter) {
+                      return null;
+                    }
+
+                    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
+                    const badgeColors = {
+                      backgroundColor: colorData?.value || '#c7d2fe',
+                      textColor: colorData?.textColor || '#4338ca',
+                    };
+
+                    return (
+                      <Card key={invite.id} className='p-4'>
+                        <div className='space-y-3'>
+                          <div className='flex items-start justify-between gap-3'>
+                            <div className='flex-1 space-y-1'>
+                              <div className='flex items-center gap-2'>
+                                <p className='text-foreground text-sm font-medium'>
+                                  {inviter.firstName} {inviter.lastName}
+                                </p>
+                                <span className='text-foreground/40 text-xs'>
+                                  invited you to
+                                </span>
+                              </div>
+                              <Badge
+                                variant='base'
+                                className='text-sm font-medium'
+                                style={{
+                                  backgroundColor: badgeColors.backgroundColor,
+                                  borderColor: badgeColors.backgroundColor,
+                                  color: badgeColors.textColor,
+                                }}
+                              >
+                                {channel.name}
+                              </Badge>
+                              <p className='text-foreground/60 text-xs'>
+                                {formatInviteTime(invite.invitedAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className='flex gap-2'>
+                            <Button
+                              size='sm'
+                              onClick={() => handleAcceptInvite(invite)}
+                              className='flex-1'
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              variant='secondary'
+                              size='sm'
+                              onClick={() => handleDeclineInvite(invite)}
+                              className='flex-1'
+                            >
+                              Decline
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Separator between pending and declined */}
+            {pendingInvites.length > 0 && declinedInvites.length > 0 && (
+              <Separator />
+            )}
+
+            {/* Declined Invites Section */}
+            {declinedInvites.length > 0 && (
+              <div className='space-y-2'>
+                <p className='text-foreground/80 text-sm font-medium'>
+                  Declined Invites ({declinedInvites.length})
+                </p>
+                <div className='space-y-2'>
+                  {declinedInvites.map((invite) => {
+                    const channel = channels.find(
+                      (ch) => ch.id === invite.channelId,
+                    );
+                    const inviter = getUserById(invite.invitedBy);
+                    
+                    if (!channel || !inviter) {
+                      return null;
+                    }
+
+                    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
+                    const badgeColors = {
+                      backgroundColor: colorData?.value || '#c7d2fe',
+                      textColor: colorData?.textColor || '#4338ca',
+                    };
+
+                    return (
+                      <Card key={invite.id} className='p-4 opacity-60'>
+                        <div className='space-y-1'>
+                          <div className='flex items-center gap-2'>
+                            <p className='text-foreground text-sm font-medium'>
+                              {inviter.firstName} {inviter.lastName}
+                            </p>
+                            <span className='text-foreground/40 text-xs'>
+                              invited you to
+                            </span>
+                          </div>
+                          <Badge
+                            variant='base'
+                            className='text-sm font-medium'
+                            style={{
+                              backgroundColor: badgeColors.backgroundColor,
+                              borderColor: badgeColors.backgroundColor,
+                              color: badgeColors.textColor,
+                            }}
+                          >
+                            {channel.name}
+                          </Badge>
+                          <p className='text-foreground/60 text-xs'>
+                            Declined {formatInviteTime(invite.respondedAt!)}
+                          </p>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {pendingInvites.length === 0 && declinedInvites.length === 0 && (
+              <p className='text-foreground/60 text-sm text-center py-8'>
+                No notifications yet. When someone invites you to a channel,
+                you'll see it here.
+              </p>
+            )}
+          </div>
         </Card>
 
         {/* Channel Form Modal */}
