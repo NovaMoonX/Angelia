@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Select, Avatar, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
@@ -11,15 +11,20 @@ type PriorityFilter = 'all' | 'high';
 const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
 export function Feed() {
+  const location = useLocation();
+  const locationState = location.state as { scrollPosition?: number; displayedCount?: number } | null;
+  
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [displayedCount, setDisplayedCount] = useState(5);
+  const [displayedCount, setDisplayedCount] = useState(locationState?.displayedCount ?? 5);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isCalloutDismissed, setIsCalloutDismissed] = useState(() => {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
+  
+  const hasRestoredScroll = useRef(false);
 
   // Filter and sort tidings
   const filteredAndSortedTidings = useMemo(() => {
@@ -57,6 +62,18 @@ export function Feed() {
   }, [filteredAndSortedTidings, displayedCount]);
 
   const hasMore = displayedCount < filteredAndSortedTidings.length;
+
+  // Restore scroll position when returning from post detail
+  useEffect(() => {
+    if (locationState?.scrollPosition !== undefined && !hasRestoredScroll.current) {
+      // Use setTimeout to ensure DOM is ready
+      const scrollPosition = locationState.scrollPosition;
+      setTimeout(() => {
+        window.scrollTo(0, scrollPosition);
+        hasRestoredScroll.current = true;
+      }, 0);
+    }
+  }, [locationState?.scrollPosition]);
 
   // Handle infinite scroll
   useEffect(() => {
@@ -133,6 +150,14 @@ export function Feed() {
     setIsCalloutDismissed(true);
   };
 
+  // Save scroll position before navigating to post
+  const saveScrollPosition = () => {
+    const scrollPosition = window.scrollY;
+    // Store in sessionStorage as backup
+    sessionStorage.setItem('feedScrollPosition', String(scrollPosition));
+    sessionStorage.setItem('feedDisplayedCount', String(displayedCount));
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
@@ -197,7 +222,11 @@ export function Feed() {
         {/* Feed */}
         <div className='space-y-4'>
           {displayedTidings.map((tiding) => (
-            <TidingCard key={tiding.id} tiding={tiding} />
+            <TidingCard 
+              key={tiding.id} 
+              tiding={tiding} 
+              onNavigate={saveScrollPosition}
+            />
           ))}
 
           {/* Loading skeletons */}

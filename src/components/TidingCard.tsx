@@ -11,9 +11,10 @@ import { getRelativeTime } from '@lib/timeUtils';
 
 interface TidingCardProps {
   tiding: Tiding;
+  onNavigate?: () => void;
 }
 
-export function TidingCard({ tiding }: TidingCardProps) {
+export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
   const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
 
@@ -28,6 +29,9 @@ export function TidingCard({ tiding }: TidingCardProps) {
   const colors = getColorPair();
 
   const handleClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
     navigate(`/tiding/${tiding.id}`);
   };
 
