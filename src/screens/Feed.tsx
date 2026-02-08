@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Select, Avatar, Callout } from '@moondreamsdev/dreamer-ui/components';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Select, Avatar, Callout, Button } from '@moondreamsdev/dreamer-ui/components';
+import { ChevronUp } from '@moondreamsdev/dreamer-ui/symbols';
 import { TidingCard } from '@components/TidingCard';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { BellIcon } from '@components/BellIcon';
 import { mockTidings, mockChannels, mockCurrentUser, mockUserInvites } from '@lib/mockData';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
@@ -12,15 +13,25 @@ type PriorityFilter = 'all' | 'high';
 const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
 export function Feed() {
+  const location = useLocation();
+  const locationState = location.state as { scrollPosition?: number; displayedCount?: number } | null;
+  
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [displayedCount, setDisplayedCount] = useState(5);
+  const [displayedCount, setDisplayedCount] = useState(locationState?.displayedCount ?? 5);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isCalloutDismissed, setIsCalloutDismissed] = useState(() => {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
+  
+  const hasRestoredScroll = useRef(false);
+  const firstPostRef = useRef<HTMLDivElement>(null);
+  const secondPostRef = useRef<HTMLDivElement>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [firstPostVisible, setFirstPostVisible] = useState(true);
+  const [secondPostVisible, setSecondPostVisible] = useState(true);
 
   // Filter and sort tidings
   const filteredAndSortedTidings = useMemo(() => {
@@ -59,6 +70,18 @@ export function Feed() {
 
   const hasMore = displayedCount < filteredAndSortedTidings.length;
 
+  // Restore scroll position when returning from post detail
+  useEffect(() => {
+    if (locationState?.scrollPosition !== undefined && !hasRestoredScroll.current) {
+      // Use setTimeout to ensure DOM is ready
+      const scrollPosition = locationState.scrollPosition;
+      setTimeout(() => {
+        window.scrollTo(0, scrollPosition);
+        hasRestoredScroll.current = true;
+      }, 0);
+    }
+  }, [locationState?.scrollPosition]);
+
   // Handle infinite scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -85,6 +108,110 @@ export function Feed() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [hasMore, isLoadingMore]);
+
+  // Intersection Observer to track when first two posts are out of view
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.target === firstPostRef.current) {
+          setFirstPostVisible(entry.isIntersecting);
+        }
+        if (entry.target === secondPostRef.current) {
+          setSecondPostVisible(entry.isIntersecting);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe first two posts after media loads
+    const observePostsWithMediaLoad = () => {
+      if (firstPostRef.current) {
+        const firstPostImages = firstPostRef.current.querySelectorAll('img, video');
+        if (firstPostImages.length > 0) {
+          // Wait for all media to load before observing
+          const mediaPromises = Array.from(firstPostImages).map((media) => {
+            return new Promise((resolve) => {
+              if (media instanceof HTMLImageElement) {
+                if (media.complete) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('load', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              } else if (media instanceof HTMLVideoElement) {
+                if (media.readyState >= 2) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              }
+            });
+          });
+
+          Promise.all(mediaPromises).then(() => {
+            if (firstPostRef.current) {
+              observer.observe(firstPostRef.current);
+            }
+          });
+        } else {
+          observer.observe(firstPostRef.current);
+        }
+      }
+
+      if (secondPostRef.current) {
+        const secondPostImages = secondPostRef.current.querySelectorAll('img, video');
+        if (secondPostImages.length > 0) {
+          const mediaPromises = Array.from(secondPostImages).map((media) => {
+            return new Promise((resolve) => {
+              if (media instanceof HTMLImageElement) {
+                if (media.complete) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('load', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              } else if (media instanceof HTMLVideoElement) {
+                if (media.readyState >= 2) {
+                  resolve(true);
+                } else {
+                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
+                  media.addEventListener('error', () => resolve(true), { once: true });
+                }
+              }
+            });
+          });
+
+          Promise.all(mediaPromises).then(() => {
+            if (secondPostRef.current) {
+              observer.observe(secondPostRef.current);
+            }
+          });
+        } else {
+          observer.observe(secondPostRef.current);
+        }
+      }
+    };
+
+    // Use setTimeout to ensure DOM is ready
+    setTimeout(observePostsWithMediaLoad, 100);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [displayedTidings]);
+
+  // Show/hide scroll to top button based on visibility of first two posts
+  useEffect(() => {
+    setShowScrollToTop(!firstPostVisible && !secondPostVisible);
+  }, [firstPostVisible, secondPostVisible]);
 
   // Channel options for Select
   const channelOptions = [
@@ -138,6 +265,19 @@ export function Feed() {
   const hasPendingInvites = useMemo(() => {
     return mockUserInvites.some((invite) => invite.status === 'pending');
   }, []);
+
+  // Save scroll position before navigating to post
+  const saveScrollPosition = () => {
+    const scrollPosition = window.scrollY;
+    // Store in sessionStorage as backup
+    sessionStorage.setItem('feedScrollPosition', String(scrollPosition));
+    sessionStorage.setItem('feedDisplayedCount', String(displayedCount));
+  };
+
+  // Scroll to top handler
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
@@ -211,8 +351,16 @@ export function Feed() {
 
         {/* Feed */}
         <div className='space-y-4'>
-          {displayedTidings.map((tiding) => (
-            <TidingCard key={tiding.id} tiding={tiding} />
+          {displayedTidings.map((tiding, index) => (
+            <div
+              key={tiding.id}
+              ref={index === 0 ? firstPostRef : index === 1 ? secondPostRef : null}
+            >
+              <TidingCard 
+                tiding={tiding} 
+                onNavigate={saveScrollPosition}
+              />
+            </div>
           ))}
 
           {/* Loading skeletons */}
@@ -239,6 +387,18 @@ export function Feed() {
           )}
         </div>
       </div>
+
+      {/* Scroll to Top Button */}
+      {showScrollToTop && (
+        <Button
+          variant='primary'
+          onClick={scrollToTop}
+          className='fixed bottom-6 right-6 z-50 h-14 w-14 !rounded-3xl p-0 shadow-lg transition-all hover:shadow-xl hover:scale-110'
+          aria-label='Scroll to top'
+        >
+          <ChevronUp className='h-8 w-8' />
+        </Button>
+      )}
     </div>
   );
 }

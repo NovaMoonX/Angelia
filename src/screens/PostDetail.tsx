@@ -45,6 +45,16 @@ export function PostDetail() {
   const [customEmoji, setCustomEmoji] = useState('');
   const [emojiError, setEmojiError] = useState('');
 
+  // Get saved scroll position from sessionStorage
+  const handleBackToFeed = () => {
+    const scrollPosition = Number(sessionStorage.getItem('feedScrollPosition') || 0);
+    const displayedCount = Number(sessionStorage.getItem('feedDisplayedCount') || 5);
+    
+    navigate('/feed', {
+      state: { scrollPosition, displayedCount },
+    });
+  };
+
   const sortedReactions = useMemo(() => {
     if (!tiding?.reactions) return [];
     return [...(tiding?.reactions ?? [])].sort(
@@ -57,7 +67,7 @@ export function PostDetail() {
       <div className='page flex flex-col items-center justify-center'>
         <div className='space-y-4 text-center'>
           <h1 className='text-foreground text-2xl font-bold'>Post not found</h1>
-          <Button onClick={() => navigate('/feed')}>Back to Feed</Button>
+          <Button onClick={handleBackToFeed}>Back to Feed</Button>
         </div>
       </div>
     );
@@ -200,7 +210,7 @@ export function PostDetail() {
           <Button
             variant='tertiary'
             size='sm'
-            onClick={() => navigate('/feed')}
+            onClick={handleBackToFeed}
             className='shrink-0'
           >
             ← Back

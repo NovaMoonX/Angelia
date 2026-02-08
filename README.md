@@ -63,6 +63,8 @@ A chronological feed for family updates called "Tidings":
 - **Filtering**: Select dropdown to filter tidings by channel (All Channels or specific subscriptions)
 - **Sorting**: Choose between "Newest First" or "Oldest First" ordering
 - **Infinite Scroll**: Automatically loads more tidings as you scroll down
+- **Scroll Position Restoration**: When viewing a post and returning to the feed, your previous scroll position is restored, maintaining your place in the feed and preserving the infinite scroll state
+- **Scroll-to-Top Button**: A floating button appears in the bottom right corner when you've scrolled past the first two posts, allowing quick navigation back to the top of the feed
 - **Loading States**: Skeleton cards provide visual feedback while loading
 - **Empty States**: Helpful messages when no tidings match filters
 
