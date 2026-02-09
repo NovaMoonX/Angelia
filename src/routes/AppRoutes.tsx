@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import Home from '@screens/Home';
 import Layout from '@ui/Layout';
 import Loading from '@ui/Loading';
+import ProtectedRoutes from '@components/ProtectedRoutes';
 
 export const router = createBrowserRouter([
   {
@@ -37,37 +38,47 @@ export const router = createBrowserRouter([
           return { Component: VerifyEmail };
         },
       },
+      // Protected routes - require authentication and email verification (unless demo mode is active)
       {
-        path: 'feed',
-        HydrateFallback: Loading,
-        lazy: async () => {
-          const { default: Feed } = await import('@screens/Feed');
-          return { Component: Feed };
-        },
-      },
-      {
-        path: 'tiding/:id',
-        HydrateFallback: Loading,
-        lazy: async () => {
-          const { default: PostDetail } = await import('@screens/PostDetail');
-          return { Component: PostDetail };
-        },
-      },
-      {
-        path: 'account',
-        HydrateFallback: Loading,
-        lazy: async () => {
-          const { default: Account } = await import('@screens/Account');
-          return { Component: Account };
-        },
-      },
-      {
-        path: 'invite/:inviteCode',
-        HydrateFallback: Loading,
-        lazy: async () => {
-          const { default: InviteAccept } = await import('@screens/InviteAccept');
-          return { Component: InviteAccept };
-        },
+        element: <ProtectedRoutes />,
+        children: [
+          {
+            path: 'feed',
+            HydrateFallback: Loading,
+            lazy: async () => {
+              const { default: Feed } = await import('@screens/Feed');
+              return { Component: Feed };
+            },
+          },
+          {
+            path: 'tiding/:id',
+            HydrateFallback: Loading,
+            lazy: async () => {
+              const { default: PostDetail } = await import(
+                '@screens/PostDetail'
+              );
+              return { Component: PostDetail };
+            },
+          },
+          {
+            path: 'account',
+            HydrateFallback: Loading,
+            lazy: async () => {
+              const { default: Account } = await import('@screens/Account');
+              return { Component: Account };
+            },
+          },
+          {
+            path: 'invite/:inviteCode',
+            HydrateFallback: Loading,
+            lazy: async () => {
+              const { default: InviteAccept } = await import(
+                '@screens/InviteAccept'
+              );
+              return { Component: InviteAccept };
+            },
+          },
+        ],
       },
       {
         path: '*',

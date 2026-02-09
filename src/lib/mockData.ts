@@ -39,6 +39,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
+  emailVerified: boolean;
   funFact: string;
   avatar: AvatarPreset;
   joinedAt: number; // Unix timestamp in ms
@@ -416,6 +417,7 @@ export const mockCurrentUser: User = {
   firstName: 'Alex',
   lastName: 'Morgan',
   email: 'alex.morgan@example.com',
+  emailVerified: true,
   funFact: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
   avatar: 'galaxy',
   joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 180, // 180 days ago (~6 months)
@@ -429,6 +431,7 @@ export const mockUsers: User[] = [
     firstName: 'Sarah',
     lastName: 'Johnson',
     email: 'sarah.johnson@example.com',
+    emailVerified: true,
     funFact: 'Love hiking and photography',
     avatar: 'cosmic-cat',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 200,
@@ -438,6 +441,7 @@ export const mockUsers: User[] = [
     firstName: 'Michael',
     lastName: 'Chen',
     email: 'michael.chen@example.com',
+    emailVerified: true,
     funFact: 'Amateur chef and food lover',
     avatar: 'rocket',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 150,
@@ -447,6 +451,7 @@ export const mockUsers: User[] = [
     firstName: 'Emily',
     lastName: 'Rodriguez',
     email: 'emily.rodriguez@example.com',
+    emailVerified: true,
     funFact: 'Graduate student and bookworm',
     avatar: 'star',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
@@ -456,6 +461,7 @@ export const mockUsers: User[] = [
     firstName: 'David',
     lastName: 'Park',
     email: 'david.park@example.com',
+    emailVerified: true,
     funFact: 'DIY enthusiast and builder',
     avatar: 'planet',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 190,
@@ -465,6 +471,7 @@ export const mockUsers: User[] = [
     firstName: 'Lisa',
     lastName: 'Thompson',
     email: 'lisa.thompson@example.com',
+    emailVerified: true,
     funFact: 'Beach lover and travel enthusiast',
     avatar: 'nebula',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 160,
@@ -474,6 +481,7 @@ export const mockUsers: User[] = [
     firstName: 'Robert',
     lastName: 'Kim',
     email: 'robert.kim@example.com',
+    emailVerified: true,
     funFact: 'Avid reader and writer',
     avatar: 'constellation',
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 170,
