@@ -260,7 +260,7 @@ export function PostFormModal({
     () => [
       FormFactories.textarea({
         name: 'text',
-        label: 'What\'s on your mind?',
+        label: "What's on your mind?",
         placeholder: 'Share an update with your family...',
         required: true,
         rows: 4,
