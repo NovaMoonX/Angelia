@@ -3,12 +3,6 @@ import { PostFormModal } from '@components/PostFormModal';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { TidingCard } from '@components/TidingCard';
 import {
-  mockChannels,
-  mockCurrentUser,
-  mockTidings,
-  mockUserInvites,
-} from '@lib/mockData';
-import {
   Avatar,
   Button,
   Callout,
@@ -18,6 +12,7 @@ import { ChevronUp, Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { useAppSelector } from '@store/hooks';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
@@ -31,6 +26,12 @@ export function Feed() {
     scrollPosition?: number;
     displayedCount?: number;
   } | null;
+
+  // Get data from Redux store
+  const tidings = useAppSelector((state) => state.tidings.items);
+  const channels = useAppSelector((state) => state.channels.items);
+  const currentUser = useAppSelector((state) => state.users.currentUser);
+  const userInvites = useAppSelector((state) => state.invites.items);
 
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
@@ -53,7 +54,7 @@ export function Feed() {
 
   // Filter and sort tidings
   const filteredAndSortedTidings = useMemo(() => {
-    let filtered = mockTidings;
+    let filtered = tidings;
 
     // Filter by channel
     if (selectedChannel === 'daily') {
@@ -79,7 +80,7 @@ export function Feed() {
     });
 
     return sorted;
-  }, [selectedChannel, sortOrder, priorityFilter]);
+  }, [tidings, selectedChannel, sortOrder, priorityFilter]);
 
   // Get currently displayed tidings
   const displayedTidings = useMemo(() => {
@@ -256,7 +257,7 @@ export function Feed() {
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
     { text: 'Daily Updates', value: 'daily' },
-    ...mockChannels
+    ...channels
       .filter((channel) => !channel.isDaily)
       .map((channel) => ({
         text: channel.name,
@@ -302,8 +303,8 @@ export function Feed() {
 
   // Memoized: Check for pending invites
   const hasPendingInvites = useMemo(() => {
-    return mockUserInvites.some((invite) => invite.status === 'pending');
-  }, []);
+    return userInvites.some((invite) => invite.status === 'pending');
+  }, [userInvites]);
 
   // Save scroll position before navigating to post
   const saveScrollPosition = () => {
@@ -320,8 +321,9 @@ export function Feed() {
 
   // Get user's channels for post creation
   const userChannels = useMemo(() => {
-    return mockChannels.filter((channel) => channel.ownerId === mockCurrentUser.id);
-  }, []);
+    if (!currentUser) return [];
+    return channels.filter((channel) => channel.ownerId === currentUser.id);
+  }, [channels, currentUser]);
 
   // Handler for post creation
   const handlePostSubmit = () => {
@@ -384,7 +386,7 @@ export function Feed() {
                 aria-label='Go to account'
                 className='focus:ring-primary rounded-full focus:ring-2 focus:outline-none'
               >
-                <Avatar preset={mockCurrentUser.avatar} size='md' />
+                <Avatar preset={currentUser?.avatar || 'moon'} size='md' />
               </Link>
             </div>
           </div>

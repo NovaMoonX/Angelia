@@ -5,10 +5,6 @@ import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import {
   Channel,
   getUserById,
-  mockChannels,
-  mockCurrentUser,
-  mockUserInvites,
-  mockUsers,
   User,
   UserInvite,
 } from '@lib/mockData';
@@ -30,6 +26,10 @@ import {
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '@store/hooks';
+import { updateChannel, removeChannel, addChannel } from '@store/slices/channelsSlice';
+import { updateInvite } from '@store/slices/invitesSlice';
+import { updateCurrentUser } from '@store/slices/usersSlice';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -68,6 +68,13 @@ export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const actionModal = useActionModal();
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+
+  // Get data from Redux store
+  const channels = useAppSelector((state) => state.channels.items);
+  const currentUser = useAppSelector((state) => state.users.currentUser);
+  const users = useAppSelector((state) => state.users.users);
+  const userInvites = useAppSelector((state) => state.invites.items);
 
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
@@ -94,10 +101,21 @@ export function Account() {
 
   // Combined form state
   const [formData, setFormData] = useState<AccountFormData>({
-    firstName: mockCurrentUser.firstName,
-    lastName: mockCurrentUser.lastName,
-    funFact: mockCurrentUser.funFact,
+    firstName: currentUser?.firstName || '',
+    lastName: currentUser?.lastName || '',
+    funFact: currentUser?.funFact || '',
   });
+
+  // Update form data when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        funFact: currentUser.funFact,
+      });
+    }
+  }, [currentUser]);
 
   // Channel modal states
   const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
@@ -106,17 +124,16 @@ export function Account() {
   const [channelFormMode, setChannelFormMode] = useState<'create' | 'edit'>(
     'create',
   );
-  const [channels, setChannels] = useState(mockChannels);
-  const [userInvites, setUserInvites] = useState(mockUserInvites);
 
   // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
+    if (!currentUser) return [];
     const result = channels.filter(
-      (channel) => channel.ownerId === mockCurrentUser.id,
+      (channel) => channel.ownerId === currentUser.id,
     );
 
     return result;
-  }, [channels]);
+  }, [channels, currentUser]);
 
   // Memoized: Find user's daily channel (from owned channels)
   const userDailyChannel = useMemo(() => {
@@ -127,14 +144,15 @@ export function Account() {
 
   // Memoized: Find channels the user has access to (subscribed)
   const subscribedChannels = useMemo(() => {
+    if (!currentUser) return [];
     const result = channels.filter(
       (channel) =>
-        channel.subscribers.includes(mockCurrentUser.id) &&
-        channel.ownerId !== mockCurrentUser.id,
+        channel.subscribers.includes(currentUser.id) &&
+        channel.ownerId !== currentUser.id,
     );
 
     return result;
-  }, [channels]);
+  }, [channels, currentUser]);
 
   // Memoized: Create channel map for O(1) lookups
   const channelsMap = useMemo(() => {
@@ -145,10 +163,10 @@ export function Account() {
 
   // Memoized: Create users map for O(1) lookups
   const usersMap = useMemo(() => {
-    const result = new Map(mockUsers.map((user) => [user.id, user]));
+    const result = new Map(users.map((user) => [user.id, user]));
 
     return result;
-  }, []);
+  }, [users]);
 
   // Memoized: Count non-daily channels owned by user
   const nonDailyChannelCount = useMemo(() => {
@@ -171,11 +189,11 @@ export function Account() {
     }
 
     const result = selectedChannel.subscribers
-      .map((id) => mockUsers.find((user) => user.id === id))
+      .map((id) => users.find((user) => user.id === id))
       .filter((user): user is User => user !== undefined);
 
     return result;
-  }, [selectedChannel]);
+  }, [selectedChannel, users]);
 
   // Memoized: Get pending invites
   const pendingInvites = useMemo(() => {
@@ -198,7 +216,7 @@ export function Account() {
     return result;
   }, [pendingInvites]);
 
-  const formattedJoinDate = formatJoinDate(mockCurrentUser.joinedAt);
+  const formattedJoinDate = formatJoinDate(currentUser?.joinedAt || Date.now());
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
     setFormData((prev) => ({
@@ -208,10 +226,11 @@ export function Account() {
   };
 
   const handleUpdateAccount = () => {
-    // Mock update function - in real app would call API
-    console.log('Updating account with:', formData);
-    // Show success feedback (could use toast notification)
-    alert('Account updated successfully!');
+    // Update account using Redux
+    if (currentUser) {
+      dispatch(updateCurrentUser(formData));
+      alert('Account updated successfully!');
+    }
   };
 
   const handleTabChange = (value: string) => {
@@ -259,8 +278,8 @@ export function Account() {
     });
 
     if (confirmed) {
-      // Mock delete - in real app would call API
-      setChannels((prev) => prev.filter((ch) => ch.id !== channel.id));
+      // Delete channel using Redux
+      dispatch(removeChannel(channel.id));
       console.log('Deleting channel:', channel.id);
     }
   };
@@ -274,20 +293,15 @@ export function Account() {
       destructive: false,
     });
 
-    if (confirmed) {
-      // Mock unsubscribe - in real app would call API
-      setChannels((prev) =>
-        prev.map((ch) =>
-          ch.id === channel.id
-            ? {
-                ...ch,
-                subscribers: ch.subscribers.filter(
-                  (id) => id !== mockCurrentUser.id,
-                ),
-              }
-            : ch,
+    if (confirmed && currentUser) {
+      // Unsubscribe using Redux
+      const updatedChannel = {
+        ...channel,
+        subscribers: channel.subscribers.filter(
+          (id) => id !== currentUser.id,
         ),
-      );
+      };
+      dispatch(updateChannel(updatedChannel));
       console.log('Unsubscribing from channel:', channel.id);
     }
   };
@@ -298,6 +312,8 @@ export function Account() {
   };
 
   const handleChannelFormSubmit = (data: ChannelFormData) => {
+    if (!currentUser) return;
+
     if (channelFormMode === 'create') {
       if (nonDailyChannelCount >= 3) {
         alert(
@@ -305,27 +321,22 @@ export function Account() {
         );
         return;
       }
-      // Mock create - in real app would call API
+      // Create channel using Redux
       const newChannel: Channel = {
         id: `channel-${Date.now()}`,
         name: data.name,
         color: data.color,
         isDaily: false,
-        ownerId: mockCurrentUser.id,
-        subscribers: [mockCurrentUser.id],
+        ownerId: currentUser.id,
+        subscribers: [currentUser.id],
       };
-      setChannels((prev) => [...prev, newChannel]);
+      dispatch(addChannel(newChannel));
       channelDescriptions[newChannel.id] = data.description;
       console.log('Creating channel:', newChannel);
     } else if (selectedChannel) {
-      // Mock update - in real app would call API
-      setChannels((prev) =>
-        prev.map((ch) =>
-          ch.id === selectedChannel.id
-            ? { ...ch, name: data.name, color: data.color }
-            : ch,
-        ),
-      );
+      // Update channel using Redux
+      const updatedChannel = { ...selectedChannel, name: data.name, color: data.color };
+      dispatch(updateChannel(updatedChannel));
       channelDescriptions[selectedChannel.id] = data.description;
       console.log('Updating channel:', selectedChannel.id, data);
     }
@@ -333,33 +344,35 @@ export function Account() {
 
   // Invite handlers
   const handleAcceptInvite = (invite: UserInvite) => {
-    // Mock accept - in real app would call API
-    setUserInvites((prev) =>
-      prev.map((inv) =>
-        inv.id === invite.id
-          ? { ...inv, status: 'accepted' as const, respondedAt: Date.now() }
-          : inv,
-      ),
-    );
+    if (!currentUser) return;
+
+    // Accept invite using Redux
+    const updatedInvite: UserInvite = { 
+      ...invite, 
+      status: 'accepted' as const, 
+      respondedAt: Date.now() 
+    };
+    dispatch(updateInvite(updatedInvite));
+
     // Add current user to channel subscribers
-    setChannels((prev) =>
-      prev.map((ch) =>
-        ch.id === invite.channelId
-          ? { ...ch, subscribers: [...ch.subscribers, mockCurrentUser.id] }
-          : ch,
-      ),
-    );
+    const channel = channels.find(ch => ch.id === invite.channelId);
+    if (channel) {
+      const updatedChannel = { 
+        ...channel, 
+        subscribers: [...channel.subscribers, currentUser.id] 
+      };
+      dispatch(updateChannel(updatedChannel));
+    }
   };
 
   const handleDeclineInvite = (invite: UserInvite) => {
-    // Mock decline - in real app would call API
-    setUserInvites((prev) =>
-      prev.map((inv) =>
-        inv.id === invite.id
-          ? { ...inv, status: 'declined' as const, respondedAt: Date.now() }
-          : inv,
-      ),
-    );
+    // Decline invite using Redux
+    const updatedInvite: UserInvite = { 
+      ...invite, 
+      status: 'declined' as const, 
+      respondedAt: Date.now() 
+    };
+    dispatch(updateInvite(updatedInvite));
   };
 
   return (
@@ -386,13 +399,13 @@ export function Account() {
         <Card className='space-y-6 p-6'>
           {/* Avatar and Basic Info */}
           <div className='flex flex-col items-center space-y-4'>
-            <Avatar preset={mockCurrentUser.avatar} size='xl' />
+            <Avatar preset={currentUser?.avatar || 'moon'} size='xl' />
             <div className='text-center'>
               <h2 className='text-foreground text-2xl font-semibold'>
                 {formData.firstName} {formData.lastName}
               </h2>
               <p className='text-foreground/60 text-sm'>
-                {mockCurrentUser.email}
+                {currentUser?.email || ''}
               </p>
               <p className='text-foreground/40 mt-2 text-xs'>
                 Joined {formattedJoinDate}

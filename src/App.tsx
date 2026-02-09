@@ -5,15 +5,19 @@ import {
 } from '@moondreamsdev/dreamer-ui/providers';
 import { router } from '@routes/AppRoutes';
 import { RouterProvider } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from '@store/index';
 
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <ActionModalProvider>
-          <RouterProvider router={router} />
-        </ActionModalProvider>
-      </ToastProvider>
+      <Provider store={store}>
+        <ToastProvider>
+          <ActionModalProvider>
+            <RouterProvider router={router} />
+          </ActionModalProvider>
+        </ToastProvider>
+      </Provider>
     </ErrorBoundary>
   );
 }
