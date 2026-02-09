@@ -25,7 +25,7 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/hooks';
 import { updateChannel, removeChannel, addChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
@@ -386,13 +386,9 @@ export function Account() {
         {/* Header */}
         <div className='mt-4 space-y-2'>
           <div className='mb-10 flex items-center gap-4'>
-            <Button
-              variant='link'
-              href='/feed'
-              className='text-foreground/60 hover:text-foreground'
-            >
+            <Link to='/feed' className='text-foreground/60 hover:text-foreground transition-colors'>
               ← Back to Feed
-            </Button>
+            </Link>
           </div>
           <h1 className='text-foreground text-3xl font-bold'>Account</h1>
           <p className='text-foreground/60'>
