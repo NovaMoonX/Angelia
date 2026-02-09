@@ -216,7 +216,9 @@ export function Account() {
     return result;
   }, [pendingInvites]);
 
-  const formattedJoinDate = formatJoinDate(currentUser?.joinedAt || Date.now());
+  const formattedJoinDate = useMemo(() => {
+    return formatJoinDate(currentUser?.joinedAt || 0);
+  }, [currentUser?.joinedAt]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
     setFormData((prev) => ({
@@ -346,11 +348,12 @@ export function Account() {
   const handleAcceptInvite = (invite: UserInvite) => {
     if (!currentUser) return;
 
+    const now = Date.now();
     // Accept invite using Redux
     const updatedInvite: UserInvite = { 
       ...invite, 
       status: 'accepted' as const, 
-      respondedAt: Date.now() 
+      respondedAt: now 
     };
     dispatch(updateInvite(updatedInvite));
 
@@ -366,11 +369,12 @@ export function Account() {
   };
 
   const handleDeclineInvite = (invite: UserInvite) => {
+    const now = Date.now();
     // Decline invite using Redux
     const updatedInvite: UserInvite = { 
       ...invite, 
       status: 'declined' as const, 
-      respondedAt: Date.now() 
+      respondedAt: now 
     };
     dispatch(updateInvite(updatedInvite));
   };
