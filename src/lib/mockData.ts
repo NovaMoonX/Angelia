@@ -58,6 +58,12 @@ export interface Comment {
   timestamp: number; // Unix timestamp in ms
 }
 
+// Media item interface
+export interface MediaItem {
+  type: 'image' | 'video';
+  url: string;
+}
+
 export interface Tiding {
   id: string;
   authorId: string;
@@ -68,6 +74,7 @@ export interface Tiding {
   channelColor: string;
   text: string;
   images: string[];
+  media?: MediaItem[]; // Optional media array supporting both images and videos
   timestamp: number; // Unix timestamp in ms
   isHighPriority: boolean;
   isDaily?: boolean; // Indicates if this is from a daily channel
@@ -94,6 +101,88 @@ export const mockTidings: Tiding[] = [
     reactions: [
       { emoji: '😍', userIds: ['user2', 'user3'] },
       { emoji: '🏔️', userIds: ['user4'] },
+    ],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
+    id: '1a',
+    authorId: 'user2',
+    authorName: 'Alex Morgan',
+    authorAvatar: 'galaxy',
+    channelId: 'user2-daily',
+    channelName: 'Daily',
+    channelColor: 'INDIGO',
+    text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
+    images: [],
+    timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
+    isHighPriority: false,
+    isDaily: true,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
+    id: '1a1',
+    authorId: 'user3',
+    authorName: 'Emily Rodriguez',
+    authorAvatar: 'star',
+    channelId: 'channel6',
+    channelName: 'Travel Vlogs',
+    channelColor: 'CYAN',
+    text: 'Check out this amazing sunset from my trip! 🌅',
+    images: [],
+    media: [
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
+    ],
+    timestamp: Date.now() - 1000 * 60 * 47, // 47 minutes ago
+    isHighPriority: false,
+    reactions: [
+      { emoji: '😍', userIds: ['user1', 'user2'] },
+    ],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
+    id: '1a2',
+    authorId: 'user4',
+    authorName: 'David Park',
+    authorAvatar: 'planet',
+    channelId: 'channel7',
+    channelName: 'Tech Reviews',
+    channelColor: 'ORANGE',
+    text: 'Comparing the latest gadgets - which one should I get? 🤔',
+    images: [],
+    media: [
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
+    ],
+    timestamp: Date.now() - 1000 * 60 * 48, // 48 minutes ago
+    isHighPriority: false,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
+    id: '1b',
+    authorId: 'user1',
+    authorName: 'Sarah Johnson',
+    authorAvatar: 'cosmic-cat',
+    channelId: 'channel5',
+    channelName: 'Family Moments',
+    channelColor: 'VIOLET',
+    text: 'The kids putting on their little talent show! So proud of them. 🎭',
+    images: [],
+    media: [
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4' },
+      { type: 'image', url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&h=600&fit=crop' },
+    ],
+    timestamp: Date.now() - 1000 * 60 * 50, // 50 minutes ago
+    isHighPriority: false,
+    reactions: [
+      { emoji: '😍', userIds: ['user2', 'user3'] },
+      { emoji: '👏', userIds: ['user4', 'user5'] },
     ],
     comments: [],
     conversationEnrollees: [],

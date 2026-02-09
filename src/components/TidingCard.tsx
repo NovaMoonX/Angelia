@@ -6,6 +6,7 @@ import {
   Card,
   Carousel,
 } from '@moondreamsdev/dreamer-ui/components';
+import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRelativeTime } from '@lib/timeUtils';
 
@@ -17,6 +18,7 @@ interface TidingCardProps {
 export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
   const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const getColorPair = () => {
     const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
@@ -28,7 +30,30 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
 
   const colors = getColorPair();
 
-  const handleClick = () => {
+  // Use media array if available, otherwise fall back to images
+  const mediaItems = useMemo(() => {
+    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
+  }, [tiding.media, tiding.images]);
+
+  const handleCarouselIndexChange = (newIndex: number) => {
+    // Pause all videos when carousel index changes
+    videoRefs.current.forEach((video, index) => {
+      if (index !== newIndex && !video.paused) {
+        video.pause();
+      }
+    });
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent navigation if clicking carousel controls or video elements
+    const target = e.target as HTMLElement;
+    const isCarouselControl = target.closest('[data-carousel-prev], [data-carousel-next], [data-carousel-dot]');
+    const isVideo = target.closest('video');
+    
+    if (isCarouselControl || isVideo) {
+      return;
+    }
+
     if (onNavigate) {
       onNavigate();
     }
@@ -89,30 +114,65 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
       </div>
 
       {/* Media Area */}
-      {tiding.images.length > 0 && (
-        <div className='w-full'>
-          {tiding.images.length === 1 ? (
-            <img
-              src={tiding.images[0]}
-              alt='Post content'
-              className='h-auto w-full object-cover'
-              loading='lazy'
-            />
-          ) : (
-            <Carousel className='w-full' buttonPosition='interior'>
-              {tiding.images.map((image, index) => (
-                <div key={`${tiding.id}-image-${index}`} className='w-full'>
-                  <img
-                    src={image}
-                    alt={`Post content ${index + 1}`}
-                    className='h-auto w-full object-cover'
-                    loading='lazy'
-                  />
+      {mediaItems.length > 0 && (
+        mediaItems.length === 1 ? (
+          <div className='w-full'>
+            {mediaItems[0].type === 'video' ? (
+              <div className='relative w-full bg-black flex items-center justify-center'>
+                <video
+                  src={mediaItems[0].url}
+                  controls
+                  className='h-auto w-full'
+                  preload='metadata'
+                />
+              </div>
+            ) : (
+              <img
+                src={mediaItems[0].url}
+                alt='Post content'
+                className='h-auto w-full object-cover'
+                loading='lazy'
+              />
+            )}
+          </div>
+        ) : (
+          <div className='w-full'>
+            <Carousel 
+              className='w-full' 
+              buttonPosition='interior'
+              onIndexChange={handleCarouselIndexChange}
+            >
+              {mediaItems.map((item, index) => (
+                <div key={`${tiding.id}-media-${index}`} className='w-full'>
+                  {item.type === 'video' ? (
+                    <div className='relative w-full bg-black flex items-center justify-center min-h-[400px]'>
+                      <video
+                        ref={(el) => {
+                          if (el) {
+                            videoRefs.current.set(index, el);
+                          } else {
+                            videoRefs.current.delete(index);
+                          }
+                        }}
+                        src={item.url}
+                        controls
+                        className='h-auto w-full max-h-[600px]'
+                        preload='metadata'
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`Post content ${index + 1}`}
+                      className='h-auto w-full object-cover'
+                      loading='lazy'
+                    />
+                  )}
                 </div>
               ))}
             </Carousel>
-          )}
-        </div>
+          </div>
+        )
       )}
     </Card>
     </div>

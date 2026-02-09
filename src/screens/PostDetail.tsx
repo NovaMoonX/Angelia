@@ -29,12 +29,13 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const [tiding, setTiding] = useState(() => {
     const foundTiding = mockTidings.find((t) => t.id === id);
@@ -61,6 +62,21 @@ export function PostDetail() {
       (a, b) => b.userIds.length - a.userIds.length,
     );
   }, [tiding?.reactions]);
+
+  // Use media array if available, otherwise fall back to images
+  const mediaItems = useMemo(() => {
+    if (!tiding) return [];
+    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
+  }, [tiding]);
+
+  const handleCarouselIndexChange = (newIndex: number) => {
+    // Pause all videos when carousel index changes
+    videoRefs.current.forEach((video, index) => {
+      if (index !== newIndex && !video.paused) {
+        video.pause();
+      }
+    });
+  };
 
   if (!tiding) {
     return (
@@ -271,30 +287,65 @@ export function PostDetail() {
             </p>
           </div>
 
-          {tiding.images.length > 0 && (
-            <div className='w-full'>
-              {tiding.images.length === 1 ? (
-                <img
-                  src={tiding.images[0]}
-                  alt='Post content'
-                  className='h-auto w-full object-cover'
-                  loading='lazy'
-                />
-              ) : (
-                <Carousel className='w-full' buttonPosition='interior'>
-                  {tiding.images.map((image, index) => (
-                    <div key={`${tiding.id}-image-${index}`} className='w-full'>
-                      <img
-                        src={image}
-                        alt={`Post content ${index + 1}`}
-                        className='h-auto w-full object-cover'
-                        loading='lazy'
-                      />
+          {mediaItems.length > 0 && (
+            mediaItems.length === 1 ? (
+              <div className='w-full'>
+                {mediaItems[0].type === 'video' ? (
+                  <div className='relative w-full bg-black flex items-center justify-center'>
+                    <video
+                      src={mediaItems[0].url}
+                      controls
+                      className='h-auto w-full'
+                      preload='metadata'
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={mediaItems[0].url}
+                    alt='Post content'
+                    className='h-auto w-full object-cover'
+                    loading='lazy'
+                  />
+                )}
+              </div>
+            ) : (
+              <div className='w-full'>
+                <Carousel 
+                  className='w-full' 
+                  buttonPosition='interior'
+                  onIndexChange={handleCarouselIndexChange}
+                >
+                  {mediaItems.map((item, index) => (
+                    <div key={`${tiding.id}-media-${index}`} className='w-full'>
+                      {item.type === 'video' ? (
+                        <div className='relative w-full bg-black flex items-center justify-center min-h-[400px]'>
+                          <video
+                            ref={(el) => {
+                              if (el) {
+                                videoRefs.current.set(index, el);
+                              } else {
+                                videoRefs.current.delete(index);
+                              }
+                            }}
+                            src={item.url}
+                            controls
+                            className='h-auto w-full max-h-[600px]'
+                            preload='metadata'
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt={`Post content ${index + 1}`}
+                          className='h-auto w-full object-cover'
+                          loading='lazy'
+                        />
+                      )}
                     </div>
                   ))}
                 </Carousel>
-              )}
-            </div>
+              </div>
+            )
           )}
         </Card>
 
