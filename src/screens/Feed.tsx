@@ -1,5 +1,5 @@
 import { BellIcon } from '@components/BellIcon';
-import { PostFormModal, type PostFormData } from '@components/PostFormModal';
+import { PostFormModal } from '@components/PostFormModal';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { TidingCard } from '@components/TidingCard';
 import {
@@ -324,7 +324,7 @@ export function Feed() {
   }, []);
 
   // Handler for post creation
-  const handlePostSubmit = (_formData: PostFormData) => {
+  const handlePostSubmit = () => {
     // In a real app, this would save to the database
     // For now, we'll just show a success message
     toast.addToast({
