@@ -29,7 +29,10 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '@lib/firebase';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -67,6 +70,8 @@ const channelDescriptions: Record<string, string> = {
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const actionModal = useActionModal();
+  const navigate = useNavigate();
+  const toast = useToast();
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   // Get active tab from query params, default to 'account'
@@ -362,6 +367,35 @@ export function Account() {
     );
   };
 
+  const handleSignOut = async () => {
+    const confirmed = await actionModal.confirm({
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out?',
+      confirmText: 'Sign Out',
+      cancelText: 'Cancel',
+      destructive: false,
+    });
+
+    if (confirmed) {
+      try {
+        await signOut(auth);
+        toast.addToast({
+          title: 'Signed Out',
+          description: 'You have been signed out successfully.',
+          type: 'success',
+        });
+        navigate('/auth?mode=login');
+      } catch (err) {
+        console.error('Sign out error:', err);
+        toast.addToast({
+          title: 'Error',
+          description: 'Failed to sign out. Please try again.',
+          type: 'error',
+        });
+      }
+    }
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl space-y-6 px-4 py-6'>
@@ -455,6 +489,17 @@ export function Account() {
               <div className='pt-2'>
                 <Button onClick={handleUpdateAccount} className='w-full'>
                   Update Account
+                </Button>
+              </div>
+
+              {/* Sign Out Button */}
+              <div className='pt-2'>
+                <Button 
+                  onClick={handleSignOut} 
+                  variant='secondary'
+                  className='w-full'
+                >
+                  Sign Out
                 </Button>
               </div>
             </TabsContent>
