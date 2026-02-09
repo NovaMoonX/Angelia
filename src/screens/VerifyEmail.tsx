@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Button, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { REDIRECT_PARAM } from '@lib/app/app.constants';
 
 export function VerifyEmail() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const email = location.state?.email || 'your email';
+  const redirectUrl = searchParams.get(REDIRECT_PARAM);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -26,6 +29,11 @@ export function VerifyEmail() {
       }, 5000);
     }, 1000);
   };
+
+  // Build the back to login URL with redirect preserved
+  const backToLoginUrl = redirectUrl 
+    ? `/auth?mode=login&${REDIRECT_PARAM}=${encodeURIComponent(redirectUrl)}`
+    : '/auth?mode=login';
 
   return (
     <div className='page flex items-center justify-center p-6'>
@@ -82,7 +90,7 @@ export function VerifyEmail() {
           {/* Back to Login */}
           <div className='text-center'>
             <Button
-              href='/auth?mode=login'
+              href={backToLoginUrl}
               variant='tertiary'
               className='w-full'
             >

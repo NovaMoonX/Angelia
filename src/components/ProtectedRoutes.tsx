@@ -1,5 +1,6 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@store/hooks';
+import { REDIRECT_PARAM } from '@lib/app/app.constants';
 
 /**
  * ProtectedRoutes component for protecting routes that require authentication.
@@ -8,7 +9,7 @@ import { useAppSelector } from '@store/hooks';
  * - Requires user to be authenticated
  * - Requires user to have verified their email
  * - Redirects unauthenticated users to /auth with redirect parameter
- * - Redirects unverified users to /verify-email
+ * - Redirects unverified users to /verify-email with redirect parameter
  * 
  * When demo mode IS active:
  * - Allows all routes to be accessed (pass-through)
@@ -23,19 +24,19 @@ export function ProtectedRoutes() {
     return <Outlet />;
   }
 
+  // Build the redirect URL for after authentication
+  const currentPath = location.pathname + location.search;
+  const redirectUrl = new URLSearchParams();
+  redirectUrl.set(REDIRECT_PARAM, currentPath);
+
   // If no user is authenticated, redirect to auth page with current location as redirect
   if (!currentUser) {
-    const params = new URLSearchParams();
-    params.set('redirect', location.pathname + location.search);
-    
-    const redirectUrl = `/auth?${params.toString()}`;
-    
-    return <Navigate to={redirectUrl} replace />;
+    return <Navigate to={`/auth?${redirectUrl.toString()}`} replace />;
   }
 
-  // If user is authenticated but email is not verified, redirect to verify-email page
+  // If user is authenticated but email is not verified, redirect to verify-email page with redirect
   if (!currentUser.emailVerified) {
-    return <Navigate to='/verify-email' replace />;
+    return <Navigate to={`/verify-email?${redirectUrl.toString()}`} replace />;
   }
 
   // User is authenticated and verified, allow access

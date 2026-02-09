@@ -13,6 +13,7 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { type AvatarPreset, type User } from '@lib/mockData';
+import { REDIRECT_PARAM } from '@lib/app/app.constants';
 
 type AuthMode = 'login' | 'signup';
 
@@ -27,7 +28,7 @@ export function Auth() {
   // Get initial mode from query params, default to login
   const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
   // Get redirect URL from query params
-  const redirectUrl = searchParams.get('redirect') || null;
+  const redirectUrl = searchParams.get(REDIRECT_PARAM) || null;
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [profileData, setProfileData] = useState<Partial<ProfileData>>({
     avatar: 'astronaut', // Default avatar
@@ -55,7 +56,7 @@ export function Auth() {
     
     // Preserve redirect parameter if it exists
     if (redirectUrl) {
-      params.redirect = redirectUrl;
+      params[REDIRECT_PARAM] = redirectUrl;
     }
     
     setSearchParams(params);
