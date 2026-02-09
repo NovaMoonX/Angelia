@@ -291,12 +291,14 @@ export function PostDetail() {
             mediaItems.length === 1 ? (
               <div className='w-full'>
                 {mediaItems[0].type === 'video' ? (
-                  <video
-                    src={mediaItems[0].url}
-                    controls
-                    className='h-auto w-full object-cover'
-                    preload='metadata'
-                  />
+                  <div className='relative w-full bg-black flex items-center justify-center'>
+                    <video
+                      src={mediaItems[0].url}
+                      controls
+                      className='h-auto w-full'
+                      preload='metadata'
+                    />
+                  </div>
                 ) : (
                   <img
                     src={mediaItems[0].url}
@@ -316,19 +318,21 @@ export function PostDetail() {
                   {mediaItems.map((item, index) => (
                     <div key={`${tiding.id}-media-${index}`} className='w-full'>
                       {item.type === 'video' ? (
-                        <video
-                          ref={(el) => {
-                            if (el) {
-                              videoRefs.current.set(index, el);
-                            } else {
-                              videoRefs.current.delete(index);
-                            }
-                          }}
-                          src={item.url}
-                          controls
-                          className='h-auto w-full object-cover'
-                          preload='metadata'
-                        />
+                        <div className='relative w-full bg-black flex items-center justify-center min-h-[400px]'>
+                          <video
+                            ref={(el) => {
+                              if (el) {
+                                videoRefs.current.set(index, el);
+                              } else {
+                                videoRefs.current.delete(index);
+                              }
+                            }}
+                            src={item.url}
+                            controls
+                            className='h-auto w-full max-h-[600px]'
+                            preload='metadata'
+                          />
+                        </div>
                       ) : (
                         <img
                           src={item.url}

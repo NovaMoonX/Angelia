@@ -123,6 +123,47 @@ export const mockTidings: Tiding[] = [
     conversationEnrollees: [],
   },
   {
+    id: '1a1',
+    authorId: 'user3',
+    authorName: 'Emily Rodriguez',
+    authorAvatar: 'star',
+    channelId: 'channel6',
+    channelName: 'Travel Vlogs',
+    channelColor: 'CYAN',
+    text: 'Check out this amazing sunset from my trip! 🌅',
+    images: [],
+    media: [
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
+    ],
+    timestamp: Date.now() - 1000 * 60 * 47, // 47 minutes ago
+    isHighPriority: false,
+    reactions: [
+      { emoji: '😍', userIds: ['user1', 'user2'] },
+    ],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
+    id: '1a2',
+    authorId: 'user4',
+    authorName: 'David Park',
+    authorAvatar: 'planet',
+    channelId: 'channel7',
+    channelName: 'Tech Reviews',
+    channelColor: 'ORANGE',
+    text: 'Comparing the latest gadgets - which one should I get? 🤔',
+    images: [],
+    media: [
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
+    ],
+    timestamp: Date.now() - 1000 * 60 * 48, // 48 minutes ago
+    isHighPriority: false,
+    reactions: [],
+    comments: [],
+    conversationEnrollees: [],
+  },
+  {
     id: '1b',
     authorId: 'user1',
     authorName: 'Sarah Johnson',
