@@ -3,8 +3,19 @@ import { CategoricalAgencyIllustration } from '@components/CategoricalAgencyIllu
 import { ComparisonTable } from '@components/ComparisonTable';
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { useAppDispatch } from '@store/hooks';
+import { enterDemoMode } from '@store/demoActions';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleViewDemoFeed = () => {
+    dispatch(enterDemoMode());
+    navigate('/feed');
+  };
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-5xl space-y-24 px-6 py-16 md:py-24'>
@@ -47,7 +58,7 @@ function Home() {
             >
               Get Started
             </Button>
-            <Button href='/feed' variant='tertiary' size='md'>
+            <Button onClick={handleViewDemoFeed} variant='tertiary' size='md'>
               View Demo Feed →
             </Button>
           </div>
