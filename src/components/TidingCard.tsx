@@ -6,6 +6,7 @@ import {
   Card,
   Carousel,
 } from '@moondreamsdev/dreamer-ui/components';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRelativeTime } from '@lib/timeUtils';
 
@@ -27,6 +28,11 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
   };
 
   const colors = getColorPair();
+
+  // Use media array if available, otherwise fall back to images
+  const mediaItems = useMemo(() => {
+    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
+  }, [tiding.media, tiding.images]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Prevent navigation if clicking carousel controls or video elements
@@ -98,36 +104,26 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
       </div>
 
       {/* Media Area */}
-      {(() => {
-        // Use media array if available, otherwise fall back to images
-        const mediaItems = tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
-        
-        if (mediaItems.length === 0) return null;
-
-        if (mediaItems.length === 1) {
-          const item = mediaItems[0];
-          return (
-            <div className='w-full'>
-              {item.type === 'video' ? (
-                <video
-                  src={item.url}
-                  controls
-                  className='h-auto w-full object-cover'
-                  preload='metadata'
-                />
-              ) : (
-                <img
-                  src={item.url}
-                  alt='Post content'
-                  className='h-auto w-full object-cover'
-                  loading='lazy'
-                />
-              )}
-            </div>
-          );
-        }
-
-        return (
+      {mediaItems.length > 0 && (
+        mediaItems.length === 1 ? (
+          <div className='w-full'>
+            {mediaItems[0].type === 'video' ? (
+              <video
+                src={mediaItems[0].url}
+                controls
+                className='h-auto w-full object-cover'
+                preload='metadata'
+              />
+            ) : (
+              <img
+                src={mediaItems[0].url}
+                alt='Post content'
+                className='h-auto w-full object-cover'
+                loading='lazy'
+              />
+            )}
+          </div>
+        ) : (
           <div className='w-full'>
             <Carousel className='w-full' buttonPosition='interior'>
               {mediaItems.map((item, index) => (
@@ -151,8 +147,8 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
               ))}
             </Carousel>
           </div>
-        );
-      })()}
+        )
+      )}
     </Card>
     </div>
   );

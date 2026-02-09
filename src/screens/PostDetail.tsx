@@ -62,6 +62,12 @@ export function PostDetail() {
     );
   }, [tiding?.reactions]);
 
+  // Use media array if available, otherwise fall back to images
+  const mediaItems = useMemo(() => {
+    if (!tiding) return [];
+    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
+  }, [tiding]);
+
   if (!tiding) {
     return (
       <div className='page flex flex-col items-center justify-center'>
@@ -271,36 +277,26 @@ export function PostDetail() {
             </p>
           </div>
 
-          {(() => {
-            // Use media array if available, otherwise fall back to images
-            const mediaItems = tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
-            
-            if (mediaItems.length === 0) return null;
-
-            if (mediaItems.length === 1) {
-              const item = mediaItems[0];
-              return (
-                <div className='w-full'>
-                  {item.type === 'video' ? (
-                    <video
-                      src={item.url}
-                      controls
-                      className='h-auto w-full object-cover'
-                      preload='metadata'
-                    />
-                  ) : (
-                    <img
-                      src={item.url}
-                      alt='Post content'
-                      className='h-auto w-full object-cover'
-                      loading='lazy'
-                    />
-                  )}
-                </div>
-              );
-            }
-
-            return (
+          {mediaItems.length > 0 && (
+            mediaItems.length === 1 ? (
+              <div className='w-full'>
+                {mediaItems[0].type === 'video' ? (
+                  <video
+                    src={mediaItems[0].url}
+                    controls
+                    className='h-auto w-full object-cover'
+                    preload='metadata'
+                  />
+                ) : (
+                  <img
+                    src={mediaItems[0].url}
+                    alt='Post content'
+                    className='h-auto w-full object-cover'
+                    loading='lazy'
+                  />
+                )}
+              </div>
+            ) : (
               <div className='w-full'>
                 <Carousel className='w-full' buttonPosition='interior'>
                   {mediaItems.map((item, index) => (
@@ -324,8 +320,8 @@ export function PostDetail() {
                   ))}
                 </Carousel>
               </div>
-            );
-          })()}
+            )
+          )}
         </Card>
 
         {!hasUserReacted ? (
