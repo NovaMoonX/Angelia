@@ -1,34 +1,35 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import {
-  Avatar,
-  Card,
-  Textarea,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  Input,
-  Label,
-  Button,
-  Separator,
-  Badge,
-} from '@moondreamsdev/dreamer-ui/components';
-import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import {
-  mockCurrentUser,
-  mockChannels,
-  mockUsers,
-  mockUserInvites,
-  User,
-  Channel,
-  UserInvite,
-  getUserById,
-} from '@lib/mockData';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import {
+  Channel,
+  getUserById,
+  mockChannels,
+  mockCurrentUser,
+  mockUserInvites,
+  mockUsers,
+  User,
+  UserInvite,
+} from '@lib/mockData';
+import { getRelativeTime } from '@lib/timeUtils';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Input,
+  Label,
+  Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+} from '@moondreamsdev/dreamer-ui/components';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -38,34 +39,6 @@ function formatJoinDate(timestamp: number): string {
     day: 'numeric',
   });
 
-  return result;
-}
-
-// Time conversion constants
-const MS_PER_MINUTE = 1000 * 60;
-const MS_PER_HOUR = MS_PER_MINUTE * 60;
-const MS_PER_DAY = MS_PER_HOUR * 24;
-
-function formatInviteTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  
-  const minutes = Math.floor(diff / MS_PER_MINUTE);
-  const hours = Math.floor(diff / MS_PER_HOUR);
-  const days = Math.floor(diff / MS_PER_DAY);
-  
-  if (minutes < 1) {
-    return 'just now';
-  }
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-  
-  const result = `${days}d ago`;
-  
   return result;
 }
 
@@ -111,9 +84,9 @@ export function Account() {
     if (view === 'notifications' && notificationsRef.current) {
       // Use requestAnimationFrame to ensure DOM is fully rendered before scrolling
       requestAnimationFrame(() => {
-        notificationsRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        notificationsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
         });
       });
     }
@@ -163,6 +136,20 @@ export function Account() {
     return result;
   }, [channels]);
 
+  // Memoized: Create channel map for O(1) lookups
+  const channelsMap = useMemo(() => {
+    const result = new Map(channels.map((ch) => [ch.id, ch]));
+
+    return result;
+  }, [channels]);
+
+  // Memoized: Create users map for O(1) lookups
+  const usersMap = useMemo(() => {
+    const result = new Map(mockUsers.map((user) => [user.id, user]));
+
+    return result;
+  }, []);
+
   // Memoized: Count non-daily channels owned by user
   const nonDailyChannelCount = useMemo(() => {
     const result = userOwnedChannels.filter((ch) => !ch.isDaily).length;
@@ -193,21 +180,21 @@ export function Account() {
   // Memoized: Get pending invites
   const pendingInvites = useMemo(() => {
     const result = userInvites.filter((invite) => invite.status === 'pending');
-    
+
     return result;
   }, [userInvites]);
 
   // Memoized: Get declined invites
   const declinedInvites = useMemo(() => {
     const result = userInvites.filter((invite) => invite.status === 'declined');
-    
+
     return result;
   }, [userInvites]);
 
   // Memoized: Count of pending invites for badge
   const pendingInviteCount = useMemo(() => {
     const result = pendingInvites.length;
-    
+
     return result;
   }, [pendingInvites]);
 
@@ -583,12 +570,12 @@ export function Account() {
             <h2 className='text-foreground text-2xl font-semibold'>
               Notifications
               {pendingInviteCount > 0 && (
-                <span className='text-foreground/60 text-xl ml-2'>
+                <span className='text-foreground/60 ml-2 text-xl'>
                   ({pendingInviteCount})
                 </span>
               )}
             </h2>
-            <p className='text-foreground/60 text-sm mt-1'>
+            <p className='text-foreground/60 mt-1 text-sm'>
               Manage your channel invitations
             </p>
           </div>
@@ -602,11 +589,9 @@ export function Account() {
                 </p>
                 <div className='space-y-2'>
                   {pendingInvites.map((invite) => {
-                    const channel = channels.find(
-                      (ch) => ch.id === invite.channelId,
-                    );
-                    const inviter = getUserById(invite.invitedBy);
-                    
+                    const channel = channelsMap.get(invite.channelId);
+                    const inviter = usersMap.get(invite.invitedBy);
+
                     if (!channel || !inviter) {
                       return null;
                     }
@@ -642,7 +627,7 @@ export function Account() {
                                 {channel.name}
                               </Badge>
                               <p className='text-foreground/60 text-xs'>
-                                {formatInviteTime(invite.invitedAt)}
+                                {getRelativeTime(invite.invitedAt)}
                               </p>
                             </div>
                           </div>
@@ -684,11 +669,9 @@ export function Account() {
                 </p>
                 <div className='space-y-2'>
                   {declinedInvites.map((invite) => {
-                    const channel = channels.find(
-                      (ch) => ch.id === invite.channelId,
-                    );
-                    const inviter = getUserById(invite.invitedBy);
-                    
+                    const channel = channelsMap.get(invite.channelId);
+                    const inviter = usersMap.get(invite.invitedBy);
+
                     if (!channel || !inviter) {
                       return null;
                     }
@@ -722,7 +705,7 @@ export function Account() {
                             {channel.name}
                           </Badge>
                           <p className='text-foreground/60 text-xs'>
-                            Declined {formatInviteTime(invite.respondedAt!)}
+                            Declined {getRelativeTime(invite.respondedAt!)}
                           </p>
                         </div>
                       </Card>
@@ -734,7 +717,7 @@ export function Account() {
 
             {/* Empty State */}
             {pendingInvites.length === 0 && declinedInvites.length === 0 && (
-              <p className='text-foreground/60 text-sm text-center py-8'>
+              <p className='text-foreground/60 py-8 text-center text-sm'>
                 No notifications yet. When someone invites you to a channel,
                 you'll see it here.
               </p>

@@ -332,7 +332,7 @@ export function Feed() {
               <Link
                 to='/account?view=notifications'
                 aria-label='View notifications'
-                className='focus:ring-primary hover:bg-foreground/5 rounded-full p-2 transition-colors focus:ring-2 focus:outline-none'
+                className='focus:ring-primary hover:bg-foreground/5 rounded-full pt-2 pb-0.5 px-2 transition-colors focus:ring-2 focus:outline-none'
               >
                 <BellIcon
                   hasNotification={hasPendingInvites}

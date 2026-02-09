@@ -16,12 +16,17 @@ Before starting any work, always read the product context in [.context.md](../.c
 ### 3. Optional Fields
 - Use `| null` for optional fields instead of `?:` since Firebase does not adapt well to `undefined`
 
-### 4. Code Formatting
+### 4. Time Formatting
+- **ALWAYS** use `getRelativeTime` from `@lib/timeUtils` for displaying relative time (e.g., "2h ago", "3d ago")
+- **NEVER** create custom time formatting functions for relative time display
+- Import: `import { getRelativeTime } from '@lib/timeUtils';`
+
+### 5. Code Formatting
 - **Always use 2 spaces for indentation** (NOT 4 spaces or tabs)
 - Ensure consistent indentation across all files
 - Configure your editor to use 2 spaces for TypeScript, JavaScript, TSX, and JSX files
 
-### 5. Return Value Debugging
+### 6. Return Value Debugging
 - Always store return values in variables before returning them for easier debugging
 - This applies to all callbacks, computed values, and complex expressions
 
@@ -46,7 +51,7 @@ const answeredCount = useMemo(() => {
 }, [allQuestions, selectedApartment, getAnswer]);
 ```
 
-### 6. Styling & Class Names
+### 7. Styling & Class Names
 - Use TailwindCSS exclusively
 - **ALWAYS** use `join` from `@moondreamsdev/dreamer-ui/utils` for conditional class names
 - **NEVER** use template literals with `${` for className - always use `join()` instead
@@ -84,12 +89,12 @@ className={join('base-class', condition && 'conditional-class')}
 className={join('base-class', isActive ? 'active' : 'inactive')}
 ```
 
-### 7. Component Library Priority
+### 8. Component Library Priority
 - Always check Dreamer UI first before creating custom components
 - Import from `@moondreamsdev/dreamer-ui/components`, `/hooks`, `/symbols`, `/utils`
 - Always check existing props of Dream UI components before setting custom styles
 
-### 8. File Structure
+### 9. File Structure
 Follow the existing structure:
 ```
 src/
@@ -105,7 +110,7 @@ src/
 ├── utils/      # Utility functions
 ```
 
-### 9. Import Patterns
+### 10. Import Patterns
 ```tsx
 // Dreamer UI imports
 import { Button } from '@moondreamsdev/dreamer-ui/components';
@@ -124,7 +129,7 @@ import { store } from '@store';
 import { helper } from '@utils/helper';
 ```
 
-### 10. Available Import Aliases
+### 11. Available Import Aliases
 - `@/` → `src/`
 - `@components/` → `src/components/`
 - `@contexts/` → `src/contexts/`
@@ -137,7 +142,7 @@ import { helper } from '@utils/helper';
 - `@ui/` → `src/ui/`
 - `@utils/` → `src/utils/`
 
-## 11. Content & Tone Guidelines
+### 12. Content & Tone Guidelines
 - **ALWAYS** use consumer-friendly wording that's human and warm
 - Write for real people, not robots—avoid jargon and technical terms
 - Use conversational language that feels personal and approachable
@@ -152,6 +157,7 @@ import { helper } from '@utils/helper';
 ## Quick Reference
 - Component syntax: `export function ComponentName`
 - **Indentation: Always use 2 spaces (NOT 4 spaces or tabs)**
+- **Time formatting: ALWAYS use `getRelativeTime()` for relative time - NEVER create custom time functions**
 - **Class names: ALWAYS use `join()` for conditionals - NEVER template literals**
 - **Tone: Consumer-friendly, human, and warm - avoid jargon**
 - Check Dreamer UI first
@@ -160,6 +166,7 @@ import { helper } from '@utils/helper';
 
 ## ⚠️ Critical Reminders
 - **2 spaces for indentation - ALWAYS**
+- **`getRelativeTime()` for relative time - NEVER custom time formatting functions**
 - **Template literals with `${` in className are FORBIDDEN**
 - **Always import and use `join` from `@moondreamsdev/dreamer-ui/utils`**
 - **Before writing any conditional className, ask: "Am I using join()?"**
@@ -167,7 +174,7 @@ import { helper } from '@utils/helper';
 
 ## 📚 Documentation Maintenance
 
-### 11. README.md Update Rule
+### 13. README.md Update Rule
 **CRITICAL**: The README.md must be updated with **EVERY** change to the codebase.
 
 **When to Update README:**
