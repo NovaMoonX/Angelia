@@ -4,12 +4,20 @@ Angelia is an intentional family connection app designed to solve "conversationa
 
 ## Features
 
-### 🔐 Authentication Flow (Mock)
+### 🔐 Authentication & Demo Routes
 
-Multi-step authentication experience using Dreamer UI components:
+**Demo Routes (Publicly Accessible)**
+- `/demo/feed` - Demo feed with mock data
+- `/demo/tiding/:id` - Demo post detail view
+- `/demo/account` - Demo account page
+- All demo routes are publicly accessible without authentication
 
-- **Auth Page** (`/auth`): Modern authentication with query parameter routing
-  - **Login Mode** (`?mode=login`): Email and password authentication using AuthForm component
+**Protected Routes (Authentication Required)**
+
+Firebase-powered authentication with email verification:
+
+- **Auth Page** (`/auth`): Firebase authentication with query parameter routing
+  - **Login Mode** (`?mode=login`): Email and password authentication
   - **Signup Mode** (`?mode=signup`): Two-step registration process
     - **Step 1**: Email and password with confirmation (AuthForm component)
     - **Step 2**: Profile completion with:
@@ -17,13 +25,33 @@ Multi-step authentication experience using Dreamer UI components:
       - Avatar selection from 12 preset options (astronaut, moon, star, galaxy, nebula, planet, cosmic-cat, dream-cloud, rocket, constellation, comet, twilight)
       - Fun fact about yourself (required)
   - Seamless toggle between login/signup modes with automatic URL updates
+  - Redirect preservation - returns to intended page after authentication
   - "Get Started" button on homepage directs to signup mode
+  - Link to demo feed for preview without signing up
   - Clean, centered layout with brand logo
 - **Email Verification** (`/verify-email`): Post-signup verification flow
+  - Firebase email verification with resend functionality
   - Confirmation message with user's email
   - "Resend Link" button with success feedback
   - "Back to Login" navigation
-- **Protected Routes**: Component wrapper for authenticated routes (currently pass-through, ready for future auth implementation)
+- **Protected Routes**: `/feed`, `/tiding/:id`, `/account`
+  - Requires authenticated user with verified email
+  - Automatic redirect to login if not authenticated
+  - Automatic redirect to email verification if email not verified
+
+**Environment Setup**
+
+Create a `.env` file in the root directory with your Firebase credentials:
+```
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+See `.env.example` for a template.
 
 ### 🔥 Landing Page
 

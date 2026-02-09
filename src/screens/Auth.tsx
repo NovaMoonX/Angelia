@@ -13,6 +13,14 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { type AvatarPreset, type User } from '@lib/mockData';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile
+} from 'firebase/auth';
+import { auth } from '@lib/firebase';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
 
 type AuthMode = 'login' | 'signup';
 
@@ -23,6 +31,7 @@ interface ProfileData extends Omit<User, 'id' | 'joinedAt'> {
 export function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Get initial mode from query params, default to login
   const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
@@ -32,6 +41,8 @@ export function Auth() {
   const [profileData, setProfileData] = useState<Partial<ProfileData>>({
     avatar: 'astronaut', // Default avatar
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const avatarOptions: AvatarPreset[] = [
     'astronaut',
@@ -66,35 +77,108 @@ export function Auth() {
     setSignupStep(1); // Reset to step 1 when switching modes
   };
 
-  const handleAuthSubmit: AuthFormOnEmailSubmit = ({ data, action }) => {
-    console.log('Auth submitted:', { data, action });
+  const handleAuthSubmit: AuthFormOnEmailSubmit = async ({ data, action }) => {
+    setIsLoading(true);
+    setError(null);
 
-    if (action === 'login') {
-      // Mock login - would normally authenticate here
-      console.log('Login attempt with:', data.email);
+    try {
+      if (action === 'login') {
+        // Sign in with Firebase
+        await signInWithEmailAndPassword(auth, data.email, data.password);
+        
+        // After successful login, redirect to the specified URL or default to feed
+        navigate(redirectUrl || '/feed');
+        return {};
+      } else {
+        // For signup, save data and move to step 2
+        setProfileData({
+          ...profileData,
+          email: data.email,
+          password: data.password,
+        });
+        setSignupStep(2);
+        return {};
+      }
+    } catch (err: any) {
+      console.error('Auth error:', err);
       
-      // After successful login, redirect to the specified URL or default to feed
-      navigate(redirectUrl || '/feed');
-    } else {
-      // For signup, save data and move to step 2
-      setProfileData({
-        ...profileData,
-        email: data.email,
-        password: data.password,
+      const errorMessage = err.code === 'auth/invalid-credential'
+        ? 'Invalid email or password'
+        : err.code === 'auth/user-not-found'
+        ? 'No account found with this email'
+        : err.code === 'auth/wrong-password'
+        ? 'Incorrect password'
+        : err.code === 'auth/too-many-requests'
+        ? 'Too many failed attempts. Please try again later.'
+        : 'An error occurred. Please try again.';
+      
+      setError(errorMessage);
+      toast.addToast({
+        title: 'Authentication Error',
+        description: errorMessage,
+        type: 'error',
       });
-      setSignupStep(2);
+      
+      return { error: { message: errorMessage } };
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleProfileComplete = () => {
-    console.log('Profile complete:', profileData);
+  const handleProfileComplete = async () => {
+    if (!profileData.email || !profileData.password) {
+      toast.addToast({
+        title: 'Error',
+        description: 'Missing email or password',
+        type: 'error',
+      });
+      return;
+    }
 
-    // If there's a redirect URL, navigate there directly after signup
-    // Otherwise, navigate to verify email
-    if (redirectUrl) {
-      navigate(redirectUrl);
-    } else {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Create user with Firebase
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        profileData.email,
+        profileData.password
+      );
+
+      // Update profile with display name
+      await updateProfile(userCredential.user, {
+        displayName: `${profileData.firstName} ${profileData.lastName}`,
+      });
+
+      // Send email verification
+      await sendEmailVerification(userCredential.user);
+
+      toast.addToast({
+        title: 'Account Created!',
+        description: 'Please check your email to verify your account.',
+        type: 'success',
+      });
+
+      // Navigate to verify email page
       navigate('/verify-email', { state: { email: profileData.email } });
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      
+      const errorMessage = err.code === 'auth/email-already-in-use'
+        ? 'An account with this email already exists'
+        : err.code === 'auth/weak-password'
+        ? 'Password should be at least 6 characters'
+        : 'Failed to create account. Please try again.';
+      
+      setError(errorMessage);
+      toast.addToast({
+        title: 'Signup Error',
+        description: errorMessage,
+        type: 'error',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -200,13 +284,23 @@ export function Auth() {
               />
             </div>
 
+            {/* Error Callout */}
+            {error && (
+              <Callout
+                variant='destructive'
+                description={error}
+                dismissible
+                onDismiss={() => setError(null)}
+              />
+            )}
+
             {/* Complete Button */}
             <Button
               onClick={handleProfileComplete}
-              disabled={!isStep2Complete}
+              disabled={!isStep2Complete || isLoading}
               className='w-full'
             >
-              Complete Signup
+              {isLoading ? 'Creating Account...' : 'Complete Signup'}
             </Button>
 
             {/* Back Button */}
@@ -251,7 +345,7 @@ export function Auth() {
                   Want to see the app in action?{' '}
                 </span>
                 <Link
-                  to='/feed'
+                  to='/demo/feed'
                   className={join(
                     'text-accent hover:text-accent/80',
                     'font-medium underline transition-colors',
@@ -263,6 +357,16 @@ export function Auth() {
             }
           />
         </div>
+
+        {/* Error Callout */}
+        {error && (
+          <Callout
+            variant='destructive'
+            description={error}
+            dismissible
+            onDismiss={() => setError(null)}
+          />
+        )}
 
         {/* AuthForm */}
         <AuthForm

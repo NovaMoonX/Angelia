@@ -1,30 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@hooks/useAuth';
+import { sendEmailVerification } from 'firebase/auth';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
 
 export function VerifyEmail() {
   const location = useLocation();
-  const email = location.state?.email || 'your email';
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { currentUser, emailVerified } = useAuth();
+  const email = location.state?.email || currentUser?.email || 'your email';
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
-  const handleResendLink = () => {
+  // Redirect to feed if already verified
+  useEffect(() => {
+    if (emailVerified) {
+      navigate('/feed');
+    }
+  }, [emailVerified, navigate]);
+
+  const handleResendLink = async () => {
+    if (!currentUser) {
+      toast.addToast({
+        title: 'Error',
+        description: 'No user found. Please sign in again.',
+        type: 'error',
+      });
+      return;
+    }
+
     setIsResending(true);
     setResendSuccess(false);
 
-    // Simulate sending email
-    setTimeout(() => {
-      console.log('Resending verification email to:', email);
-      setIsResending(false);
+    try {
+      await sendEmailVerification(currentUser);
       setResendSuccess(true);
+      toast.addToast({
+        title: 'Email Sent',
+        description: 'Verification email sent successfully!',
+        type: 'success',
+      });
 
       // Hide success message after 5 seconds
       setTimeout(() => {
         setResendSuccess(false);
       }, 5000);
-    }, 1000);
+    } catch (err: any) {
+      console.error('Resend error:', err);
+      const errorMessage = err.code === 'auth/too-many-requests'
+        ? 'Too many requests. Please try again later.'
+        : 'Failed to send verification email. Please try again.';
+      
+      toast.addToast({
+        title: 'Error',
+        description: errorMessage,
+        type: 'error',
+      });
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -70,7 +108,7 @@ export function VerifyEmail() {
           {/* Resend Button */}
           <Button
             onClick={handleResendLink}
-            disabled={isResending}
+            disabled={isResending || !currentUser}
             className={join(
               'w-full',
               'bg-accent hover:bg-accent/90 text-accent-foreground'

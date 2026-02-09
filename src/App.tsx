@@ -5,15 +5,18 @@ import {
 } from '@moondreamsdev/dreamer-ui/providers';
 import { router } from '@routes/AppRoutes';
 import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from '@contexts/AuthProvider';
 
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <ActionModalProvider>
-          <RouterProvider router={router} />
-        </ActionModalProvider>
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <ActionModalProvider>
+            <RouterProvider router={router} />
+          </ActionModalProvider>
+        </ToastProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

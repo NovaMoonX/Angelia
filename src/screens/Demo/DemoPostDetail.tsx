@@ -32,7 +32,7 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-export function PostDetail() {
+export function DemoPostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -51,7 +51,7 @@ export function PostDetail() {
     const scrollPosition = Number(sessionStorage.getItem('feedScrollPosition') || 0);
     const displayedCount = Number(sessionStorage.getItem('feedDisplayedCount') || 5);
     
-    navigate('/feed', {
+    navigate('/demo/feed', {
       state: { scrollPosition, displayedCount },
     });
   };
@@ -579,4 +579,4 @@ export function PostDetail() {
   );
 }
 
-export default PostDetail;
+export default DemoPostDetail;
