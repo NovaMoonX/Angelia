@@ -223,11 +223,6 @@ function ChannelSelectorField({ value, onValueChange, userChannels }: ChannelSel
             />
             <div className='flex-1'>
               <span className='text-foreground font-medium'>{channel.name}</span>
-              {channel.isDaily && (
-                <Badge variant='base' className='ml-2 text-xs'>
-                  Daily
-                </Badge>
-              )}
             </div>
           </button>
         );
