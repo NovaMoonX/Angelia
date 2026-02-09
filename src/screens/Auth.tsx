@@ -14,6 +14,8 @@ import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { type AvatarPreset, type User } from '@lib/mockData';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { useAppDispatch } from '@store/hooks';
+import { enterDemoMode } from '@store/demoActions';
 
 type AuthMode = 'login' | 'signup';
 
@@ -24,6 +26,7 @@ interface ProfileData extends Omit<User, 'id' | 'joinedAt'> {
 export function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // Get initial mode from query params, default to login
   const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
@@ -65,6 +68,12 @@ export function Auth() {
       setSearchParams(params);
     }, 0);
     setSignupStep(1); // Reset to step 1 when switching modes
+  };
+
+  const handleDemoFeedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dispatch(enterDemoMode());
+    navigate('/feed');
   };
 
   const handleAuthSubmit: AuthFormOnEmailSubmit = ({ data, action }) => {
@@ -253,6 +262,7 @@ export function Auth() {
                 </span>
                 <Link
                   to='/feed'
+                  onClick={handleDemoFeedClick}
                   className={join(
                     'text-accent hover:text-accent/80',
                     'font-medium underline transition-colors',
@@ -267,7 +277,7 @@ export function Auth() {
 
         {/* AuthForm */}
         <AuthForm
-          methods={['email']}
+          methods={['email', 'google']}
           action='both'
           onActionChange={handleModeChange}
           onEmailSubmit={handleAuthSubmit}
