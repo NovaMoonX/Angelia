@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@lib/firebase';
 import { AuthContext } from '@hooks/useAuth';
 
@@ -12,7 +12,7 @@ interface AuthProviderProps {
  * Manages Firebase authentication state and provides it to child components
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [emailVerified, setEmailVerified] = useState(false);
 

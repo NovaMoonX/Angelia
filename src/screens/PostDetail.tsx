@@ -386,7 +386,7 @@ export function PostDetail() {
                   }}
                   placeholder='Custom'
                   className='h-12 w-20 text-center text-2xl'
-                  maxLength={1}
+                  maxLength={2}
                   autoComplete='off'
                 />
               </div>
