@@ -13,9 +13,10 @@ import { getRelativeTime } from '@lib/timeUtils';
 interface TidingCardProps {
   tiding: Tiding;
   onNavigate?: () => void;
+  pathPrefix?: string;
 }
 
-export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
+export function TidingCard({ tiding, onNavigate, pathPrefix = '' }: TidingCardProps) {
   const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -57,7 +58,7 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
     if (onNavigate) {
       onNavigate();
     }
-    navigate(`/tiding/${tiding.id}`);
+    navigate(`${pathPrefix}/tiding/${tiding.id}`);
   };
 
   return (
