@@ -28,7 +28,16 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
 
   const colors = getColorPair();
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent navigation if clicking carousel controls or video elements
+    const target = e.target as HTMLElement;
+    const isCarouselControl = target.closest('[data-carousel-prev], [data-carousel-next], [data-carousel-dot]');
+    const isVideo = target.closest('video');
+    
+    if (isCarouselControl || isVideo) {
+      return;
+    }
+
     if (onNavigate) {
       onNavigate();
     }
@@ -89,31 +98,61 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
       </div>
 
       {/* Media Area */}
-      {tiding.images.length > 0 && (
-        <div className='w-full'>
-          {tiding.images.length === 1 ? (
-            <img
-              src={tiding.images[0]}
-              alt='Post content'
-              className='h-auto w-full object-cover'
-              loading='lazy'
-            />
-          ) : (
+      {(() => {
+        // Use media array if available, otherwise fall back to images
+        const mediaItems = tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
+        
+        if (mediaItems.length === 0) return null;
+
+        if (mediaItems.length === 1) {
+          const item = mediaItems[0];
+          return (
+            <div className='w-full'>
+              {item.type === 'video' ? (
+                <video
+                  src={item.url}
+                  controls
+                  className='h-auto w-full object-cover'
+                  preload='metadata'
+                />
+              ) : (
+                <img
+                  src={item.url}
+                  alt='Post content'
+                  className='h-auto w-full object-cover'
+                  loading='lazy'
+                />
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <div className='w-full'>
             <Carousel className='w-full' buttonPosition='interior'>
-              {tiding.images.map((image, index) => (
-                <div key={`${tiding.id}-image-${index}`} className='w-full'>
-                  <img
-                    src={image}
-                    alt={`Post content ${index + 1}`}
-                    className='h-auto w-full object-cover'
-                    loading='lazy'
-                  />
+              {mediaItems.map((item, index) => (
+                <div key={`${tiding.id}-media-${index}`} className='w-full'>
+                  {item.type === 'video' ? (
+                    <video
+                      src={item.url}
+                      controls
+                      className='h-auto w-full object-cover'
+                      preload='metadata'
+                    />
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`Post content ${index + 1}`}
+                      className='h-auto w-full object-cover'
+                      loading='lazy'
+                    />
+                  )}
                 </div>
               ))}
             </Carousel>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })()}
     </Card>
     </div>
   );
