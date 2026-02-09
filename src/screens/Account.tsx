@@ -217,7 +217,8 @@ export function Account() {
   }, [pendingInvites]);
 
   const formattedJoinDate = useMemo(() => {
-    return formatJoinDate(currentUser?.joinedAt || 0);
+    if (!currentUser?.joinedAt) return 'N/A';
+    return formatJoinDate(currentUser.joinedAt);
   }, [currentUser?.joinedAt]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
@@ -357,9 +358,9 @@ export function Account() {
     };
     dispatch(updateInvite(updatedInvite));
 
-    // Add current user to channel subscribers
+    // Add current user to channel subscribers if not already subscribed
     const channel = channels.find(ch => ch.id === invite.channelId);
-    if (channel) {
+    if (channel && !channel.subscribers.includes(currentUser.id)) {
       const updatedChannel = { 
         ...channel, 
         subscribers: [...channel.subscribers, currentUser.id] 
