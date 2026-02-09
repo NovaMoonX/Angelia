@@ -1,9 +1,20 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { Select, Avatar, Callout, Button } from '@moondreamsdev/dreamer-ui/components';
-import { ChevronUp } from '@moondreamsdev/dreamer-ui/symbols';
-import { TidingCard } from '@components/TidingCard';
+import { BellIcon } from '@components/BellIcon';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
-import { mockTidings, mockChannels, mockCurrentUser } from '@lib/mockData';
+import { TidingCard } from '@components/TidingCard';
+import {
+  mockChannels,
+  mockCurrentUser,
+  mockTidings,
+  mockUserInvites,
+} from '@lib/mockData';
+import {
+  Avatar,
+  Button,
+  Callout,
+  Select,
+} from '@moondreamsdev/dreamer-ui/components';
+import { ChevronUp } from '@moondreamsdev/dreamer-ui/symbols';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 type SortOrder = 'newest' | 'oldest';
@@ -13,22 +24,26 @@ const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
 export function Feed() {
   const location = useLocation();
-  const locationState = location.state as { scrollPosition?: number; displayedCount?: number } | null;
-  
+  const locationState = location.state as {
+    scrollPosition?: number;
+    displayedCount?: number;
+  } | null;
+
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [displayedCount, setDisplayedCount] = useState(locationState?.displayedCount ?? 5);
+  const [displayedCount, setDisplayedCount] = useState(
+    locationState?.displayedCount ?? 5,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isCalloutDismissed, setIsCalloutDismissed] = useState(() => {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
-  
+
   const hasRestoredScroll = useRef(false);
   const firstPostRef = useRef<HTMLDivElement>(null);
   const secondPostRef = useRef<HTMLDivElement>(null);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [firstPostVisible, setFirstPostVisible] = useState(true);
   const [secondPostVisible, setSecondPostVisible] = useState(true);
 
@@ -41,7 +56,9 @@ export function Feed() {
       // Show all daily channel posts
       filtered = filtered.filter((tiding) => tiding.isDaily);
     } else if (selectedChannel !== 'all') {
-      filtered = filtered.filter((tiding) => tiding.channelId === selectedChannel);
+      filtered = filtered.filter(
+        (tiding) => tiding.channelId === selectedChannel,
+      );
     }
 
     // Filter by priority
@@ -71,7 +88,10 @@ export function Feed() {
 
   // Restore scroll position when returning from post detail
   useEffect(() => {
-    if (locationState?.scrollPosition !== undefined && !hasRestoredScroll.current) {
+    if (
+      locationState?.scrollPosition !== undefined &&
+      !hasRestoredScroll.current
+    ) {
       // Use setTimeout to ensure DOM is ready
       const scrollPosition = locationState.scrollPosition;
       setTimeout(() => {
@@ -127,12 +147,16 @@ export function Feed() {
       });
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions,
+    );
 
     // Observe first two posts after media loads
     const observePostsWithMediaLoad = () => {
       if (firstPostRef.current) {
-        const firstPostImages = firstPostRef.current.querySelectorAll('img, video');
+        const firstPostImages =
+          firstPostRef.current.querySelectorAll('img, video');
         if (firstPostImages.length > 0) {
           // Wait for all media to load before observing
           const mediaPromises = Array.from(firstPostImages).map((media) => {
@@ -141,15 +165,23 @@ export function Feed() {
                 if (media.complete) {
                   resolve(true);
                 } else {
-                  media.addEventListener('load', () => resolve(true), { once: true });
-                  media.addEventListener('error', () => resolve(true), { once: true });
+                  media.addEventListener('load', () => resolve(true), {
+                    once: true,
+                  });
+                  media.addEventListener('error', () => resolve(true), {
+                    once: true,
+                  });
                 }
               } else if (media instanceof HTMLVideoElement) {
                 if (media.readyState >= 2) {
                   resolve(true);
                 } else {
-                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
-                  media.addEventListener('error', () => resolve(true), { once: true });
+                  media.addEventListener('loadeddata', () => resolve(true), {
+                    once: true,
+                  });
+                  media.addEventListener('error', () => resolve(true), {
+                    once: true,
+                  });
                 }
               }
             });
@@ -166,7 +198,8 @@ export function Feed() {
       }
 
       if (secondPostRef.current) {
-        const secondPostImages = secondPostRef.current.querySelectorAll('img, video');
+        const secondPostImages =
+          secondPostRef.current.querySelectorAll('img, video');
         if (secondPostImages.length > 0) {
           const mediaPromises = Array.from(secondPostImages).map((media) => {
             return new Promise((resolve) => {
@@ -174,15 +207,23 @@ export function Feed() {
                 if (media.complete) {
                   resolve(true);
                 } else {
-                  media.addEventListener('load', () => resolve(true), { once: true });
-                  media.addEventListener('error', () => resolve(true), { once: true });
+                  media.addEventListener('load', () => resolve(true), {
+                    once: true,
+                  });
+                  media.addEventListener('error', () => resolve(true), {
+                    once: true,
+                  });
                 }
               } else if (media instanceof HTMLVideoElement) {
                 if (media.readyState >= 2) {
                   resolve(true);
                 } else {
-                  media.addEventListener('loadeddata', () => resolve(true), { once: true });
-                  media.addEventListener('error', () => resolve(true), { once: true });
+                  media.addEventListener('loadeddata', () => resolve(true), {
+                    once: true,
+                  });
+                  media.addEventListener('error', () => resolve(true), {
+                    once: true,
+                  });
                 }
               }
             });
@@ -206,11 +247,6 @@ export function Feed() {
       observer.disconnect();
     };
   }, [displayedTidings]);
-
-  // Show/hide scroll to top button based on visibility of first two posts
-  useEffect(() => {
-    setShowScrollToTop(!firstPostVisible && !secondPostVisible);
-  }, [firstPostVisible, secondPostVisible]);
 
   // Channel options for Select
   const channelOptions = [
@@ -260,6 +296,11 @@ export function Feed() {
     setIsCalloutDismissed(true);
   };
 
+  // Memoized: Check for pending invites
+  const hasPendingInvites = useMemo(() => {
+    return mockUserInvites.some((invite) => invite.status === 'pending');
+  }, []);
+
   // Save scroll position before navigating to post
   const saveScrollPosition = () => {
     const scrollPosition = window.scrollY;
@@ -273,28 +314,44 @@ export function Feed() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const showScrollToTop = !firstPostVisible && !secondPostVisible;
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
-      <div className='w-full max-w-2xl px-4 py-6 space-y-6'>
+      <div className='w-full max-w-2xl space-y-6 px-4 py-6'>
         {/* Header */}
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-3xl font-bold text-foreground'>Tidings</h1>
-              <p className='text-foreground/60'>Stay connected with family updates</p>
+              <h1 className='text-foreground text-3xl font-bold'>Tidings</h1>
+              <p className='text-foreground/60'>
+                Stay connected with family updates
+              </p>
             </div>
-            <Link
-              to='/account'
-              aria-label='Go to account'
-              className='focus:outline-none focus:ring-2 focus:ring-primary rounded-full'
-            >
-              <Avatar preset={mockCurrentUser.avatar} size='md' />
-            </Link>
+            <div className='flex items-center gap-3'>
+              <Link
+                to='/account?view=notifications'
+                aria-label='View notifications'
+                className='focus:ring-primary hover:bg-foreground/5 rounded-full pt-2 pb-0.5 px-2 transition-colors focus:ring-2 focus:outline-none'
+              >
+                <BellIcon
+                  hasNotification={hasPendingInvites}
+                  className='text-foreground'
+                />
+              </Link>
+              <Link
+                to='/account'
+                aria-label='Go to account'
+                className='focus:ring-primary rounded-full focus:ring-2 focus:outline-none'
+              >
+                <Avatar preset={mockCurrentUser.avatar} size='md' />
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className='flex flex-col sm:flex-row gap-3'>
+        <div className='flex flex-col gap-3 sm:flex-row'>
           <div className='flex-1'>
             <Select
               options={channelOptions}
@@ -328,7 +385,12 @@ export function Feed() {
         {!isCalloutDismissed && (
           <Callout
             variant='info'
-            description={<span className='text-blue-500'>Click on any post to see more details, react with emojis, and join the conversation!</span>}
+            description={
+              <span className='text-blue-500'>
+                Click on any post to see more details, react with emojis, and
+                join the conversation!
+              </span>
+            }
             dismissible
             onDismiss={handleCalloutDismiss}
           />
@@ -339,12 +401,11 @@ export function Feed() {
           {displayedTidings.map((tiding, index) => (
             <div
               key={tiding.id}
-              ref={index === 0 ? firstPostRef : index === 1 ? secondPostRef : null}
+              ref={
+                index === 0 ? firstPostRef : index === 1 ? secondPostRef : null
+              }
             >
-              <TidingCard 
-                tiding={tiding} 
-                onNavigate={saveScrollPosition}
-              />
+              <TidingCard tiding={tiding} onNavigate={saveScrollPosition} />
             </div>
           ))}
 
@@ -356,16 +417,16 @@ export function Feed() {
 
           {/* End of feed message */}
           {!hasMore && displayedTidings.length > 0 && (
-            <div className='text-center py-8 text-foreground/60'>
+            <div className='text-foreground/60 py-8 text-center'>
               <p>You've caught up with all tidings</p>
             </div>
           )}
 
           {/* Empty state */}
           {displayedTidings.length === 0 && !isLoadingMore && (
-            <div className='text-center py-12 space-y-2'>
-              <p className='text-lg text-foreground/60'>No tidings found</p>
-              <p className='text-sm text-foreground/40'>
+            <div className='space-y-2 py-12 text-center'>
+              <p className='text-foreground/60 text-lg'>No tidings found</p>
+              <p className='text-foreground/40 text-sm'>
                 Try selecting a different channel or check back later
               </p>
             </div>
@@ -378,7 +439,7 @@ export function Feed() {
         <Button
           variant='primary'
           onClick={scrollToTop}
-          className='fixed bottom-6 right-6 z-50 h-14 w-14 !rounded-3xl p-0 shadow-lg transition-all hover:shadow-xl hover:scale-110'
+          className='fixed right-6 bottom-6 z-50 h-14 w-14 rounded-3xl! p-0 shadow-lg transition-all hover:scale-110 hover:shadow-xl'
           aria-label='Scroll to top'
         >
           <ChevronUp className='h-8 w-8' />
