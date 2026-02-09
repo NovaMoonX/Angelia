@@ -29,12 +29,13 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const [tiding, setTiding] = useState(() => {
     const foundTiding = mockTidings.find((t) => t.id === id);
@@ -67,6 +68,15 @@ export function PostDetail() {
     if (!tiding) return [];
     return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
   }, [tiding]);
+
+  const handleCarouselIndexChange = (newIndex: number) => {
+    // Pause all videos when carousel index changes
+    videoRefs.current.forEach((video, index) => {
+      if (index !== newIndex && !video.paused) {
+        video.pause();
+      }
+    });
+  };
 
   if (!tiding) {
     return (
@@ -298,11 +308,22 @@ export function PostDetail() {
               </div>
             ) : (
               <div className='w-full'>
-                <Carousel className='w-full' buttonPosition='interior'>
+                <Carousel 
+                  className='w-full' 
+                  buttonPosition='interior'
+                  onIndexChange={handleCarouselIndexChange}
+                >
                   {mediaItems.map((item, index) => (
                     <div key={`${tiding.id}-media-${index}`} className='w-full'>
                       {item.type === 'video' ? (
                         <video
+                          ref={(el) => {
+                            if (el) {
+                              videoRefs.current.set(index, el);
+                            } else {
+                              videoRefs.current.delete(index);
+                            }
+                          }}
                           src={item.url}
                           controls
                           className='h-auto w-full object-cover'

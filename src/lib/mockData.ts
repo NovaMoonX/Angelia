@@ -134,6 +134,7 @@ export const mockTidings: Tiding[] = [
     images: [],
     media: [
       { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
+      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4' },
       { type: 'image', url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&h=600&fit=crop' },
     ],
     timestamp: Date.now() - 1000 * 60 * 50, // 50 minutes ago

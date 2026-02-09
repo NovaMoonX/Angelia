@@ -6,7 +6,7 @@ import {
   Card,
   Carousel,
 } from '@moondreamsdev/dreamer-ui/components';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRelativeTime } from '@lib/timeUtils';
 
@@ -18,6 +18,7 @@ interface TidingCardProps {
 export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
   const navigate = useNavigate();
   const relativeTime = getRelativeTime(tiding.timestamp);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const getColorPair = () => {
     const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
@@ -33,6 +34,15 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
   const mediaItems = useMemo(() => {
     return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
   }, [tiding.media, tiding.images]);
+
+  const handleCarouselIndexChange = (newIndex: number) => {
+    // Pause all videos when carousel index changes
+    videoRefs.current.forEach((video, index) => {
+      if (index !== newIndex && !video.paused) {
+        video.pause();
+      }
+    });
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Prevent navigation if clicking carousel controls or video elements
@@ -125,11 +135,22 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
           </div>
         ) : (
           <div className='w-full'>
-            <Carousel className='w-full' buttonPosition='interior'>
+            <Carousel 
+              className='w-full' 
+              buttonPosition='interior'
+              onIndexChange={handleCarouselIndexChange}
+            >
               {mediaItems.map((item, index) => (
                 <div key={`${tiding.id}-media-${index}`} className='w-full'>
                   {item.type === 'video' ? (
                     <video
+                      ref={(el) => {
+                        if (el) {
+                          videoRefs.current.set(index, el);
+                        } else {
+                          videoRefs.current.delete(index);
+                        }
+                      }}
                       src={item.url}
                       controls
                       className='h-auto w-full object-cover'
