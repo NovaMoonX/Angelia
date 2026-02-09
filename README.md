@@ -53,6 +53,16 @@ A text-focused page explaining the research and philosophy behind Angelia:
 
 A chronological feed for family updates called "Tidings":
 
+- **Create New Post**: 
+  - Prominent "+ New Post" button in the feed header
+  - Opens a dedicated modal for post creation
+  - Enter text content (required)
+  - Select which of your channels to post to
+  - Attach up to 5 media files (images or videos)
+  - File size validation (max 10MB per file)
+  - Supported formats: JPEG, PNG, GIF, WebP for images; MP4, WebM, OGG for videos
+  - Option to mark posts as high priority
+  - Clean, intuitive form interface with real-time validation
 - **Dynamic Post Cards**: Each tiding features:
   - Author avatar with preset cartoon-like icons
   - Channel badge with color coding

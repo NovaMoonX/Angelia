@@ -1,4 +1,5 @@
 import { BellIcon } from '@components/BellIcon';
+import { PostFormModal } from '@components/PostFormModal';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { TidingCard } from '@components/TidingCard';
 import {
@@ -13,9 +14,10 @@ import {
   Callout,
   Select,
 } from '@moondreamsdev/dreamer-ui/components';
-import { ChevronUp } from '@moondreamsdev/dreamer-ui/symbols';
+import { ChevronUp, Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
@@ -24,6 +26,7 @@ const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
 export function Feed() {
   const location = useLocation();
+  const toast = useToast();
   const locationState = location.state as {
     scrollPosition?: number;
     displayedCount?: number;
@@ -40,6 +43,7 @@ export function Feed() {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const hasRestoredScroll = useRef(false);
   const firstPostRef = useRef<HTMLDivElement>(null);
@@ -314,6 +318,23 @@ export function Feed() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Get user's channels for post creation
+  const userChannels = useMemo(() => {
+    return mockChannels.filter((channel) => channel.ownerId === mockCurrentUser.id);
+  }, []);
+
+  // Handler for post creation
+  const handlePostSubmit = () => {
+    // In a real app, this would save to the database
+    // For now, we'll just show a success message
+    toast.addToast({
+      title: 'Post created successfully!',
+      description: 'This is a demo - post not saved',
+      type: 'success',
+    });
+    setIsPostModalOpen(false);
+  };
+
   const showScrollToTop = !firstPostVisible && !secondPostVisible;
 
   return (
@@ -329,6 +350,25 @@ export function Feed() {
               </p>
             </div>
             <div className='flex items-center gap-3'>
+              <Button
+                variant='primary'
+                size='sm'
+                onClick={() => setIsPostModalOpen(true)}
+                className='hidden sm:flex'
+                aria-label='Create new post'
+              >
+                <Plus className='h-4 w-4 mr-1' />
+                New Post
+              </Button>
+              <Button
+                variant='primary'
+                size='sm'
+                onClick={() => setIsPostModalOpen(true)}
+                className='flex sm:hidden p-2'
+                aria-label='Create new post'
+              >
+                <Plus className='h-5 w-5' />
+              </Button>
               <Link
                 to='/account?view=notifications'
                 aria-label='View notifications'
@@ -445,6 +485,14 @@ export function Feed() {
           <ChevronUp className='h-8 w-8' />
         </Button>
       )}
+
+      {/* Post Creation Modal */}
+      <PostFormModal
+        isOpen={isPostModalOpen}
+        onClose={() => setIsPostModalOpen(false)}
+        onSubmit={handlePostSubmit}
+        userChannels={userChannels}
+      />
     </div>
   );
 }
