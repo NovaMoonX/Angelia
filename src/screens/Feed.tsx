@@ -1,5 +1,5 @@
 import { BellIcon } from '@components/BellIcon';
-import { PostFormModal } from '@components/PostFormModal';
+import { PostFormModal, type PostFormData } from '@components/PostFormModal';
 import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
 import { TidingCard } from '@components/TidingCard';
 import {
@@ -7,7 +7,6 @@ import {
   mockCurrentUser,
   mockTidings,
   mockUserInvites,
-  type MediaItem,
 } from '@lib/mockData';
 import {
   Avatar,
@@ -325,13 +324,6 @@ export function Feed() {
   }, []);
 
   // Handler for post creation
-  interface PostFormData {
-    text: string;
-    channelId: string;
-    media: MediaItem[];
-    isHighPriority: boolean;
-  }
-
   const handlePostSubmit = (_formData: PostFormData) => {
     // In a real app, this would save to the database
     // For now, we'll just show a success message

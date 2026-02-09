@@ -12,7 +12,7 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { X } from '@moondreamsdev/dreamer-ui/symbols';
 import type { Channel, MediaItem } from '@lib/mockData';
 
-interface PostFormData {
+export interface PostFormData {
   text: string;
   channelId: string;
   media: MediaItem[];
@@ -166,7 +166,7 @@ function MediaUploaderField({ value, onValueChange }: MediaUploaderFieldProps) {
               <button
                 type='button'
                 onClick={() => handleRemove(index)}
-                className='absolute top-2 right-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100'
+                className='absolute top-2 right-2 rounded-full bg-red-500 p-1 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100'
                 aria-label='Remove media'
               >
                 <X className='h-4 w-4' />
@@ -174,9 +174,9 @@ function MediaUploaderField({ value, onValueChange }: MediaUploaderFieldProps) {
               {/* Type Badge */}
               <Badge
                 variant='base'
-                className='absolute bottom-2 left-2 text-xs'
+                className='absolute bottom-2 left-2 bg-background text-xs'
               >
-                {item.type === 'image' ? '🖼️ Image' : '🎥 Video'}
+                {item.type === 'image' ? '🖼️' : '🎥'}
               </Badge>
             </div>
           ))}
