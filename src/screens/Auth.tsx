@@ -12,10 +12,11 @@ import {
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { type AvatarPreset, type User } from '@lib/mockData';
+import { type AvatarPreset, type User, mockCurrentUser } from '@lib/mockData';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch } from '@store/hooks';
 import { enterDemoMode } from '@store/demoActions';
+import { setCurrentUser } from '@store/slices/usersSlice';
 
 type AuthMode = 'login' | 'signup';
 
@@ -83,6 +84,9 @@ export function Auth() {
       // Mock login - would normally authenticate here
       console.log('Login attempt with:', data.email);
       
+      // Set the current user to enable authenticated access
+      dispatch(setCurrentUser(mockCurrentUser));
+      
       // After successful login, redirect to the specified URL or default to feed
       navigate(redirectUrl || '/feed');
     } else {
@@ -98,6 +102,22 @@ export function Auth() {
 
   const handleProfileComplete = () => {
     console.log('Profile complete:', profileData);
+
+    // Create a user object with the signup data (mock - would normally create via API)
+    // Note: For now, using mockCurrentUser as template but with unverified email
+    // In a real app, this would create a new user record
+    const newUser: User = {
+      ...mockCurrentUser,
+      email: profileData.email || mockCurrentUser.email,
+      firstName: profileData.firstName || mockCurrentUser.firstName,
+      lastName: profileData.lastName || mockCurrentUser.lastName,
+      funFact: profileData.funFact || mockCurrentUser.funFact,
+      avatar: profileData.avatar || mockCurrentUser.avatar,
+      emailVerified: false, // New signups need to verify email
+    };
+    
+    // Set the current user
+    dispatch(setCurrentUser(newUser));
 
     // If there's a redirect URL, navigate there directly after signup
     // Otherwise, navigate to verify email
