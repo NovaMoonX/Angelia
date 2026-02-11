@@ -31,6 +31,15 @@ export const router = createBrowserRouter([
         },
       },
       {
+        path: 'complete-profile',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: CompleteProfile } =
+            await import('@screens/CompleteProfile');
+          return { Component: CompleteProfile };
+        },
+      },
+      {
         path: 'verify-email',
         HydrateFallback: Loading,
         lazy: async () => {
@@ -54,9 +63,8 @@ export const router = createBrowserRouter([
             path: 'tiding/:id',
             HydrateFallback: Loading,
             lazy: async () => {
-              const { default: PostDetail } = await import(
-                '@screens/PostDetail'
-              );
+              const { default: PostDetail } =
+                await import('@screens/PostDetail');
               return { Component: PostDetail };
             },
           },
@@ -72,9 +80,8 @@ export const router = createBrowserRouter([
             path: 'invite/:inviteCode',
             HydrateFallback: Loading,
             lazy: async () => {
-              const { default: InviteAccept } = await import(
-                '@screens/InviteAccept'
-              );
+              const { default: InviteAccept } =
+                await import('@screens/InviteAccept');
               return { Component: InviteAccept };
             },
           },

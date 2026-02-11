@@ -42,6 +42,7 @@ export interface User {
   emailVerified: boolean;
   funFact: string;
   avatar: AvatarPreset;
+  signUpComplete: boolean;
   joinedAt: number; // Unix timestamp in ms
 }
 
@@ -420,6 +421,7 @@ export const mockCurrentUser: User = {
   emailVerified: true,
   funFact: 'Coffee enthusiast ☕ | Book lover 📚 | Weekend hiker 🥾 | Always up for trying new recipes',
   avatar: 'galaxy',
+  signUpComplete: true,
   joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 180, // 180 days ago (~6 months)
 };
 
@@ -434,6 +436,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'Love hiking and photography',
     avatar: 'cosmic-cat',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 200,
   },
   {
@@ -444,6 +447,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'Amateur chef and food lover',
     avatar: 'rocket',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 150,
   },
   {
@@ -454,6 +458,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'Graduate student and bookworm',
     avatar: 'star',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
   },
   {
@@ -464,6 +469,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'DIY enthusiast and builder',
     avatar: 'planet',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 190,
   },
   {
@@ -474,6 +480,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'Beach lover and travel enthusiast',
     avatar: 'nebula',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 160,
   },
   {
@@ -484,6 +491,7 @@ export const mockUsers: User[] = [
     emailVerified: true,
     funFact: 'Avid reader and writer',
     avatar: 'constellation',
+    signUpComplete: true,
     joinedAt: Date.now() - 1000 * 60 * 60 * 24 * 170,
   },
 ];

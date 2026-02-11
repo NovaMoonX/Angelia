@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAuth } from '@hooks/useAuth';
 
 export function VerifyEmail() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { firebaseUser, sendVerificationEmail } = useAuth();
   const email = firebaseUser?.email || location.state?.email || 'your email';
@@ -15,6 +16,55 @@ export function VerifyEmail() {
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log('firebaseUser', firebaseUser); // REMOVE
+
+  // Poll for email verification status every 3 seconds
+  useEffect(() => {
+    if (!firebaseUser || firebaseUser.emailVerified) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await firebaseUser.reload();
+        // Force re-render by checking emailVerified status
+        // The auth state change listener will pick up the update
+      } catch (err) {
+        console.error('Error reloading user:', err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [firebaseUser]);
+
+  // Check if email is already verified and redirect
+  useEffect(() => {
+    if (firebaseUser?.emailVerified) {
+      const destination = redirectUrl || '/feed';
+      const timer = setTimeout(() => {
+        navigate(destination);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [firebaseUser, navigate, redirectUrl]);
+
+  // Show notice if email already verified
+  if (firebaseUser?.emailVerified) {
+    return (
+      <div className='page flex items-center justify-center p-6'>
+        <div className='w-full max-w-md space-y-8'>
+          <div className='flex flex-col items-center space-y-4'>
+            <AngeliaLogo className='h-20 w-20' />
+            <h1 className='text-foreground text-3xl font-bold'>
+              Email Has Been Verified
+            </h1>
+            <p className='text-foreground/70 text-center'>
+              Your email is verified. Redirecting you to your feed...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleResendLink = async () => {
     setIsResending(true);
@@ -62,13 +112,12 @@ export function VerifyEmail() {
         <div className='space-y-6'>
           <Callout
             variant='info'
-            className='text-left'
             title='Verification link sent!'
             description={
-              <>
+              <span className='text-blue-500'>
                 We sent a verification link to <strong>{email}</strong>. Click
                 the link in the email to verify your account.
-              </>
+              </span>
             }
           />
 
