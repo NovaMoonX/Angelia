@@ -87,7 +87,7 @@ export function VerifyEmail() {
           {/* Error message */}
           {error && (
             <Callout 
-              variant='error' 
+              variant='destructive' 
               icon='⚠️'
               className='text-left'
               description={error}
