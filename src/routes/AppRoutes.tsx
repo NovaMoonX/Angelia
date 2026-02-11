@@ -3,7 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import Home from '@screens/Home';
 import Layout from '@ui/Layout';
 import Loading from '@ui/Loading';
-import ProtectedRoutes from '@components/ProtectedRoutes';
+import ProtectedRoutes from './ProtectedRoutes';
 
 export const router = createBrowserRouter([
   {
