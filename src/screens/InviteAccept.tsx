@@ -8,6 +8,7 @@ import {
   mockCurrentUser,
   mockChannels,
 } from '@lib/mockData';
+import { REDIRECT_PARAM } from '@lib/app/app.constants';
 
 export function InviteAccept() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
@@ -58,7 +59,7 @@ export function InviteAccept() {
 
     if (!isAuthenticated) {
       // Redirect to auth with return URL
-      navigate(`/auth?redirect=/invite/${inviteCode}`);
+      navigate(`/auth?${REDIRECT_PARAM}=/invite/${inviteCode}`);
       return;
     }
 

@@ -2,12 +2,7 @@ import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import {
-  Channel,
-  getUserById,
-  User,
-  UserInvite,
-} from '@lib/mockData';
+import { Channel, getUserById, User, UserInvite } from '@lib/mockData';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
@@ -25,11 +20,16 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/hooks';
-import { updateChannel, removeChannel, addChannel } from '@store/slices/channelsSlice';
+import {
+  updateChannel,
+  removeChannel,
+  addChannel,
+} from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
+import { useAuth } from '@hooks/useAuth';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -69,6 +69,8 @@ export function Account() {
   const actionModal = useActionModal();
   const notificationsRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   // Get data from Redux store
   const channels = useAppSelector((state) => state.channels.items);
@@ -109,6 +111,7 @@ export function Account() {
   // Update form data when currentUser changes
   useEffect(() => {
     if (currentUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
@@ -219,7 +222,7 @@ export function Account() {
   const formattedJoinDate = useMemo(() => {
     if (!currentUser?.joinedAt) return 'N/A';
     return formatJoinDate(currentUser.joinedAt);
-  }, [currentUser?.joinedAt]);
+  }, [currentUser]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
     setFormData((prev) => ({
@@ -300,9 +303,7 @@ export function Account() {
       // Unsubscribe using Redux
       const updatedChannel = {
         ...channel,
-        subscribers: channel.subscribers.filter(
-          (id) => id !== currentUser.id,
-        ),
+        subscribers: channel.subscribers.filter((id) => id !== currentUser.id),
       };
       dispatch(updateChannel(updatedChannel));
       console.log('Unsubscribing from channel:', channel.id);
@@ -338,7 +339,11 @@ export function Account() {
       console.log('Creating channel:', newChannel);
     } else if (selectedChannel) {
       // Update channel using Redux
-      const updatedChannel = { ...selectedChannel, name: data.name, color: data.color };
+      const updatedChannel = {
+        ...selectedChannel,
+        name: data.name,
+        color: data.color,
+      };
       dispatch(updateChannel(updatedChannel));
       channelDescriptions[selectedChannel.id] = data.description;
       console.log('Updating channel:', selectedChannel.id, data);
@@ -346,24 +351,23 @@ export function Account() {
   };
 
   // Invite handlers
-  const handleAcceptInvite = (invite: UserInvite) => {
+  const handleAcceptInvite = (invite: UserInvite, timestamp: number) => {
     if (!currentUser) return;
 
-    const now = Date.now();
     // Accept invite using Redux
-    const updatedInvite: UserInvite = { 
-      ...invite, 
-      status: 'accepted' as const, 
-      respondedAt: now 
+    const updatedInvite: UserInvite = {
+      ...invite,
+      status: 'accepted' as const,
+      respondedAt: timestamp,
     };
     dispatch(updateInvite(updatedInvite));
 
     // Add current user to channel subscribers if not already subscribed
-    const channel = channels.find(ch => ch.id === invite.channelId);
+    const channel = channels.find((ch) => ch.id === invite.channelId);
     if (channel && !channel.subscribers.includes(currentUser.id)) {
-      const updatedChannel = { 
-        ...channel, 
-        subscribers: [...channel.subscribers, currentUser.id] 
+      const updatedChannel = {
+        ...channel,
+        subscribers: [...channel.subscribers, currentUser.id],
       };
       dispatch(updateChannel(updatedChannel));
     }
@@ -372,10 +376,10 @@ export function Account() {
   const handleDeclineInvite = (invite: UserInvite) => {
     const now = Date.now();
     // Decline invite using Redux
-    const updatedInvite: UserInvite = { 
-      ...invite, 
-      status: 'declined' as const, 
-      respondedAt: now 
+    const updatedInvite: UserInvite = {
+      ...invite,
+      status: 'declined' as const,
+      respondedAt: now,
     };
     dispatch(updateInvite(updatedInvite));
   };
@@ -386,7 +390,10 @@ export function Account() {
         {/* Header */}
         <div className='mt-4 space-y-2'>
           <div className='mb-10 flex items-center gap-4'>
-            <Link to='/feed' className='text-foreground/60 hover:text-foreground transition-colors'>
+            <Link
+              to='/feed'
+              className='text-foreground/60 hover:text-foreground transition-colors'
+            >
               ← Back to Feed
             </Link>
           </div>
@@ -469,6 +476,28 @@ export function Account() {
               <div className='pt-2'>
                 <Button onClick={handleUpdateAccount} className='w-full'>
                   Update Account
+                </Button>
+              </div>
+
+              {/* Sign Out Section */}
+              <Separator className='my-4' />
+              <div className='pt-2'>
+                <Button
+                  variant='tertiary'
+                  onClick={async () => {
+                    try {
+                      await signOut();
+                      navigate('/auth');
+                    } catch (err) {
+                      console.error('Sign out error:', err);
+                      alert(
+                        'An error occurred while signing out. Please try again.',
+                      );
+                    }
+                  }}
+                  className='w-full'
+                >
+                  Sign Out
                 </Button>
               </div>
             </TabsContent>
@@ -648,7 +677,9 @@ export function Account() {
                           <div className='flex gap-2'>
                             <Button
                               size='sm'
-                              onClick={() => handleAcceptInvite(invite)}
+                              onClick={() =>
+                                handleAcceptInvite(invite, Date.now())
+                              }
                               className='flex-1'
                             >
                               Accept

@@ -2,16 +2,21 @@ rules_version='2'
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Users collection - users can read and write their own profile
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles (for displaying names, avatars, etc.)
+      allow read: if request.auth != null;
+      
+      // Users can only write to their own profile
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      
+      // Prevent deletion of user profiles
+      allow delete: if false;
+    }
+    
+    // Temporary: Allow all reads/writes for other collections during development
+    // TODO: Add proper security rules for channels, tidings, invites, etc.
     match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
       allow read, write: if request.time < timestamp.date(2026, 3, 9);
     }
   }

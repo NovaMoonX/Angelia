@@ -7,16 +7,19 @@ import { router } from '@routes/AppRoutes';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from '@store/index';
+import { AuthProvider } from '@contexts/AuthContext';
 
 function App() {
   return (
     <ErrorBoundary>
       <Provider store={store}>
-        <ToastProvider>
-          <ActionModalProvider>
-            <RouterProvider router={router} />
-          </ActionModalProvider>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <ActionModalProvider>
+              <RouterProvider router={router} />
+            </ActionModalProvider>
+          </ToastProvider>
+        </AuthProvider>
       </Provider>
     </ErrorBoundary>
   );

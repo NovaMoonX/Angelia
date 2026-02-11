@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Channel, mockChannels } from '@lib/mockData';
+import { resetAllState } from '@store/globalActions';
 
 interface ChannelsState {
   items: Channel[];
@@ -34,6 +35,9 @@ const channelsSlice = createSlice({
     loadDemoChannels: (state) => {
       state.items = mockChannels;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, () => initialState);
   },
 });
 

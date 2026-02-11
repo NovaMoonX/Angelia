@@ -23,7 +23,20 @@ Multi-step authentication experience using Dreamer UI components:
   - Confirmation message with user's email
   - "Resend Link" button with success feedback
   - "Back to Login" navigation
-- **Protected Routes**: Component wrapper for authenticated routes (currently pass-through, ready for future auth implementation)
+- **Protected Routes**: Intelligent route protection with demo mode support
+  - When **demo mode is DISABLED**:
+    - Requires user authentication for protected routes (`/feed`, `/tiding/:id`, `/account`, `/invite/:inviteCode`)
+    - Unauthenticated users are redirected to `/auth` with redirect parameter to return after login
+    - Authenticated users must have verified their email to access protected routes
+    - Unverified users are redirected to `/verify-email` page
+  - When **demo mode is ENABLED**:
+    - All routes are accessible without authentication (pass-through)
+    - Allows users to explore the app with sample data
+  - **Public Routes** (always accessible):
+    - Home page (`/`)
+    - About page (`/about`)
+    - Auth page (`/auth`)
+    - Verify Email page (`/verify-email`)
 
 ### 🔥 Landing Page
 

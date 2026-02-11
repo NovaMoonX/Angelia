@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { resetAllState } from '@store/globalActions';
 
 interface DemoState {
   isActive: boolean;
@@ -18,6 +19,9 @@ const demoSlice = createSlice({
     exitDemoMode: (state) => {
       state.isActive = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, () => initialState);
   },
 });
 

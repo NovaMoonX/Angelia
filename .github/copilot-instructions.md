@@ -101,7 +101,7 @@ src/
 ├── components/ # Reusable UI components
 ├── contexts/   # React context providers (Should always import the context from its hook file)
 ├── hooks/      # Custom React hooks (should always declare the context they use)
-├── lib/        # Utilities and constants
+├── lib/        # Async functions, mock data, constants, etc
 ├── routes/     # Router configuration
 ├── screens/    # Page/route components
 ├── store/      # State management (i.e. Redux store)
@@ -154,11 +154,60 @@ import { helper } from '@utils/helper';
   - ❌ "Temporal hygiene enforcement mechanism"
   - ✅ "Updates fade after six months, so you can share freely"
 
+### 13. Redux State Management
+- **ALWAYS** use `createAsyncThunk` from `@reduxjs/toolkit` for async operations that affect Redux state
+- **NEVER** perform async Firestore operations directly in components - use thunks instead
+- Place async thunks in `src/store/` directory (e.g., `authActions.ts`, `demoActions.ts`)
+- Thunks should handle both the async operation and the Redux state update
+
+**❌ NEVER DO THIS:**
+```tsx
+// Bad - async Firestore operations directly in component
+const handleLogin = async () => {
+  const user = await signIn(email, password);
+  const userDoc = await getDoc(doc(db, 'users', user.uid));
+  dispatch(setCurrentUser(userDoc.data()));
+};
+```
+
+**✅ ALWAYS DO THIS:**
+```tsx
+// Good - create async thunk in store/authActions.ts
+export const fetchUserProfile = createAsyncThunk(
+  'auth/fetchUserProfile',
+  async (uid: string, { dispatch }) => {
+    const userDocRef = doc(db, 'users', uid);
+    const userDocSnap = await getDoc(userDocRef);
+    
+    if (userDocSnap.exists()) {
+      const user = { id: uid, ...userDocSnap.data() };
+      dispatch(setCurrentUser(user));
+      return user;
+    }
+    return null;
+  }
+);
+
+// Then use in component
+const handleLogin = async () => {
+  const user = await signIn(email, password);
+  await dispatch(fetchUserProfile(user.uid));
+};
+```
+
+**Benefits of createAsyncThunk:**
+- Centralized async logic for better maintainability
+- Built-in loading states (pending/fulfilled/rejected)
+- Automatic error handling
+- Better testing and debugging
+- Consistent pattern across the application
+
 ## Quick Reference
 - Component syntax: `export function ComponentName`
 - **Indentation: Always use 2 spaces (NOT 4 spaces or tabs)**
 - **Time formatting: ALWAYS use `getRelativeTime()` for relative time - NEVER create custom time functions**
 - **Class names: ALWAYS use `join()` for conditionals - NEVER template literals**
+- **Redux async: ALWAYS use `createAsyncThunk` for async operations that affect state**
 - **Tone: Consumer-friendly, human, and warm - avoid jargon**
 - Check Dreamer UI first
 - Use import aliases: `@components/`, `@hooks/`, `@lib/`, `@screens/`, `@ui/`, etc.
@@ -170,6 +219,7 @@ import { helper } from '@utils/helper';
 - **Template literals with `${` in className are FORBIDDEN**
 - **Always import and use `join` from `@moondreamsdev/dreamer-ui/utils`**
 - **Before writing any conditional className, ask: "Am I using join()?"**
+- **Async operations that update Redux state must use `createAsyncThunk`**
 - **Use consumer-friendly, warm, human language - avoid jargon**
 
 ## 📚 Documentation Maintenance

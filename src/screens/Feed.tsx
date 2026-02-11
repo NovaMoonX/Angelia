@@ -356,7 +356,7 @@ export function Feed() {
                 variant='primary'
                 size='sm'
                 onClick={() => setIsPostModalOpen(true)}
-                className='hidden sm:flex'
+                className='hidden! sm:flex!'
                 aria-label='Create new post'
               >
                 <Plus className='h-4 w-4 mr-1' />

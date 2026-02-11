@@ -318,7 +318,7 @@ export function PostDetail() {
                   {mediaItems.map((item, index) => (
                     <div key={`${tiding.id}-media-${index}`} className='w-full'>
                       {item.type === 'video' ? (
-                        <div className='relative w-full bg-black flex items-center justify-center min-h-[400px]'>
+                        <div className='relative w-full bg-black flex items-center justify-center min-h-100'>
                           <video
                             ref={(el) => {
                               if (el) {
@@ -329,7 +329,7 @@ export function PostDetail() {
                             }}
                             src={item.url}
                             controls
-                            className='h-auto w-full max-h-[600px]'
+                            className='h-auto w-full max-h-150'
                             preload='metadata'
                           />
                         </div>
