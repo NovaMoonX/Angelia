@@ -109,6 +109,7 @@ export function Account() {
   // Update form data when currentUser changes
   useEffect(() => {
     if (currentUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
@@ -219,7 +220,7 @@ export function Account() {
   const formattedJoinDate = useMemo(() => {
     if (!currentUser?.joinedAt) return 'N/A';
     return formatJoinDate(currentUser.joinedAt);
-  }, [currentUser?.joinedAt]);
+  }, [currentUser]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
     setFormData((prev) => ({
@@ -346,15 +347,14 @@ export function Account() {
   };
 
   // Invite handlers
-  const handleAcceptInvite = (invite: UserInvite) => {
+  const handleAcceptInvite = (invite: UserInvite, timestamp: number) => {
     if (!currentUser) return;
 
-    const now = Date.now();
     // Accept invite using Redux
     const updatedInvite: UserInvite = { 
       ...invite, 
       status: 'accepted' as const, 
-      respondedAt: now 
+      respondedAt: timestamp 
     };
     dispatch(updateInvite(updatedInvite));
 
@@ -648,7 +648,7 @@ export function Account() {
                           <div className='flex gap-2'>
                             <Button
                               size='sm'
-                              onClick={() => handleAcceptInvite(invite)}
+                              onClick={() => handleAcceptInvite(invite, Date.now())}
                               className='flex-1'
                             >
                               Accept
