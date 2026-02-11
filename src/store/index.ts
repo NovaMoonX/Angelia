@@ -13,6 +13,9 @@ export const store = configureStore({
     users: usersReducer,
     invites: invitesReducer,
   },
+  devTools: {
+    name: 'Angelia Store Instance',
+  }
 });
 
 export type RootState = ReturnType<typeof store.getState>;
