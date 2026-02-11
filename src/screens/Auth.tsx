@@ -18,6 +18,7 @@ import { useAppDispatch } from '@store/hooks';
 import { enterDemoMode } from '@store/demoActions';
 import { setCurrentUser } from '@store/slices/usersSlice';
 import { useAuth } from '@hooks/useAuth';
+import { getAuthErrorMessage } from '@/util/firebaseAuth';
 
 type AuthMode = 'login' | 'signup';
 
@@ -107,7 +108,7 @@ export function Auth() {
       }
     } catch (err) {
       console.error('Auth error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred during authentication';
+      const errorMessage = getAuthErrorMessage(err);
       setIsLoading(false);
       return { error: { message: errorMessage } };
     }

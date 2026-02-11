@@ -5,6 +5,7 @@ import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAuth } from '@hooks/useAuth';
+import { getAuthErrorMessage } from '@/util/firebaseAuth';
 
 export function VerifyEmail() {
   const location = useLocation();
@@ -32,7 +33,7 @@ export function VerifyEmail() {
       }, 5000);
     } catch (err) {
       console.error('Error sending verification email:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send verification email';
+      const errorMessage = getAuthErrorMessage(err);
       setError(errorMessage);
     } finally {
       setIsResending(false);
