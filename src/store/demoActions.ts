@@ -4,6 +4,7 @@ import { loadDemoTidings, clearTidings } from './slices/tidingsSlice';
 import { loadDemoChannels, clearChannels } from './slices/channelsSlice';
 import { loadDemoUsers, clearUsers } from './slices/usersSlice';
 import { loadDemoInvites, clearInvites } from './slices/invitesSlice';
+import { resetAllState } from './globalActions';
 
 // Thunk to enter demo mode - loads all demo data
 export const enterDemoMode = createAsyncThunk(
@@ -30,13 +31,21 @@ export const enterDemoMode = createAsyncThunk(
 export const exitDemoMode = createAsyncThunk(
   'demo/exit',
   async (_, { dispatch }) => {
-    // First, deactivate demo mode
+    // Exit demo mode and clear all state using global reset
     dispatch(exitDemoModeAction());
-    
-    // Then clear all data
-    dispatch(clearTidings());
-    dispatch(clearChannels());
-    dispatch(clearUsers());
-    dispatch(clearInvites());
+    dispatch(resetAllState());
   }
 );
+
+/**
+ * Example usage of resetAllState:
+ * 
+ * // In any component with dispatch:
+ * import { resetAllState } from '@store/index';
+ * 
+ * const handleSignOut = async () => {
+ *   await signOut(); // Firebase sign out
+ *   dispatch(resetAllState()); // Clear all Redux state
+ *   navigate('/auth');
+ * };
+ */

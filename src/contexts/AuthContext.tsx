@@ -10,7 +10,8 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { auth } from '@lib/firebase';
-import { AuthContext, AuthContextType } from '@/hooks/useAuth';
+import { AuthContext, AuthContextType } from '@hooks/useAuth';
+import { useAppDispatch } from '@/store/hooks';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -19,15 +20,20 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
       setLoading(false);
+
+      if (!user) {
+        dispatch({ type: 'RESET_ALL_STATE' });
+      }
     });
 
     return unsubscribe;
-  }, []);
+  }, [dispatch]);
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(
@@ -35,7 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       email,
       password,
     );
-    
+
     return userCredential.user;
   };
 
@@ -45,14 +51,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       email,
       password,
     );
-    
+
     return userCredential.user;
   };
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    
+
     return userCredential.user;
   };
 
@@ -61,9 +67,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const sendVerificationEmail = async () => {
-    if (firebaseUser) {
-      await sendEmailVerification(firebaseUser);
+    if (!firebaseUser) {
+      throw new Error(
+        'No authenticated user available to send verification email.',
+      );
     }
+
+    await sendEmailVerification(firebaseUser);
   };
 
   const value: AuthContextType = {

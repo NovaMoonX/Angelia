@@ -5,7 +5,6 @@ import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAuth } from '@hooks/useAuth';
-import { getAuthErrorMessage } from '@/util/firebaseAuth';
 
 export function VerifyEmail() {
   const location = useLocation();
@@ -33,7 +32,10 @@ export function VerifyEmail() {
       }, 5000);
     } catch (err) {
       console.error('Error sending verification email:', err);
-      const errorMessage = getAuthErrorMessage(err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'An unknown error occurred while sending the verification email.';
       setError(errorMessage);
     } finally {
       setIsResending(false);
@@ -41,7 +43,7 @@ export function VerifyEmail() {
   };
 
   // Build the back to login URL with redirect preserved
-  const backToLoginUrl = redirectUrl 
+  const backToLoginUrl = redirectUrl
     ? `/auth?mode=login&${REDIRECT_PARAM}=${encodeURIComponent(redirectUrl)}`
     : '/auth?mode=login';
 
@@ -50,36 +52,37 @@ export function VerifyEmail() {
       <div className='w-full max-w-md space-y-8'>
         {/* Logo and Title */}
         <div className='flex flex-col items-center space-y-4'>
-          <AngeliaLogo className='w-20 h-20' />
-          <h1 className='text-3xl font-bold text-foreground'>
+          <AngeliaLogo className='h-20 w-20' />
+          <h1 className='text-foreground text-3xl font-bold'>
             Check Your Email
           </h1>
         </div>
 
         {/* Verification Message */}
         <div className='space-y-6'>
-          <Callout 
-            variant='info' 
+          <Callout
+            variant='info'
             className='text-left'
             title='Verification link sent!'
             description={
               <>
-                We sent a verification link to <strong>{email}</strong>.
-                Click the link in the email to verify your account.
+                We sent a verification link to <strong>{email}</strong>. Click
+                the link in the email to verify your account.
               </>
             }
           />
 
-          <div className='space-y-4 text-center text-foreground/70'>
+          <div className='text-foreground/70 space-y-4 text-center'>
             <p className='text-sm'>
-              Didn't receive the email? Check your spam folder or request a new link.
+              Didn't receive the email? Check your spam folder or request a new
+              link.
             </p>
           </div>
 
           {/* Success message */}
           {resendSuccess && (
-            <Callout 
-              variant='success' 
+            <Callout
+              variant='success'
               className='text-left'
               description='Verification email resent successfully!'
             />
@@ -87,8 +90,8 @@ export function VerifyEmail() {
 
           {/* Error message */}
           {error && (
-            <Callout 
-              variant='destructive' 
+            <Callout
+              variant='destructive'
               icon='⚠️'
               className='text-left'
               description={error}
@@ -101,7 +104,7 @@ export function VerifyEmail() {
             disabled={isResending}
             className={join(
               'w-full',
-              'bg-accent hover:bg-accent/90 text-accent-foreground'
+              'bg-accent hover:bg-accent/90 text-accent-foreground',
             )}
           >
             {isResending ? 'Sending...' : 'Resend Link'}
@@ -109,11 +112,7 @@ export function VerifyEmail() {
 
           {/* Back to Login */}
           <div className='text-center'>
-            <Button
-              href={backToLoginUrl}
-              variant='tertiary'
-              className='w-full'
-            >
+            <Button href={backToLoginUrl} variant='tertiary' className='w-full'>
               Back to Login
             </Button>
           </div>

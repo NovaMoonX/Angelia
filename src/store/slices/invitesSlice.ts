@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserInvite, mockUserInvites } from '@lib/mockData';
+import { resetAllState } from '@store/globalActions';
 
 interface InvitesState {
   items: UserInvite[];
@@ -28,6 +29,9 @@ const invitesSlice = createSlice({
     loadDemoInvites: (state) => {
       state.items = mockUserInvites;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, () => initialState);
   },
 });
 

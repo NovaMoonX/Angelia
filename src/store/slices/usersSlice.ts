@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, mockCurrentUser, mockUsers } from '@lib/mockData';
+import { resetAllState } from '@store/globalActions';
 
 interface UsersState {
   currentUser: User | null;
@@ -34,6 +35,9 @@ const usersSlice = createSlice({
       state.currentUser = mockCurrentUser;
       state.users = mockUsers;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, () => initialState);
   },
 });
 

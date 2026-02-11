@@ -2,12 +2,7 @@ import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import {
-  Channel,
-  getUserById,
-  User,
-  UserInvite,
-} from '@lib/mockData';
+import { Channel, getUserById, User, UserInvite } from '@lib/mockData';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
@@ -27,7 +22,11 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/hooks';
-import { updateChannel, removeChannel, addChannel } from '@store/slices/channelsSlice';
+import {
+  updateChannel,
+  removeChannel,
+  addChannel,
+} from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
 import { useAuth } from '@hooks/useAuth';
@@ -304,9 +303,7 @@ export function Account() {
       // Unsubscribe using Redux
       const updatedChannel = {
         ...channel,
-        subscribers: channel.subscribers.filter(
-          (id) => id !== currentUser.id,
-        ),
+        subscribers: channel.subscribers.filter((id) => id !== currentUser.id),
       };
       dispatch(updateChannel(updatedChannel));
       console.log('Unsubscribing from channel:', channel.id);
@@ -342,7 +339,11 @@ export function Account() {
       console.log('Creating channel:', newChannel);
     } else if (selectedChannel) {
       // Update channel using Redux
-      const updatedChannel = { ...selectedChannel, name: data.name, color: data.color };
+      const updatedChannel = {
+        ...selectedChannel,
+        name: data.name,
+        color: data.color,
+      };
       dispatch(updateChannel(updatedChannel));
       channelDescriptions[selectedChannel.id] = data.description;
       console.log('Updating channel:', selectedChannel.id, data);
@@ -354,19 +355,19 @@ export function Account() {
     if (!currentUser) return;
 
     // Accept invite using Redux
-    const updatedInvite: UserInvite = { 
-      ...invite, 
-      status: 'accepted' as const, 
-      respondedAt: timestamp 
+    const updatedInvite: UserInvite = {
+      ...invite,
+      status: 'accepted' as const,
+      respondedAt: timestamp,
     };
     dispatch(updateInvite(updatedInvite));
 
     // Add current user to channel subscribers if not already subscribed
-    const channel = channels.find(ch => ch.id === invite.channelId);
+    const channel = channels.find((ch) => ch.id === invite.channelId);
     if (channel && !channel.subscribers.includes(currentUser.id)) {
-      const updatedChannel = { 
-        ...channel, 
-        subscribers: [...channel.subscribers, currentUser.id] 
+      const updatedChannel = {
+        ...channel,
+        subscribers: [...channel.subscribers, currentUser.id],
       };
       dispatch(updateChannel(updatedChannel));
     }
@@ -375,10 +376,10 @@ export function Account() {
   const handleDeclineInvite = (invite: UserInvite) => {
     const now = Date.now();
     // Decline invite using Redux
-    const updatedInvite: UserInvite = { 
-      ...invite, 
-      status: 'declined' as const, 
-      respondedAt: now 
+    const updatedInvite: UserInvite = {
+      ...invite,
+      status: 'declined' as const,
+      respondedAt: now,
     };
     dispatch(updateInvite(updatedInvite));
   };
@@ -389,7 +390,10 @@ export function Account() {
         {/* Header */}
         <div className='mt-4 space-y-2'>
           <div className='mb-10 flex items-center gap-4'>
-            <Link to='/feed' className='text-foreground/60 hover:text-foreground transition-colors'>
+            <Link
+              to='/feed'
+              className='text-foreground/60 hover:text-foreground transition-colors'
+            >
               ← Back to Feed
             </Link>
           </div>
@@ -481,21 +485,14 @@ export function Account() {
                 <Button
                   variant='tertiary'
                   onClick={async () => {
-                    const confirmed = await actionModal.confirm({
-                      title: 'Sign Out',
-                      message: 'Are you sure you want to sign out?',
-                      confirmText: 'Sign Out',
-                      cancelText: 'Cancel',
-                      destructive: false,
-                    });
-
-                    if (confirmed) {
-                      try {
-                        await signOut();
-                        navigate('/auth');
-                      } catch (error) {
-                        console.error('Error signing out:', error);
-                      }
+                    try {
+                      await signOut();
+                      navigate('/auth');
+                    } catch (err) {
+                      console.error('Sign out error:', err);
+                      alert(
+                        'An error occurred while signing out. Please try again.',
+                      );
                     }
                   }}
                   className='w-full'
@@ -680,7 +677,9 @@ export function Account() {
                           <div className='flex gap-2'>
                             <Button
                               size='sm'
-                              onClick={() => handleAcceptInvite(invite, Date.now())}
+                              onClick={() =>
+                                handleAcceptInvite(invite, Date.now())
+                              }
                               className='flex-1'
                             >
                               Accept

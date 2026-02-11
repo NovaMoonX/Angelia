@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Tiding, mockTidings } from '@lib/mockData';
+import { resetAllState } from '@store/globalActions';
 
 interface TidingsState {
   items: Tiding[];
@@ -25,6 +26,9 @@ const tidingsSlice = createSlice({
     loadDemoTidings: (state) => {
       state.items = mockTidings;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, () => initialState);
   },
 });
 
