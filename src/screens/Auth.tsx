@@ -12,11 +12,12 @@ import {
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { type AvatarPreset, type User, mockCurrentUser } from '@lib/mockData';
+import { type AvatarPreset, type User } from '@lib/mockData';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch } from '@store/hooks';
 import { enterDemoMode } from '@store/demoActions';
 import { setCurrentUser } from '@store/slices/usersSlice';
+import { useAuth } from '@hooks/useAuth';
 
 type AuthMode = 'login' | 'signup';
 
@@ -28,6 +29,8 @@ export function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { signIn, signUp, sendVerificationEmail } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Get initial mode from query params, default to login
   const authMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
@@ -77,54 +80,78 @@ export function Auth() {
     navigate('/feed');
   };
 
-  const handleAuthSubmit: AuthFormOnEmailSubmit = ({ data, action }) => {
-    console.log('Auth submitted:', { data, action });
+  const handleAuthSubmit = async ({ data, action }: Parameters<AuthFormOnEmailSubmit>[0]): Promise<{ error?: { message: string; } }> => {
+    setIsLoading(true);
 
-    if (action === 'login') {
-      // Mock login - would normally authenticate here
-      console.log('Login attempt with:', data.email);
-      
-      // Set the current user to enable authenticated access
-      dispatch(setCurrentUser(mockCurrentUser));
-      
-      // After successful login, redirect to the specified URL or default to feed
-      navigate(redirectUrl || '/feed');
-    } else {
-      // For signup, save data and move to step 2
-      setProfileData({
-        ...profileData,
-        email: data.email,
-        password: data.password,
-      });
-      setSignupStep(2);
+    try {
+      if (action === 'login') {
+        // Sign in with Firebase
+        await signIn(data.email, data.password);
+        
+        // TODO: Fetch user profile from Firestore and set in Redux
+        // For now, we'll need to create the user profile fetch logic
+        
+        // After successful login, redirect to the specified URL or default to feed
+        navigate(redirectUrl || '/feed');
+      } else {
+        // For signup, create Firebase account and move to step 2
+        await signUp(data.email, data.password);
+        
+        // Save email and password for profile completion
+        setProfileData({
+          ...profileData,
+          email: data.email,
+          password: data.password,
+        });
+        setSignupStep(2);
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during authentication';
+      setIsLoading(false);
+      return { error: { message: errorMessage } };
     }
+    
+    setIsLoading(false);
+    return {};
   };
 
-  const handleProfileComplete = () => {
-    console.log('Profile complete:', profileData);
+  const handleProfileComplete = async () => {
+    setIsLoading(true);
 
-    // Create a user object with the signup data (mock - would normally create via API)
-    // Note: For now, using mockCurrentUser as template but with unverified email
-    // In a real app, this would create a new user record
-    const newUser: User = {
-      ...mockCurrentUser,
-      email: profileData.email || mockCurrentUser.email,
-      firstName: profileData.firstName || mockCurrentUser.firstName,
-      lastName: profileData.lastName || mockCurrentUser.lastName,
-      funFact: profileData.funFact || mockCurrentUser.funFact,
-      avatar: profileData.avatar || mockCurrentUser.avatar,
-      emailVerified: false, // New signups need to verify email
-    };
-    
-    // Set the current user
-    dispatch(setCurrentUser(newUser));
+    try {
+      console.log('Profile complete:', profileData);
 
-    // If there's a redirect URL, navigate there directly after signup
-    // Otherwise, navigate to verify email
-    if (redirectUrl) {
-      navigate(redirectUrl);
-    } else {
-      navigate('/verify-email', { state: { email: profileData.email } });
+      // TODO: Save user profile to Firestore
+      // For now, create a local user object for Redux
+      const newUser: User = {
+        id: '', // TODO: Use Firebase Auth UID
+        email: profileData.email || '',
+        firstName: profileData.firstName || '',
+        lastName: profileData.lastName || '',
+        funFact: profileData.funFact || '',
+        avatar: profileData.avatar || 'astronaut',
+        emailVerified: false,
+        joinedAt: Date.now(),
+      };
+      
+      // Set the user profile in Redux
+      dispatch(setCurrentUser(newUser));
+
+      // Send email verification
+      await sendVerificationEmail();
+
+      // If there's a redirect URL, navigate there directly after signup
+      // Otherwise, navigate to verify email
+      if (redirectUrl) {
+        navigate(redirectUrl);
+      } else {
+        navigate('/verify-email', { state: { email: profileData.email } });
+      }
+    } catch (err) {
+      console.error('Profile completion error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -233,10 +260,10 @@ export function Auth() {
             {/* Complete Button */}
             <Button
               onClick={handleProfileComplete}
-              disabled={!isStep2Complete}
+              disabled={!isStep2Complete || isLoading}
               className='w-full'
             >
-              Complete Signup
+              {isLoading ? 'Creating Account...' : 'Complete Signup'}
             </Button>
 
             {/* Back Button */}

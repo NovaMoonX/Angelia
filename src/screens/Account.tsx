@@ -25,11 +25,12 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/hooks';
 import { updateChannel, removeChannel, addChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
+import { useAuth } from '@hooks/useAuth';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -69,6 +70,8 @@ export function Account() {
   const actionModal = useActionModal();
   const notificationsRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   // Get data from Redux store
   const channels = useAppSelector((state) => state.channels.items);
@@ -469,6 +472,35 @@ export function Account() {
               <div className='pt-2'>
                 <Button onClick={handleUpdateAccount} className='w-full'>
                   Update Account
+                </Button>
+              </div>
+
+              {/* Sign Out Section */}
+              <Separator className='my-4' />
+              <div className='pt-2'>
+                <Button
+                  variant='tertiary'
+                  onClick={async () => {
+                    const confirmed = await actionModal.confirm({
+                      title: 'Sign Out',
+                      message: 'Are you sure you want to sign out?',
+                      confirmText: 'Sign Out',
+                      cancelText: 'Cancel',
+                      destructive: false,
+                    });
+
+                    if (confirmed) {
+                      try {
+                        await signOut();
+                        navigate('/auth');
+                      } catch (error) {
+                        console.error('Error signing out:', error);
+                      }
+                    }
+                  }}
+                  className='w-full'
+                >
+                  Sign Out
                 </Button>
               </div>
             </TabsContent>

@@ -4,30 +4,39 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { useAuth } from '@hooks/useAuth';
 
 export function VerifyEmail() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const email = location.state?.email || 'your email';
+  const { firebaseUser, sendVerificationEmail } = useAuth();
+  const email = firebaseUser?.email || location.state?.email || 'your email';
   const redirectUrl = searchParams.get(REDIRECT_PARAM);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleResendLink = () => {
+  const handleResendLink = async () => {
     setIsResending(true);
     setResendSuccess(false);
+    setError(null);
 
-    // Simulate sending email
-    setTimeout(() => {
-      console.log('Resending verification email to:', email);
-      setIsResending(false);
+    try {
+      await sendVerificationEmail();
+      console.log('Verification email sent to:', email);
       setResendSuccess(true);
 
       // Hide success message after 5 seconds
       setTimeout(() => {
         setResendSuccess(false);
       }, 5000);
-    }, 1000);
+    } catch (err) {
+      console.error('Error sending verification email:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send verification email';
+      setError(errorMessage);
+    } finally {
+      setIsResending(false);
+    }
   };
 
   // Build the back to login URL with redirect preserved
@@ -72,6 +81,16 @@ export function VerifyEmail() {
               variant='success' 
               className='text-left'
               description='Verification email resent successfully!'
+            />
+          )}
+
+          {/* Error message */}
+          {error && (
+            <Callout 
+              variant='error' 
+              icon='⚠️'
+              className='text-left'
+              description={error}
             />
           )}
 
