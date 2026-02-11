@@ -5,19 +5,18 @@ import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAuth } from '@hooks/useAuth';
+import Loading from '@ui/Loading';
 
 export function VerifyEmail() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { firebaseUser, sendVerificationEmail } = useAuth();
+  const { firebaseUser, sendVerificationEmail, loading } = useAuth();
   const email = firebaseUser?.email || location.state?.email || 'your email';
   const redirectUrl = searchParams.get(REDIRECT_PARAM);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  console.log('firebaseUser', firebaseUser); // REMOVE
 
   // Poll for email verification status every 3 seconds
   useEffect(() => {
@@ -46,6 +45,11 @@ export function VerifyEmail() {
       return () => clearTimeout(timer);
     }
   }, [firebaseUser, navigate, redirectUrl]);
+
+  // Show loading state while Firebase user is being loaded
+  if (loading) {
+    return <Loading />;
+  }
 
   // Show notice if email already verified
   if (firebaseUser?.emailVerified) {
