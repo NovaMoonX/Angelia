@@ -193,7 +193,7 @@ export function Auth() {
             icon='👀'
             description={
               <>
-                <span className='text-black'>
+                <span className='text-foreground'>
                   Want to see the app in action?{' '}
                 </span>
                 <Link
