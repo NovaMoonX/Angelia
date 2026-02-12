@@ -2,7 +2,6 @@ import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import { Channel, getUserById, User, UserInvite } from '@lib/mockData';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
@@ -30,6 +29,8 @@ import {
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
 import { useAuth } from '@hooks/useAuth';
+import { getUserById, User } from '@/lib/user';
+import { Channel, UserChannelInvite } from '@/lib/channel';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -76,7 +77,7 @@ export function Account() {
   const channels = useAppSelector((state) => state.channels.items);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const users = useAppSelector((state) => state.users.users);
-  const userInvites = useAppSelector((state) => state.invites.items);
+  const userChannelInvites = useAppSelector((state) => state.invites.items);
 
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
@@ -200,17 +201,17 @@ export function Account() {
 
   // Memoized: Get pending invites
   const pendingInvites = useMemo(() => {
-    const result = userInvites.filter((invite) => invite.status === 'pending');
+    const result = userChannelInvites.filter((invite) => invite.status === 'pending');
 
     return result;
-  }, [userInvites]);
+  }, [userChannelInvites]);
 
   // Memoized: Get declined invites
   const declinedInvites = useMemo(() => {
-    const result = userInvites.filter((invite) => invite.status === 'declined');
+    const result = userChannelInvites.filter((invite) => invite.status === 'declined');
 
     return result;
-  }, [userInvites]);
+  }, [userChannelInvites]);
 
   // Memoized: Count of pending invites for badge
   const pendingInviteCount = useMemo(() => {
@@ -351,11 +352,11 @@ export function Account() {
   };
 
   // Invite handlers
-  const handleAcceptInvite = (invite: UserInvite, timestamp: number) => {
+  const handleAcceptInvite = (invite: UserChannelInvite, timestamp: number) => {
     if (!currentUser) return;
 
     // Accept invite using Redux
-    const updatedInvite: UserInvite = {
+    const updatedInvite: UserChannelInvite = {
       ...invite,
       status: 'accepted' as const,
       respondedAt: timestamp,
@@ -373,10 +374,10 @@ export function Account() {
     }
   };
 
-  const handleDeclineInvite = (invite: UserInvite) => {
+  const handleDeclineInvite = (invite: UserChannelInvite) => {
     const now = Date.now();
     // Decline invite using Redux
-    const updatedInvite: UserInvite = {
+    const updatedInvite: UserChannelInvite = {
       ...invite,
       status: 'declined' as const,
       respondedAt: now,

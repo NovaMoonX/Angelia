@@ -1,8 +1,9 @@
 import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import type { Channel, User } from '@lib/mockData';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import { Channel } from '@/lib/channel';
+import { User } from '@/lib/user';
 
 interface ChannelCardProps {
   channel: Channel;

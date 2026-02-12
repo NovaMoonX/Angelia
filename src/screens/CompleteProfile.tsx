@@ -9,7 +9,7 @@ import {
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { type AvatarPreset } from '@lib/mockData';
+import { type AvatarPreset } from '@lib/app';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { createUserProfile } from '@store/actions/authActions';

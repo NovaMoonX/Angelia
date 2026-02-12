@@ -1,7 +1,7 @@
 import { BellIcon } from '@components/BellIcon';
 import { PostFormModal } from '@components/PostFormModal';
-import { SkeletonTidingCard } from '@components/SkeletonTidingCard';
-import { TidingCard } from '@components/TidingCard';
+import { SkeletonPostCard } from '@components/SkeletonPostCard';
+import { PostCard } from '@components/PostCard';
 import {
   Avatar,
   Button,
@@ -28,10 +28,10 @@ export function Feed() {
   } | null;
 
   // Get data from Redux store
-  const tidings = useAppSelector((state) => state.tidings.items);
+  const posts = useAppSelector((state) => state.posts.items);
   const channels = useAppSelector((state) => state.channels.items);
   const currentUser = useAppSelector((state) => state.users.currentUser);
-  const userInvites = useAppSelector((state) => state.invites.items);
+  const userChannelInvites = useAppSelector((state) => state.invites.items);
 
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
@@ -52,23 +52,23 @@ export function Feed() {
   const [firstPostVisible, setFirstPostVisible] = useState(true);
   const [secondPostVisible, setSecondPostVisible] = useState(true);
 
-  // Filter and sort tidings
-  const filteredAndSortedTidings = useMemo(() => {
-    let filtered = tidings;
+  // Filter and sort posts
+  const filteredAndSortedPosts = useMemo(() => {
+    let filtered = posts;
 
     // Filter by channel
     if (selectedChannel === 'daily') {
       // Show all daily channel posts
-      filtered = filtered.filter((tiding) => tiding.isDaily);
+      filtered = filtered.filter((post) => post.isDaily);
     } else if (selectedChannel !== 'all') {
       filtered = filtered.filter(
-        (tiding) => tiding.channelId === selectedChannel,
+        (post) => post.channelId === selectedChannel,
       );
     }
 
     // Filter by priority
     if (priorityFilter === 'high') {
-      filtered = filtered.filter((tiding) => tiding.isHighPriority);
+      filtered = filtered.filter((post) => post.isHighPriority);
     }
 
     const sorted = [...filtered].sort((a, b) => {
@@ -80,16 +80,16 @@ export function Feed() {
     });
 
     return sorted;
-  }, [tidings, selectedChannel, sortOrder, priorityFilter]);
+  }, [posts, selectedChannel, sortOrder, priorityFilter]);
 
-  // Get currently displayed tidings
-  const displayedTidings = useMemo(() => {
-    const result = filteredAndSortedTidings.slice(0, displayedCount);
+  // Get currently displayed posts
+  const displayedPosts = useMemo(() => {
+    const result = filteredAndSortedPosts.slice(0, displayedCount);
 
     return result;
-  }, [filteredAndSortedTidings, displayedCount]);
+  }, [filteredAndSortedPosts, displayedCount]);
 
-  const hasMore = displayedCount < filteredAndSortedTidings.length;
+  const hasMore = displayedCount < filteredAndSortedPosts.length;
 
   // Restore scroll position when returning from post detail
   useEffect(() => {
@@ -251,7 +251,7 @@ export function Feed() {
     return () => {
       observer.disconnect();
     };
-  }, [displayedTidings]);
+  }, [displayedPosts]);
 
   // Channel options for Select
   const channelOptions = [
@@ -303,8 +303,8 @@ export function Feed() {
 
   // Memoized: Check for pending invites
   const hasPendingInvites = useMemo(() => {
-    return userInvites.some((invite) => invite.status === 'pending');
-  }, [userInvites]);
+    return userChannelInvites.some((invite) => invite.status === 'pending');
+  }, [userChannelInvites]);
 
   // Save scroll position before navigating to post
   const saveScrollPosition = () => {
@@ -346,7 +346,7 @@ export function Feed() {
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-foreground text-3xl font-bold'>Tidings</h1>
+              <h1 className='text-foreground text-3xl font-bold'>Posts</h1>
               <p className='text-foreground/60'>
                 Stay connected with family updates
               </p>
@@ -440,34 +440,34 @@ export function Feed() {
 
         {/* Feed */}
         <div className='space-y-4'>
-          {displayedTidings.map((tiding, index) => (
+          {displayedPosts.map((post, index) => (
             <div
-              key={tiding.id}
+              key={post.id}
               ref={
                 index === 0 ? firstPostRef : index === 1 ? secondPostRef : null
               }
             >
-              <TidingCard tiding={tiding} onNavigate={saveScrollPosition} />
+              <PostCard post={post} onNavigate={saveScrollPosition} />
             </div>
           ))}
 
           {/* Loading skeletons */}
           {isLoadingMore &&
             Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonTidingCard key={`skeleton-${index}`} />
+              <SkeletonPostCard key={`skeleton-${index}`} />
             ))}
 
           {/* End of feed message */}
-          {!hasMore && displayedTidings.length > 0 && (
+          {!hasMore && displayedPosts.length > 0 && (
             <div className='text-foreground/60 py-8 text-center'>
-              <p>You've caught up with all tidings</p>
+              <p>You've caught up with all posts</p>
             </div>
           )}
 
           {/* Empty state */}
-          {displayedTidings.length === 0 && !isLoadingMore && (
+          {displayedPosts.length === 0 && !isLoadingMore && (
             <div className='space-y-2 py-12 text-center'>
-              <p className='text-foreground/60 text-lg'>No tidings found</p>
+              <p className='text-foreground/60 text-lg'>No posts found</p>
               <p className='text-foreground/40 text-sm'>
                 Try selecting a different channel or check back later
               </p>

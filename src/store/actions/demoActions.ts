@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { enterDemoMode as enterDemoModeAction, exitDemoMode as exitDemoModeAction } from '../slices/demoSlice';
-import { loadDemoTidings, clearTidings } from '../slices/tidingsSlice';
+import { loadDemoPosts, clearPosts } from '../slices/postsSlice';
 import { loadDemoChannels, clearChannels } from '../slices/channelsSlice';
 import { loadDemoUsers, clearUsers } from '../slices/usersSlice';
 import { loadDemoInvites, clearInvites } from '../slices/invitesSlice';
@@ -11,13 +11,13 @@ export const enterDemoMode = createAsyncThunk(
   'demo/enter',
   async (_, { dispatch }) => {
     // First, clear any existing data
-    dispatch(clearTidings());
+    dispatch(clearPosts());
     dispatch(clearChannels());
     dispatch(clearUsers());
     dispatch(clearInvites());
     
     // Then load demo data
-    dispatch(loadDemoTidings());
+    dispatch(loadDemoPosts());
     dispatch(loadDemoChannels());
     dispatch(loadDemoUsers());
     dispatch(loadDemoInvites());

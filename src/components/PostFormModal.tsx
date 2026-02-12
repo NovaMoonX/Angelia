@@ -10,7 +10,8 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { X } from '@moondreamsdev/dreamer-ui/symbols';
-import type { Channel, MediaItem } from '@lib/mockData';
+import { MediaItem } from '@/lib/post';
+import { Channel } from '@/lib/channel';
 
 export interface PostFormData {
   text: string;

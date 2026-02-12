@@ -16,7 +16,7 @@ import {
   fetchUserProfile,
   syncEmailVerified,
 } from '@/store/actions/authActions';
-import { User } from '@/lib/mockData';
+import { User } from '@/lib/user';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -57,9 +57,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.error(
             'Error fetching user profile on auth state change:',
             err,
-          );
-          alert(
-            'An error occurred while fetching your profile. Please try signing in again.',
           );
         } finally {
           setLoading(false);

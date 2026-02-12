@@ -1,14 +1,15 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Avatar, Badge } from '@moondreamsdev/dreamer-ui/components';
-import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
-import {
-  getChannelByInviteCode,
-  getUserById,
-  mockCurrentUser,
-  mockChannels,
-} from '@lib/mockData';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { getChannelByInviteCode, mockChannels } from '@lib/channel';
+import { getUserById, mockCurrentUser } from '@lib/user';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+} from '@moondreamsdev/dreamer-ui/components';
+import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export function InviteAccept() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
@@ -23,7 +24,7 @@ export function InviteAccept() {
   const channel = useMemo(() => {
     if (!inviteCode) return null;
     const result = getChannelByInviteCode(inviteCode);
-    
+
     return result;
   }, [inviteCode]);
 
@@ -31,7 +32,7 @@ export function InviteAccept() {
   const channelOwner = useMemo(() => {
     if (!channel) return null;
     const result = getUserById(channel.ownerId);
-    
+
     return result;
   }, [channel]);
 
@@ -39,7 +40,7 @@ export function InviteAccept() {
   const isAlreadySubscribed = useMemo(() => {
     if (!channel) return false;
     const result = channel.subscribers.includes(mockCurrentUser.id);
-    
+
     return result;
   }, [channel]);
 
@@ -103,9 +104,9 @@ export function InviteAccept() {
     return (
       <div className='page flex items-center justify-center'>
         <div className='w-full max-w-md px-4'>
-          <Card className='p-8 space-y-6 text-center'>
+          <Card className='space-y-6 p-8 text-center'>
             <div className='space-y-2'>
-              <h1 className='text-2xl font-bold text-foreground'>
+              <h1 className='text-foreground text-2xl font-bold'>
                 Invalid Invitation
               </h1>
               <p className='text-foreground/60'>
@@ -124,16 +125,16 @@ export function InviteAccept() {
   return (
     <div className='page flex items-center justify-center'>
       <div className='w-full max-w-md px-4'>
-        <Card className='p-8 space-y-6'>
+        <Card className='space-y-6 p-8'>
           {/* Header */}
-          <div className='text-center space-y-4 pb-4'>
+          <div className='space-y-4 pb-4 text-center'>
             {channelOwner && (
               <div className='flex justify-center'>
                 <Avatar preset={channelOwner.avatar} size='lg' />
               </div>
             )}
             <div className='space-y-3'>
-              <h1 className='text-2xl font-bold text-foreground'>
+              <h1 className='text-foreground text-2xl font-bold'>
                 You've been invited!
               </h1>
               <p className='text-foreground/70'>
@@ -142,7 +143,7 @@ export function InviteAccept() {
                   : 'You have been invited to join '}
                 <Badge
                   variant='secondary'
-                  className='inline-flex mx-1 text-lg font-semibold px-3 py-1'
+                  className='mx-1 inline-flex px-3 py-1 text-lg font-semibold'
                   style={{ borderColor: channel.color }}
                 >
                   {channel.name}
@@ -153,8 +154,8 @@ export function InviteAccept() {
 
           {/* Already subscribed message */}
           {isAlreadySubscribed && (
-            <div className='bg-muted/20 p-4 rounded-lg'>
-              <p className='text-sm text-foreground/70 text-center'>
+            <div className='bg-muted/20 rounded-lg p-4'>
+              <p className='text-foreground/70 text-center text-sm'>
                 You are already subscribed to this channel
               </p>
             </div>
@@ -165,7 +166,11 @@ export function InviteAccept() {
             <Button onClick={handleJoinChannel} className='w-full'>
               {isAlreadySubscribed ? 'Go to Channel' : 'Join Channel'}
             </Button>
-            <Button onClick={handleDecline} variant='tertiary' className='w-full'>
+            <Button
+              onClick={handleDecline}
+              variant='tertiary'
+              className='w-full'
+            >
               Decline
             </Button>
           </div>

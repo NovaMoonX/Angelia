@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Channel, mockChannels } from '@lib/mockData';
+import { Channel, mockChannels } from '@lib/channel';
 import { resetAllState } from '@store/actions/globalActions';
 
 interface ChannelsState {

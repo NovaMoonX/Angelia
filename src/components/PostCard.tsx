@@ -1,5 +1,4 @@
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import type { Tiding } from '@lib/mockData';
 import {
   Avatar,
   Badge,
@@ -9,19 +8,20 @@ import {
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRelativeTime } from '@lib/timeUtils';
+import { Post } from '@/lib/post';
 
-interface TidingCardProps {
-  tiding: Tiding;
+interface PostCardProps {
+  post: Post;
   onNavigate?: () => void;
 }
 
-export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
+export function PostCard({ post, onNavigate }: PostCardProps) {
   const navigate = useNavigate();
-  const relativeTime = getRelativeTime(tiding.timestamp);
+  const relativeTime = getRelativeTime(post.timestamp);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
+    const colorData = CHANNEL_COLOR_MAP.get(post.channelColor);
     return {
       backgroundColor: colorData?.value || '#c7d2fe',
       textColor: colorData?.textColor || '#4338ca',
@@ -32,8 +32,8 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
 
   // Use media array if available, otherwise fall back to images
   const mediaItems = useMemo(() => {
-    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
-  }, [tiding.media, tiding.images]);
+    return post.media || post.images.map(url => ({ type: 'image' as const, url }));
+  }, [post.media, post.images]);
 
   const handleCarouselIndexChange = (newIndex: number) => {
     // Pause all videos when carousel index changes
@@ -57,7 +57,7 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
     if (onNavigate) {
       onNavigate();
     }
-    navigate(`/tiding/${tiding.id}`);
+    navigate(`/post/${post.id}`);
   };
 
   return (
@@ -67,7 +67,7 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
     >
       <Card className='relative overflow-hidden p-0'>
       {/* High Priority Banner */}
-      {tiding.isHighPriority && (
+      {post.isHighPriority && (
         <div
           className='absolute top-0 left-0 z-10 h-0 w-0 border-b-50 border-l-50 border-b-transparent border-l-red-500'
           aria-label='High priority post'
@@ -86,10 +86,10 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
       <div className='space-y-3 p-4'>
         <div className='flex items-start justify-between gap-3'>
           <div className='flex items-center gap-3'>
-            <Avatar preset={tiding.authorAvatar} size='md' />
+            <Avatar preset={post.authorAvatar} size='md' />
             <div className='flex flex-col'>
               <span className='text-foreground font-semibold'>
-                {tiding.authorName}
+                {post.authorName}
               </span>
               <span className='text-foreground/60 text-sm'>{relativeTime}</span>
             </div>
@@ -103,13 +103,13 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
               color: colors.textColor,
             }}
           >
-            {tiding.channelName}
+            {post.channelName}
           </Badge>
         </div>
 
         {/* Text Content */}
         <p className='text-foreground leading-relaxed whitespace-pre-wrap'>
-          {tiding.text}
+          {post.text}
         </p>
       </div>
 
@@ -143,9 +143,9 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
               onIndexChange={handleCarouselIndexChange}
             >
               {mediaItems.map((item, index) => (
-                <div key={`${tiding.id}-media-${index}`} className='w-full'>
+                <div key={`${post.id}-media-${index}`} className='w-full'>
                   {item.type === 'video' ? (
-                    <div className='relative w-full bg-black flex items-center justify-center min-h-[400px]'>
+                    <div className='relative w-full bg-black flex items-center justify-center min-h-100'>
                       <video
                         ref={(el) => {
                           if (el) {
@@ -156,7 +156,7 @@ export function TidingCard({ tiding, onNavigate }: TidingCardProps) {
                         }}
                         src={item.url}
                         controls
-                        className='h-auto w-full max-h-[600px]'
+                        className='h-auto w-full max-h-150'
                         preload='metadata'
                       />
                     </div>

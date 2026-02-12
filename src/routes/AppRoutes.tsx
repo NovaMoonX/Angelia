@@ -62,7 +62,7 @@ export const router = createBrowserRouter([
             },
           },
           {
-            path: 'tiding/:id',
+            path: 'post/:id',
             HydrateFallback: Loading,
             lazy: async () => {
               const { default: PostDetail } =

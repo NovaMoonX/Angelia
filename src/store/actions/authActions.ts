@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { type User } from '@lib/mockData';
+import { type User } from '@lib/user';
 import { setCurrentUser } from '../slices/usersSlice';
 
 /**

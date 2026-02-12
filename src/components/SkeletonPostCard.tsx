@@ -1,6 +1,6 @@
 import { Card, Skeleton } from '@moondreamsdev/dreamer-ui/components';
 
-export function SkeletonTidingCard() {
+export function SkeletonPostCard() {
   return (
     <Card className='p-0 overflow-hidden'>
       {/* Header */}

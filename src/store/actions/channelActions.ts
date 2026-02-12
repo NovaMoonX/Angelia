@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { Channel } from '@lib/mockData';
+import { Channel } from '@lib/channel';
 import { addChannel } from '../slices/channelsSlice';
 
 /**

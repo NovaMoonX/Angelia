@@ -2,11 +2,11 @@ import { ChatMessage } from '@components/ChatMessage';
 import { ReactionDisplay } from '@components/ReactionDisplay';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import {
-  mockCurrentUser,
-  mockTidings,
+  mockPosts,
   type Comment,
   type Reaction,
-} from '@lib/mockData';
+} from '@lib/post';
+import { mockCurrentUser } from '@lib/user';
 import {
   COMMON_EMOJIS,
   JOIN_CONVERSATION_PHRASES,
@@ -37,9 +37,9 @@ export function PostDetail() {
   const navigate = useNavigate();
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
-  const [tiding, setTiding] = useState(() => {
-    const foundTiding = mockTidings.find((t) => t.id === id);
-    return foundTiding;
+  const [post, setPost] = useState(() => {
+    const foundPost = mockPosts.find((t) => t.id === id);
+    return foundPost;
   });
 
   const [newMessage, setNewMessage] = useState('');
@@ -57,17 +57,17 @@ export function PostDetail() {
   };
 
   const sortedReactions = useMemo(() => {
-    if (!tiding?.reactions) return [];
-    return [...(tiding?.reactions ?? [])].sort(
+    if (!post?.reactions) return [];
+    return [...(post?.reactions ?? [])].sort(
       (a, b) => b.userIds.length - a.userIds.length,
     );
-  }, [tiding?.reactions]);
+  }, [post?.reactions]);
 
   // Use media array if available, otherwise fall back to images
   const mediaItems = useMemo(() => {
-    if (!tiding) return [];
-    return tiding.media || tiding.images.map(url => ({ type: 'image' as const, url }));
-  }, [tiding]);
+    if (!post) return [];
+    return post.media || post.images.map(url => ({ type: 'image' as const, url }));
+  }, [post]);
 
   const handleCarouselIndexChange = (newIndex: number) => {
     // Pause all videos when carousel index changes
@@ -78,7 +78,7 @@ export function PostDetail() {
     });
   };
 
-  if (!tiding) {
+  if (!post) {
     return (
       <div className='page flex flex-col items-center justify-center'>
         <div className='space-y-4 text-center'>
@@ -89,10 +89,10 @@ export function PostDetail() {
     );
   }
 
-  const relativeTime = getRelativeTime(tiding.timestamp);
+  const relativeTime = getRelativeTime(post.timestamp);
 
   const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(tiding.channelColor);
+    const colorData = CHANNEL_COLOR_MAP.get(post.channelColor);
 
     return {
       backgroundColor: colorData?.value || '#c7d2fe',
@@ -102,16 +102,16 @@ export function PostDetail() {
 
   const colors = getColorPair();
 
-  const hasUserReacted = tiding.reactions.some((reaction) =>
+  const hasUserReacted = post.reactions.some((reaction) =>
     reaction.userIds.includes(mockCurrentUser.id),
   );
 
-  const isEnrolledInConversation = tiding.conversationEnrollees.includes(
+  const isEnrolledInConversation = post.conversationEnrollees.includes(
     mockCurrentUser.id,
   );
 
   const handleReaction = (emoji: string) => {
-    setTiding((prev) => {
+    setPost((prev) => {
       if (!prev) return prev;
 
       const existingReactionIndex = prev.reactions.findIndex(
@@ -166,7 +166,7 @@ export function PostDetail() {
   };
 
   const handleJoinConversation = () => {
-    setTiding((prev) => {
+    setPost((prev) => {
       if (!prev) return prev;
 
       return {
@@ -207,7 +207,7 @@ export function PostDetail() {
       timestamp: Date.now(),
     };
 
-    setTiding((prev) => {
+    setPost((prev) => {
       if (!prev) return prev;
 
       return {
@@ -241,7 +241,7 @@ export function PostDetail() {
         </div>
 
         <Card className='relative overflow-hidden p-0'>
-          {tiding.isHighPriority && (
+          {post.isHighPriority && (
             <div
               className='absolute top-0 left-0 z-10 h-0 w-0 border-b-50 border-l-50 border-b-transparent border-l-red-500'
               aria-label='High priority post'
@@ -259,10 +259,10 @@ export function PostDetail() {
           <div className='space-y-3 p-4'>
             <div className='flex items-start justify-between gap-3'>
               <div className='flex items-center gap-3'>
-                <Avatar preset={tiding.authorAvatar} size='md' />
+                <Avatar preset={post.authorAvatar} size='md' />
                 <div className='flex flex-col'>
                   <span className='text-foreground font-semibold'>
-                    {tiding.authorName}
+                    {post.authorName}
                   </span>
                   <span className='text-foreground/60 text-sm'>
                     {relativeTime}
@@ -278,12 +278,12 @@ export function PostDetail() {
                   color: colors.textColor,
                 }}
               >
-                {tiding.channelName}
+                {post.channelName}
               </Badge>
             </div>
 
             <p className='text-foreground leading-relaxed whitespace-pre-wrap'>
-              {tiding.text}
+              {post.text}
             </p>
           </div>
 
@@ -316,7 +316,7 @@ export function PostDetail() {
                   onIndexChange={handleCarouselIndexChange}
                 >
                   {mediaItems.map((item, index) => (
-                    <div key={`${tiding.id}-media-${index}`} className='w-full'>
+                    <div key={`${post.id}-media-${index}`} className='w-full'>
                       {item.type === 'video' ? (
                         <div className='relative w-full bg-black flex items-center justify-center min-h-100'>
                           <video
@@ -405,7 +405,7 @@ export function PostDetail() {
                 {sortedReactions.reduce((sum, r) => sum + r.userIds.length, 0)})
               </TabsTrigger>
               <TabsTrigger value='conversation'>
-                Conversation ({tiding.comments.length})
+                Conversation ({post.comments.length})
               </TabsTrigger>
             </TabsList>
 
@@ -445,7 +445,7 @@ export function PostDetail() {
                     </p>
                     <div className='flex flex-wrap gap-2'>
                       {COMMON_EMOJIS.map((emoji) => {
-                        const existingReaction = tiding.reactions.find(
+                        const existingReaction = post.reactions.find(
                           (r) => r.emoji === emoji,
                         );
                         const isUserReacted =
@@ -501,22 +501,22 @@ export function PostDetail() {
                 {!isEnrolledInConversation ? (
                   <div className='space-y-4 py-8 text-center'>
                     <h3 className='text-foreground text-lg font-semibold'>
-                      {tiding.comments.length === 0
+                      {post.comments.length === 0
                         ? 'Start the conversation'
                         : 'Join the conversation'}
                     </h3>
                     <p className='text-foreground/60 text-sm'>
-                      {tiding.comments.length === 0
+                      {post.comments.length === 0
                         ? 'Enroll to share your thoughts'
                         : 'Enroll to see messages and share your thoughts'}
                     </p>
                     <Button onClick={handleJoinConversation}>
-                      {tiding.comments.length === 0
+                      {post.comments.length === 0
                         ? 'Start Conversation'
                         : 'Join Conversation'}
                     </Button>
                     <p className='text-foreground/70 mt-2 text-sm italic'>
-                      {tiding.comments.length === 0
+                      {post.comments.length === 0
                         ? getRandomPhrase(START_CONVERSATION_PHRASES)
                         : getRandomPhrase(JOIN_CONVERSATION_PHRASES)}
                     </p>
@@ -527,7 +527,7 @@ export function PostDetail() {
                       Conversation
                     </h3>
 
-                    {tiding.comments.length === 0 ? (
+                    {post.comments.length === 0 ? (
                       <div className='py-8 text-center'>
                         <p className='text-foreground/60 text-sm'>
                           No messages yet. Start the conversation!
@@ -535,7 +535,7 @@ export function PostDetail() {
                       </div>
                     ) : (
                       <div className='space-y-2'>
-                        {tiding.comments.map((comment) => (
+                        {post.comments.map((comment) => (
                           <ChatMessage
                             key={comment.id}
                             authorId={comment.authorId}
