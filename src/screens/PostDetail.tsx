@@ -66,7 +66,7 @@ export function PostDetail() {
   // Use media array if available, otherwise fall back to images
   const mediaItems = useMemo(() => {
     if (!post) return [];
-    return post.media || post.images.map(url => ({ type: 'image' as const, url }));
+    return post.media ?? [];
   }, [post]);
 
   const handleCarouselIndexChange = (newIndex: number) => {

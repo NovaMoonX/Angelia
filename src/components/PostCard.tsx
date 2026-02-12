@@ -32,8 +32,8 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
 
   // Use media array if available, otherwise fall back to images
   const mediaItems = useMemo(() => {
-    return post.media || post.images.map(url => ({ type: 'image' as const, url }));
-  }, [post.media, post.images]);
+    return post.media ?? []
+  }, [post.media]);
 
   const handleCarouselIndexChange = (newIndex: number) => {
     // Pause all videos when carousel index changes

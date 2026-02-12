@@ -29,11 +29,10 @@ export interface Post {
   channelName: string;
   channelColor: string;
   text: string;
-  images: string[];
-  media?: MediaItem[]; // Optional media array supporting both images and videos
+  media: MediaItem[] | null; // Optional media array supporting both images and videos
   timestamp: number; // Unix timestamp in ms
   isHighPriority: boolean;
-  isDaily?: boolean; // Indicates if this is from a daily channel
+  isDaily: boolean | null; // Indicates if this is from a daily channel
   reactions: Reaction[]; // Array of reactions
   comments: Comment[]; // Array of comments/messages
   conversationEnrollees: string[]; // User IDs who have joined the conversation
