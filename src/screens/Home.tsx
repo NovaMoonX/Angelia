@@ -6,10 +6,12 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useAppDispatch } from '@store/hooks';
 import { enterDemoMode } from '@store/actions/demoActions';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 function Home() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { firebaseUser } = useAuth();
 
   const handleViewDemoFeed = () => {
     dispatch(enterDemoMode());
@@ -27,13 +29,24 @@ function Home() {
               Angelia
             </h2>
           </div>
-          <Button
-            href='/auth?mode=login'
-            variant='tertiary'
-            className='text-sm md:text-base'
-          >
-            Login
-          </Button>
+          {!firebaseUser && (
+            <Button
+              href='/auth?mode=login'
+              variant='tertiary'
+              className='text-sm md:text-base'
+            >
+              Login
+            </Button>
+          )}
+          {firebaseUser && (
+            <Button
+              href='/feed'
+              variant='tertiary'
+              className='text-sm md:text-base'
+            >
+              Head to Feed →
+            </Button>
+          )}
         </header>
 
         {/* Hero Section */}
