@@ -334,6 +334,7 @@ export function Account() {
         isDaily: false,
         ownerId: currentUser.id,
         subscribers: [currentUser.id],
+        inviteCode: null,
       };
       dispatch(addChannel(newChannel));
       channelDescriptions[newChannel.id] = data.description;
