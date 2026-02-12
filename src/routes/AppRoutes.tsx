@@ -4,11 +4,13 @@ import Home from '@screens/Home';
 import Layout from '@ui/Layout';
 import Loading from '@ui/Loading';
 import ProtectedRoutes from './ProtectedRoutes';
+import ErrorFallback from '@/screens/ErrorFallback';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
+    ErrorBoundary: ErrorFallback,
     children: [
       {
         index: true,
@@ -60,7 +62,7 @@ export const router = createBrowserRouter([
             },
           },
           {
-            path: 'tiding/:id',
+            path: 'post/:id',
             HydrateFallback: Loading,
             lazy: async () => {
               const { default: PostDetail } =

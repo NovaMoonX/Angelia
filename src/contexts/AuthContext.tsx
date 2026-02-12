@@ -12,7 +12,11 @@ import {
 import { auth } from '@lib/firebase';
 import { AuthContext, AuthContextType } from '@hooks/useAuth';
 import { useAppDispatch } from '@/store/hooks';
-import { fetchUserProfile, syncEmailVerified } from '@/store/authActions';
+import {
+  fetchUserProfile,
+  syncEmailVerified,
+} from '@/store/actions/authActions';
+import { User } from '@/lib/user';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -36,12 +40,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const result = await dispatch(fetchUserProfile(user.uid));
 
           // If Firebase user's email is verified but Firestore doesn't reflect it, sync it
+          const resultAsUser: User | null =
+            result.payload && typeof result.payload === 'object'
+              ? (result.payload as User)
+              : null;
           if (
             user.emailVerified &&
-            result.payload &&
-            typeof result.payload === 'object' &&
-            'emailVerified' in result.payload &&
-            !result.payload.emailVerified
+            resultAsUser &&
+            !resultAsUser.accountProgress.emailVerified
           ) {
             await dispatch(
               syncEmailVerified({ uid: user.uid, emailVerified: true }),
@@ -51,9 +57,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.error(
             'Error fetching user profile on auth state change:',
             err,
-          );
-          alert(
-            'An error occurred while fetching your profile. Please try signing in again.',
           );
         } finally {
           setLoading(false);

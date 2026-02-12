@@ -1,7 +1,7 @@
 import { Avatar } from '@moondreamsdev/dreamer-ui/components';
-import { getUserById } from '@lib/mockData';
 import { getRelativeTime } from '@lib/timeUtils';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { getUserById } from '@/lib/user';
 
 interface ChatMessageProps {
   authorId: string;
@@ -50,7 +50,7 @@ export function ChatMessage({
         </div>
         <div
           className={join(
-            'px-4 py-2 rounded-2xl break-words',
+            'px-4 py-2 rounded-2xl wrap-break-word',
             isCurrentUser
               ? 'bg-primary text-primary-foreground rounded-tr-sm'
               : 'bg-muted text-foreground rounded-tl-sm'

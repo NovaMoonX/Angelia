@@ -1,7 +1,7 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useAppDispatch } from '@store/hooks';
-import { exitDemoMode } from '@store/demoActions';
+import { exitDemoMode } from '@store/actions/demoActions';
 import { useNavigate } from 'react-router-dom';
 
 export function DemoModeBanner() {

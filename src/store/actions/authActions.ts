@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { type User } from '@lib/mockData';
-import { setCurrentUser } from './slices/usersSlice';
+import { type User } from '@lib/user';
+import { setCurrentUser } from '../slices/usersSlice';
 
 /**
  * Async thunk to fetch user profile from Firestore and set in Redux
@@ -45,7 +45,7 @@ export const createUserProfile = createAsyncThunk(
       lastName,
       funFact,
       avatar,
-    }: Omit<User, 'emailVerified' | 'joinedAt'>,
+    }: Omit<User,'joinedAt' | 'accountProgress'>,
     { dispatch },
   ) => {
     const newUser: User = {
@@ -55,9 +55,12 @@ export const createUserProfile = createAsyncThunk(
       lastName,
       funFact,
       avatar,
-      emailVerified: false,
-      signUpComplete: true,
       joinedAt: Date.now(),
+      accountProgress: {
+        emailVerified: false,
+        signUpComplete: true,
+        dailyChannelCreated: false,
+      },
     };
     try {
       // Save user profile to Firestore
@@ -68,8 +71,7 @@ export const createUserProfile = createAsyncThunk(
         lastName: newUser.lastName,
         funFact: newUser.funFact,
         avatar: newUser.avatar,
-        emailVerified: newUser.emailVerified,
-        signUpComplete: newUser.signUpComplete,
+        accountProgress: newUser.accountProgress,
         joinedAt: newUser.joinedAt,
       });
 
@@ -89,13 +91,16 @@ export const createUserProfile = createAsyncThunk(
  */
 export const syncEmailVerified = createAsyncThunk(
   'auth/syncEmailVerified',
-  async ({ uid, emailVerified }: { uid: string; emailVerified: boolean }, { dispatch }) => {
+  async (
+    { uid, emailVerified }: { uid: string; emailVerified: boolean },
+    { dispatch },
+  ) => {
     try {
       const userDocRef = doc(db, 'users', uid);
-      
+
       // Update emailVerified in Firestore
       await updateDoc(userDocRef, {
-        emailVerified,
+        'accountProgress.emailVerified': emailVerified,
       });
 
       // Fetch and update the user profile in Redux

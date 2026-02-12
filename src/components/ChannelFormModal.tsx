@@ -8,7 +8,7 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { CHANNEL_COLORS, DEFAULT_CHANNEL_COLOR } from '@lib/channelColors';
-import type { Channel } from '@lib/mockData';
+import type { Channel } from '@lib/channel';
 
 interface ChannelFormData {
   name: string;

@@ -15,7 +15,7 @@ service cloud.firestore {
     }
     
     // Temporary: Allow all reads/writes for other collections during development
-    // TODO: Add proper security rules for channels, tidings, invites, etc.
+    // TODO: Add proper security rules for channels, posts, invites, etc.
     match /{document=**} {
       allow read, write: if request.time < timestamp.date(2026, 3, 9);
     }

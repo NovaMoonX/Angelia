@@ -1,6 +1,6 @@
+import { Channel } from '@/lib/channel';
+import { mockCurrentUser, User } from '@/lib/user';
 import { Modal, Badge, Avatar, Separator, CopyButton } from '@moondreamsdev/dreamer-ui/components';
-import type { Channel, User } from '@lib/mockData';
-import { mockCurrentUser } from '@lib/mockData';
 
 interface ChannelModalProps {
   isOpen: boolean;

@@ -25,7 +25,7 @@ Multi-step authentication experience using Dreamer UI components:
   - "Back to Login" navigation
 - **Protected Routes**: Intelligent route protection with demo mode support
   - When **demo mode is DISABLED**:
-    - Requires user authentication for protected routes (`/feed`, `/tiding/:id`, `/account`, `/invite/:inviteCode`)
+    - Requires user authentication for protected routes (`/feed`, `/post/:id`, `/account`, `/invite/:inviteCode`)
     - Unauthenticated users are redirected to `/auth` with redirect parameter to return after login
     - Authenticated users must have verified their email to access protected routes
     - Unverified users are redirected to `/verify-email` page
@@ -62,9 +62,9 @@ A text-focused page explaining the research and philosophy behind Angelia:
   - **The 180-Day Rule** - Why updates fade after six months to mirror human memory and reduce performance pressure
 - **Comparison Table**: Visual comparison of Privacy, Intentionality, and Ephemerality between traditional social media and Angelia
 
-### 📰 Primary Feed (Tidings)
+### 📰 Primary Feed (Posts)
 
-A chronological feed for family updates called "Tidings":
+A chronological feed for family updates called "Posts":
 
 - **Create New Post**: 
   - Prominent "+ New Post" button in the feed header
@@ -76,20 +76,20 @@ A chronological feed for family updates called "Tidings":
   - Supported formats: JPEG, PNG, GIF, WebP for images; MP4, WebM, OGG for videos
   - Option to mark posts as high priority
   - Clean, intuitive form interface with real-time validation
-- **Dynamic Post Cards**: Each tiding features:
+- **Dynamic Post Cards**: Each post features:
   - Author avatar with preset cartoon-like icons
   - Channel badge with color coding
   - Rich text content
   - Media area supporting single images or image carousels for multiple photos
   - Relative timestamps (e.g., "30m ago", "2h ago")
   - Clickable cards that navigate to detailed post view
-- **Filtering**: Select dropdown to filter tidings by channel (All Channels or specific subscriptions)
+- **Filtering**: Select dropdown to filter posts by channel (All Channels or specific subscriptions)
 - **Sorting**: Choose between "Newest First" or "Oldest First" ordering
-- **Infinite Scroll**: Automatically loads more tidings as you scroll down
+- **Infinite Scroll**: Automatically loads more posts as you scroll down
 - **Scroll Position Restoration**: When viewing a post and returning to the feed, your previous scroll position is restored, maintaining your place in the feed and preserving the infinite scroll state
 - **Scroll-to-Top Button**: A floating button appears in the bottom right corner when you've scrolled past the first two posts, allowing quick navigation back to the top of the feed
 - **Loading States**: Skeleton cards provide visual feedback while loading
-- **Empty States**: Helpful messages when no tidings match filters
+- **Empty States**: Helpful messages when no posts match filters
 
 ### 💬 Reactions & Conversations
 
@@ -219,7 +219,7 @@ A streamlined notification system for managing channel invitations:
   - **Empty State**: Friendly message when no invites exist
     - "No notifications yet. When someone invites you to a channel, you'll see it here."
   
-- **Data Model**: `UserInvite` interface tracks:
+- **Data Model**: `UserChannelInvite` interface tracks:
   - Channel ID and inviter user ID
   - Invitation timestamp
   - Status (pending/accepted/declined)

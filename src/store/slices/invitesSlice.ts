@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserInvite, mockUserInvites } from '@lib/mockData';
-import { resetAllState } from '@store/globalActions';
+import { UserChannelInvite, mockUserChannelInvites } from '@lib/channel';
+import { resetAllState } from '@store/actions/globalActions';
 
 interface InvitesState {
-  items: UserInvite[];
+  items: UserChannelInvite[];
 }
 
 const initialState: InvitesState = {
@@ -14,10 +14,10 @@ const invitesSlice = createSlice({
   name: 'invites',
   initialState,
   reducers: {
-    setInvites: (state, action: PayloadAction<UserInvite[]>) => {
+    setInvites: (state, action: PayloadAction<UserChannelInvite[]>) => {
       state.items = action.payload;
     },
-    updateInvite: (state, action: PayloadAction<UserInvite>) => {
+    updateInvite: (state, action: PayloadAction<UserChannelInvite>) => {
       const index = state.items.findIndex(inv => inv.id === action.payload.id);
       if (index !== -1) {
         state.items[index] = action.payload;
@@ -27,7 +27,7 @@ const invitesSlice = createSlice({
       state.items = [];
     },
     loadDemoInvites: (state) => {
-      state.items = mockUserInvites;
+      state.items = mockUserChannelInvites;
     },
   },
   extraReducers: (builder) => {

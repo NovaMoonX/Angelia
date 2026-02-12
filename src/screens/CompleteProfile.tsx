@@ -9,10 +9,10 @@ import {
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { type AvatarPreset } from '@lib/mockData';
+import { type AvatarPreset } from '@lib/app';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { createUserProfile } from '@store/authActions';
+import { createUserProfile } from '@store/actions/authActions';
 import { useAuth } from '@hooks/useAuth';
 
 interface ProfileFormData {
@@ -41,7 +41,7 @@ export function CompleteProfile() {
 
   // Check if profile is already complete and redirect
   useEffect(() => {
-    if (currentUser?.signUpComplete) {
+    if (currentUser?.accountProgress.signUpComplete) {
       const timer = setTimeout(() => {
         navigate('/feed');
       }, 2000);
@@ -50,7 +50,7 @@ export function CompleteProfile() {
   }, [currentUser, navigate]);
 
   // Show notice if profile already complete
-  if (currentUser?.signUpComplete) {
+  if (currentUser?.accountProgress.signUpComplete) {
     return (
       <div className='page flex items-center justify-center p-6'>
         <div className='w-full max-w-md space-y-8'>
@@ -103,7 +103,6 @@ export function CompleteProfile() {
           lastName: profileData.lastName,
           funFact: profileData.funFact,
           avatar: profileData.avatar,
-          signUpComplete: true,
         }),
       );
 

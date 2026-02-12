@@ -10,8 +10,8 @@ import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { enterDemoMode } from '@store/demoActions';
-import { fetchUserProfile } from '@store/authActions';
+import { enterDemoMode } from '@store/actions/demoActions';
+import { fetchUserProfile } from '@store/actions/authActions';
 import { useAuth } from '@hooks/useAuth';
 import { getAuthErrorMessage } from '@/util/firebaseAuth';
 import Loading from '@ui/Loading';
@@ -66,7 +66,7 @@ export function Auth() {
   // Show logged-in user state while checking redirect conditions
   // Don't show if we're in the middle of authenticating
   if (firebaseUser && !isAuthenticating) {
-    const profileComplete = currentUser?.signUpComplete || false;
+    const profileComplete = currentUser?.accountProgress.signUpComplete;
     const emailVerified = firebaseUser.emailVerified;
 
     let title = 'You\'re Already Logged In';
@@ -193,7 +193,7 @@ export function Auth() {
             icon='👀'
             description={
               <>
-                <span className='text-black'>
+                <span className='text-foreground'>
                   Want to see the app in action?{' '}
                 </span>
                 <Link
