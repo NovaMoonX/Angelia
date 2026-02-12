@@ -13,7 +13,7 @@ function App() {
     >
       <Provider store={store}>
         <AuthProvider>
-          <DreamerUIProvider>
+          <DreamerUIProvider theme={{ defaultTheme: 'light'}}>
             <RouterProvider router={router} />
           </DreamerUIProvider>
         </AuthProvider>
