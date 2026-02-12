@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
 import { type User } from '@lib/mockData';
-import { setCurrentUser } from './slices/usersSlice';
+import { setCurrentUser } from '../slices/usersSlice';
 
 /**
  * Async thunk to fetch user profile from Firestore and set in Redux

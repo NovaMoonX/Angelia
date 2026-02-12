@@ -4,7 +4,7 @@ import { ComparisonTable } from '@components/ComparisonTable';
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useAppDispatch } from '@store/hooks';
-import { enterDemoMode } from '@store/demoActions';
+import { enterDemoMode } from '@store/actions/demoActions';
 import { useNavigate } from 'react-router-dom';
 
 function Home() {

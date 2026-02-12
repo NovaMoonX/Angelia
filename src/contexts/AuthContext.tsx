@@ -12,7 +12,7 @@ import {
 import { auth } from '@lib/firebase';
 import { AuthContext, AuthContextType } from '@hooks/useAuth';
 import { useAppDispatch } from '@/store/hooks';
-import { fetchUserProfile, syncEmailVerified } from '@/store/authActions';
+import { fetchUserProfile, syncEmailVerified } from '@/store/actions/authActions';
 
 interface AuthProviderProps {
   children: ReactNode;

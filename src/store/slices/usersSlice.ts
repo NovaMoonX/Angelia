@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, mockCurrentUser, mockUsers } from '@lib/mockData';
-import { resetAllState } from '@store/globalActions';
+import { resetAllState } from '@store/actions/globalActions';
 
 interface UsersState {
   currentUser: User | null;

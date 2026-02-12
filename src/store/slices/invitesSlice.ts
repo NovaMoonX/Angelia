@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserInvite, mockUserInvites } from '@lib/mockData';
-import { resetAllState } from '@store/globalActions';
+import { resetAllState } from '@store/actions/globalActions';
 
 interface InvitesState {
   items: UserInvite[];

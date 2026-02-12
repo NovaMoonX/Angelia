@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Tiding, mockTidings } from '@lib/mockData';
-import { resetAllState } from '@store/globalActions';
+import { resetAllState } from '@store/actions/globalActions';
 
 interface TidingsState {
   items: Tiding[];

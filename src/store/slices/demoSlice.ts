@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { resetAllState } from '@store/globalActions';
+import { resetAllState } from '@store/actions/globalActions';
 
 interface DemoState {
   isActive: boolean;

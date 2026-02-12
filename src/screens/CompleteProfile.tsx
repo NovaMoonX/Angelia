@@ -12,7 +12,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { type AvatarPreset } from '@lib/mockData';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { createUserProfile } from '@store/authActions';
+import { createUserProfile } from '@store/actions/authActions';
 import { useAuth } from '@hooks/useAuth';
 
 interface ProfileFormData {

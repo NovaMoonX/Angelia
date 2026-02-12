@@ -22,4 +22,4 @@ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 // Export global actions
-export { resetAllState } from './globalActions';
+export { resetAllState } from './actions/globalActions';
