@@ -37,6 +37,11 @@ html, body {
   transition: height 0.3s ease;
 }
 
+/* center text within Badge components */
+span[data-variant="base"][aria-hidden="true"] {
+  @apply text-center!
+}
+
 
 /* Dreamer UI styles */
 @import "@moondreamsdev/dreamer-ui/styles"; /* non-TailwindCSS styles */
