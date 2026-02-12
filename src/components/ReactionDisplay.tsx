@@ -21,7 +21,7 @@ export function ReactionDisplay({
       onClick={onClick}
       className={join(
         'px-3 py-1.5 gap-2 transition-all',
-        isUserReacted ? 'bg-primary/10 border-primary/30' : 'bg-transparent'
+        isUserReacted ? 'bg-accent/30' : 'bg-transparent'
       )}
     >
       <span className='text-base' role='img' aria-label={`Reaction: ${emoji}`}>
