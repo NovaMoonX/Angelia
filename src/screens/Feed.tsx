@@ -428,7 +428,7 @@ export function Feed() {
           <Callout
             variant='info'
             description={
-              <span className='text-blue-500'>
+              <span className='text-blue-500 inline-block pr-4'>
                 Click on any post to see more details, react with emojis, and
                 join the conversation!
               </span>
