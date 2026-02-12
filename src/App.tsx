@@ -11,7 +11,7 @@ import { AuthProvider } from '@contexts/AuthContext';
 
 function App() {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<div className='p-6 text-center'>Something went wrong.</div>}>
       <Provider store={store}>
         <AuthProvider>
           <ToastProvider>

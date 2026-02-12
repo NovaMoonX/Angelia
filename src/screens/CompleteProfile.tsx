@@ -41,7 +41,7 @@ export function CompleteProfile() {
 
   // Check if profile is already complete and redirect
   useEffect(() => {
-    if (currentUser?.signUpComplete) {
+    if (currentUser?.accountProgress.signUpComplete) {
       const timer = setTimeout(() => {
         navigate('/feed');
       }, 2000);
@@ -50,7 +50,7 @@ export function CompleteProfile() {
   }, [currentUser, navigate]);
 
   // Show notice if profile already complete
-  if (currentUser?.signUpComplete) {
+  if (currentUser?.accountProgress.signUpComplete) {
     return (
       <div className='page flex items-center justify-center p-6'>
         <div className='w-full max-w-md space-y-8'>
@@ -103,7 +103,6 @@ export function CompleteProfile() {
           lastName: profileData.lastName,
           funFact: profileData.funFact,
           avatar: profileData.avatar,
-          signUpComplete: true,
         }),
       );
 
