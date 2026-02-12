@@ -50,7 +50,7 @@ export function ProtectedRoutes() {
   }
 
   // If user hasn't completed signup (profile), redirect to complete-profile
-  if (!currentUser || !currentUser.signUpComplete) {
+  if (!currentUser || !currentUser?.accountProgress?.signUpComplete) {
     return <Navigate to='/complete-profile' replace />;
   }
 
