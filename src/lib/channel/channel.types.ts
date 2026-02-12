@@ -3,10 +3,10 @@ export interface Channel {
   id: string;
   name: string;
   color: string;
-  isDaily?: boolean;
+  isDaily: boolean | null;
   ownerId: string; // User who owns/created the channel
   subscribers: string[]; // Array of user IDs who have access to this channel
-  inviteCode?: string; // Unique invite code for sharing
+  inviteCode: string | null; // Unique invite code for sharing
 }
 
 // Channel Invite interface

@@ -36,6 +36,7 @@ export default function ErrorFallback() {
               onClick={() => {
                 signOut();
                 navigate('/auth');
+                document.location.reload();
               }}
               variant='tertiary'
             >

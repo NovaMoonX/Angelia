@@ -10,7 +10,12 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Just got back from an amazing hike at Red Rock Canyon! The kids were troopers and made it all the way to the top. The view was absolutely breathtaking.',
-    images: ['https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=600&fit=crop'],
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=600&fit=crop',
+      },
+    ],
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
     isHighPriority: false,
     isDaily: true,
@@ -30,7 +35,7 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
-    images: [],
+    media: [],
     timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
     isHighPriority: false,
     isDaily: true,
@@ -47,17 +52,18 @@ export const mockPosts: Post[] = [
     channelName: 'Travel Vlogs',
     channelColor: 'CYAN',
     text: 'Check out this amazing sunset from my trip! 🌅',
-    images: [],
     media: [
-      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
+      {
+        type: 'video',
+        url: '/demo/sunset.mp4',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 47, // 47 minutes ago
     isHighPriority: false,
-    reactions: [
-      { emoji: '😍', userIds: ['user1', 'user2'] },
-    ],
+    reactions: [{ emoji: '😍', userIds: ['user1', 'user2'] }],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '1a2',
@@ -68,16 +74,22 @@ export const mockPosts: Post[] = [
     channelName: 'Tech Reviews',
     channelColor: 'ORANGE',
     text: 'Comparing the latest gadgets - which one should I get? 🤔',
-    images: [],
     media: [
-      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
-      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
+      {
+        type: 'video',
+        url: '/demo/gadget-1.mp4',
+      },
+      {
+        type: 'video',
+        url: '/demo/gadget-2.mp4',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 48, // 48 minutes ago
     isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '1b',
@@ -85,14 +97,22 @@ export const mockPosts: Post[] = [
     authorName: 'Sarah Johnson',
     authorAvatar: 'cosmic-cat',
     channelId: 'channel5',
-    channelName: 'Family Moments',
+    channelName: 'Studio Moments',
     channelColor: 'VIOLET',
-    text: 'The kids putting on their little talent show! So proud of them. 🎭',
-    images: [],
+    text: 'Had a great time at the studio today! 🎤',
     media: [
-      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
-      { type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4' },
-      { type: 'image', url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&h=600&fit=crop' },
+      {
+        type: 'video',
+        url: '/demo/studio-1.mp4',
+      },
+      {
+        type: 'video',
+        url: '/demo/studio-2.mp4',
+      },
+      {
+        type: 'image',
+        url: '/demo/studio-3.png',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 50, // 50 minutes ago
     isHighPriority: false,
@@ -102,6 +122,7 @@ export const mockPosts: Post[] = [
     ],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '2',
@@ -112,9 +133,15 @@ export const mockPosts: Post[] = [
     channelName: 'Cooking Corner',
     channelColor: 'EMERALD',
     text: 'Tried a new recipe tonight - homemade pasta carbonara! Turned out better than expected. Recipe in the comments if anyone wants it.',
-    images: [
-      'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=600&fit=crop',
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800&h=600&fit=crop',
+      },
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=600&fit=crop',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
     isHighPriority: false,
@@ -131,6 +158,7 @@ export const mockPosts: Post[] = [
       },
     ],
     conversationEnrollees: ['currentUser'],
+    isDaily: null,
   },
   {
     id: '3',
@@ -141,7 +169,7 @@ export const mockPosts: Post[] = [
     channelName: 'Milestone Moments',
     channelColor: 'PINK',
     text: 'BIG NEWS! 🎉 Just got accepted into my dream graduate school! All those late nights studying paid off. So grateful for all your support.',
-    images: [],
+    media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 5, // 5 hours ago
     isHighPriority: true,
     reactions: [
@@ -151,6 +179,7 @@ export const mockPosts: Post[] = [
     ],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '4',
@@ -161,16 +190,26 @@ export const mockPosts: Post[] = [
     channelName: 'Garden Updates',
     channelColor: 'LIME',
     text: 'The tomato plants are finally producing! First harvest of the season. Nothing beats the taste of homegrown tomatoes.',
-    images: [
-      'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1594097677688-9c0d3229404a?w=800&h=600&fit=crop',
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=800&h=600&fit=crop',
+      },
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&h=600&fit=crop',
+      },
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1594097677688-9c0d3229404a?w=800&h=600&fit=crop',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
     isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '5',
@@ -181,7 +220,12 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Finally finished building the treehouse! Took three weekends but it was worth it. The kids are over the moon.',
-    images: ['https://images.unsplash.com/photo-1587502537745-84b86da1204f?w=800&h=600&fit=crop'],
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1587502537745-84b86da1204f?w=800&h=600&fit=crop',
+      },
+    ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2, // 2 days ago
     isHighPriority: false,
     isDaily: true,
@@ -198,15 +242,22 @@ export const mockPosts: Post[] = [
     channelName: 'Family Adventures',
     channelColor: 'AMBER',
     text: 'Beach day with the family! Perfect weather, clear water, and the kids found so many seashells. Making memories.',
-    images: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop',
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop',
+      },
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop',
+      },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3, // 3 days ago
     isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '7',
@@ -217,7 +268,7 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Just finished "The Midnight Library" - what a thought-provoking read! Highly recommend. Anyone else read it?',
-    images: [],
+    media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
     isHighPriority: false,
     isDaily: true,
@@ -234,12 +285,18 @@ export const mockPosts: Post[] = [
     channelName: 'Milestone Moments',
     channelColor: 'PINK',
     text: "Our little one took her first steps today! 🚶‍♀️ Can't believe how fast she's growing. Managed to catch it on video!",
-    images: ['https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=600&fit=crop'],
+    media: [
+      {
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=600&fit=crop',
+      },
+    ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
     isHighPriority: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+    isDaily: null,
   },
   {
     id: '9',
@@ -250,7 +307,7 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Morning coffee tastes better when you know you have a great day ahead! ☕ Working on my thesis today.',
-    images: [],
+    media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 6, // 6 hours ago
     isHighPriority: false,
     isDaily: true,
@@ -267,7 +324,7 @@ export const mockPosts: Post[] = [
     channelName: 'Daily',
     channelColor: 'INDIGO',
     text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
-    images: [],
+    media: [],
     timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
     isHighPriority: false,
     isDaily: true,
