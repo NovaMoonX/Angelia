@@ -20,7 +20,7 @@ export function VerifyEmail() {
 
   // Poll for email verification status every 3 seconds
   useEffect(() => {
-    if (!firebaseUser || firebaseUser.emailVerified) return;
+    if (!firebaseUser) return;
 
     const interval = setInterval(async () => {
       try {

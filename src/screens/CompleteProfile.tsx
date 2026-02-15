@@ -53,7 +53,7 @@ export function CompleteProfile() {
     }
   }, [currentUser, navigate]);
 
-  if (loading) {
+  if (loading || !firebaseUser || !firebaseUser.emailVerified) {
     return <Loading />
   }
 
