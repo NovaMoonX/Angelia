@@ -10,10 +10,13 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { AngeliaLogo } from '@components/AngeliaLogo';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { type AvatarPreset } from '@lib/app';
-import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { AVATAR_PRESETS, REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { createUserProfile } from '@store/actions/authActions';
+import {
+  createUserProfile,
+} from '@store/actions/authActions';
 import { useAuth } from '@hooks/useAuth';
+import { createDailyChannel } from '@/store/actions/channelActions';
 
 interface ProfileFormData {
   firstName: string;
@@ -41,7 +44,7 @@ export function CompleteProfile() {
 
   // Check if profile is already complete and redirect
   useEffect(() => {
-    if (currentUser?.accountProgress.signUpComplete) {
+    if (currentUser?.accountProgress?.signUpComplete) {
       const timer = setTimeout(() => {
         navigate('/feed');
       }, 2000);
@@ -50,7 +53,7 @@ export function CompleteProfile() {
   }, [currentUser, navigate]);
 
   // Show notice if profile already complete
-  if (currentUser?.accountProgress.signUpComplete) {
+  if (currentUser?.accountProgress?.signUpComplete) {
     return (
       <div className='page flex items-center justify-center p-6'>
         <div className='w-full max-w-md space-y-8'>
@@ -70,31 +73,14 @@ export function CompleteProfile() {
     );
   }
 
-  const avatarOptions: AvatarPreset[] = [
-    'astronaut',
-    'moon',
-    'star',
-    'galaxy',
-    'nebula',
-    'planet',
-    'cosmic-cat',
-    'dream-cloud',
-    'rocket',
-    'constellation',
-    'comet',
-    'twilight',
-  ];
-
   const handleProfileComplete = async () => {
     setIsLoading(true);
 
     try {
-      // Get the current Firebase user
       if (!firebaseUser) {
         throw new Error('No authenticated user found');
       }
 
-      // Create and save user profile using thunk
       await dispatch(
         createUserProfile({
           id: firebaseUser.uid,
@@ -106,11 +92,9 @@ export function CompleteProfile() {
         }),
       );
 
-      // Send email verification
       await sendVerificationEmail();
 
-      // If there's a redirect URL, navigate there directly after signup
-      // Otherwise, navigate to verify email
+      await dispatch(createDailyChannel(firebaseUser.uid));
       if (redirectUrl) {
         navigate(redirectUrl);
       } else {
@@ -185,7 +169,7 @@ export function CompleteProfile() {
           <div>
             <Label>Choose Your Avatar *</Label>
             <div className='mt-4 grid grid-cols-4 gap-3'>
-              {avatarOptions.map((avatar) => (
+              {AVATAR_PRESETS.map((avatar) => (
                 <button
                   key={avatar}
                   type='button'

@@ -17,6 +17,7 @@ import {
   updateAccountProgress,
 } from '@/store/actions/authActions';
 import { User } from '@/lib/user';
+import { ensureDailyChannelExists } from '@/store/actions/channelActions';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -53,6 +54,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
               updateAccountProgress({ uid: user.uid, field: 'emailVerified', value: true }),
             );
           }
+          
+          await dispatch(ensureDailyChannelExists(user.uid));
         } catch (err) {
           console.error(
             'Error fetching user profile on auth state change:',
