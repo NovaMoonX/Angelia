@@ -66,7 +66,7 @@ export function Auth() {
   // Show logged-in user state while checking redirect conditions
   // Don't show if we're in the middle of authenticating
   if (firebaseUser && !isAuthenticating) {
-    const profileComplete = currentUser?.accountProgress.signUpComplete;
+    const profileComplete = currentUser?.accountProgress?.signUpComplete;
     const emailVerified = firebaseUser.emailVerified;
 
     let title = 'You\'re Already Logged In';

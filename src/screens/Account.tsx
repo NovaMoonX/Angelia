@@ -52,19 +52,6 @@ interface ChannelFormData {
   color: string;
 }
 
-// Mock channel descriptions (in real app, this would come from database)
-const channelDescriptions: Record<string, string> = {
-  'user1-daily': 'Daily updates and life moments',
-  channel2: 'Sharing delicious recipes and cooking adventures',
-  channel3: 'Celebrating big achievements and special moments',
-  channel4: 'Updates from the garden and growing tips',
-  'user4-daily': 'Daily thoughts and experiences',
-  channel1: 'Family trips, vacations, and adventures together',
-  'user6-daily': 'Daily reflections and musings',
-  'user3-daily': 'Day-to-day life and casual updates',
-  'currentUser-daily': 'My daily updates and life moments',
-};
-
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const actionModal = useActionModal();
@@ -330,6 +317,7 @@ export function Account() {
       const newChannel: Channel = {
         id: `channel-${Date.now()}`,
         name: data.name,
+        description: data.description,
         color: data.color,
         isDaily: false,
         ownerId: currentUser.id,
@@ -337,7 +325,6 @@ export function Account() {
         inviteCode: null,
       };
       dispatch(addChannel(newChannel));
-      channelDescriptions[newChannel.id] = data.description;
       console.log('Creating channel:', newChannel);
     } else if (selectedChannel) {
       // Update channel using Redux
@@ -347,7 +334,6 @@ export function Account() {
         color: data.color,
       };
       dispatch(updateChannel(updatedChannel));
-      channelDescriptions[selectedChannel.id] = data.description;
       console.log('Updating channel:', selectedChannel.id, data);
     }
   };
@@ -515,7 +501,6 @@ export function Account() {
                     </p>
                     <ChannelCard
                       channel={userDailyChannel}
-                      description={channelDescriptions[userDailyChannel.id]}
                       onClick={handleViewChannel}
                       onEdit={handleEditChannel}
                       isOwner={true}
@@ -545,7 +530,6 @@ export function Account() {
                         <ChannelCard
                           key={channel.id}
                           channel={channel}
-                          description={channelDescriptions[channel.id]}
                           onClick={handleViewChannel}
                           onEdit={handleEditChannel}
                           onDelete={handleDeleteChannel}
@@ -590,7 +574,6 @@ export function Account() {
                         <ChannelCard
                           key={channel.id}
                           channel={channel}
-                          description={channelDescriptions[channel.id]}
                           owner={owner}
                           onClick={handleViewChannel}
                           onUnsubscribe={handleUnsubscribe}
@@ -787,11 +770,6 @@ export function Account() {
           isOpen={isChannelDetailOpen}
           onClose={() => setIsChannelDetailOpen(false)}
           channel={selectedChannel}
-          description={
-            selectedChannel
-              ? channelDescriptions[selectedChannel.id]
-              : undefined
-          }
           subscribers={selectedChannelSubscribers}
         />
       </div>

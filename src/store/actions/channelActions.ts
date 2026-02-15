@@ -1,23 +1,39 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { Channel } from '@lib/channel';
+import { Channel, DAILY_CHANNEL_DESCRIPTION } from '@lib/channel';
 import { addChannel } from '../slices/channelsSlice';
+import { RootState } from '..';
+import { updateAccountProgress } from './authActions';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
  * state first and then Firestore. If found in Firestore, it will dispatch
  * `addChannel` to ensure local state is populated.
  */
-export const checkDailyChannelExists = createAsyncThunk(
+export const ensureDailyChannelExists = createAsyncThunk(
   'channels/checkDailyExists',
   async (userId: string, { dispatch, getState }) => {
     try {
-      const state = getState() as any;
+      const state = getState() as RootState;
+
+      const user = state.users?.currentUser;
+
+      if (user?.accountProgress?.dailyChannelCreated) {
+        return;
+      }
+
       const channels: Channel[] = state.channels?.items || [];
 
-      const existing = channels.find((ch) => ch.ownerId === userId && ch.isDaily);
-      if (existing) return existing;
+      const existingDailyChannel = channels.find((ch) => ch.ownerId === userId && ch.isDaily);
+      if (existingDailyChannel) {
+        await dispatch(updateAccountProgress({
+          uid: userId,
+          field: 'dailyChannelCreated',
+          value: true,
+        }));
+        return;
+      }
 
       const channelId = `${userId}-daily`;
       const channelDocRef = doc(db, 'channels', channelId);
@@ -26,10 +42,15 @@ export const checkDailyChannelExists = createAsyncThunk(
       if (channelSnap.exists()) {
         const data = channelSnap.data() as Channel;
         dispatch(addChannel(data));
-        return data;
+        await dispatch(updateAccountProgress({
+          uid: userId,
+          field: 'dailyChannelCreated',
+          value: true,
+        }));
+        return;
       }
 
-      return null;
+      await dispatch(createDailyChannel(userId));
     } catch (err) {
       console.error('Error checking daily channel:', err);
       throw err;
@@ -59,10 +80,11 @@ export const createDailyChannel = createAsyncThunk(
       const newChannel: Channel = {
         id: channelId,
         name: 'Daily',
+        description: DAILY_CHANNEL_DESCRIPTION,
         color: 'INDIGO',
         isDaily: true,
         ownerId: userId,
-        subscribers: [userId],
+        subscribers: [],
         inviteCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
       };
 

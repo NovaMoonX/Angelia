@@ -89,18 +89,18 @@ export const createUserProfile = createAsyncThunk(
 /**
  * Async thunk to sync emailVerified status from Firebase Auth to Firestore
  */
-export const syncEmailVerified = createAsyncThunk(
-  'auth/syncEmailVerified',
+export const updateAccountProgress = createAsyncThunk(
+  'auth/accountProgress',
   async (
-    { uid, emailVerified }: { uid: string; emailVerified: boolean },
+    { uid, field, value }: { uid: string; field: keyof User['accountProgress']; value: boolean },
     { dispatch },
   ) => {
     try {
       const userDocRef = doc(db, 'users', uid);
 
-      // Update emailVerified in Firestore
+      // Update the specified field in Firestore
       await updateDoc(userDocRef, {
-        'accountProgress.emailVerified': emailVerified,
+        [`accountProgress.${field}`]: value,
       });
 
       // Fetch and update the user profile in Redux
@@ -115,7 +115,7 @@ export const syncEmailVerified = createAsyncThunk(
         return user;
       }
     } catch (err) {
-      console.error('Error syncing email verified status:', err);
+      console.error(`Error updating account progress (${field}):`, err);
       throw err;
     }
 

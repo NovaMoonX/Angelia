@@ -14,9 +14,10 @@ import { AuthContext, AuthContextType } from '@hooks/useAuth';
 import { useAppDispatch } from '@/store/hooks';
 import {
   fetchUserProfile,
-  syncEmailVerified,
+  updateAccountProgress,
 } from '@/store/actions/authActions';
 import { User } from '@/lib/user';
+import { ensureDailyChannelExists } from '@/store/actions/channelActions';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -50,9 +51,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             !resultAsUser.accountProgress.emailVerified
           ) {
             await dispatch(
-              syncEmailVerified({ uid: user.uid, emailVerified: true }),
+              updateAccountProgress({ uid: user.uid, field: 'emailVerified', value: true }),
             );
           }
+          
+          await dispatch(ensureDailyChannelExists(user.uid));
         } catch (err) {
           console.error(
             'Error fetching user profile on auth state change:',

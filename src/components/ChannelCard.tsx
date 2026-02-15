@@ -1,13 +1,15 @@
-import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
+import {
+  Channel,
+  CHANNEL_FALLBACK_DESCRIPTION,
+  getColorPair,
+} from '@/lib/channel';
+import { User } from '@/lib/user';
+import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import { Channel } from '@/lib/channel';
-import { User } from '@/lib/user';
 
 interface ChannelCardProps {
   channel: Channel;
-  description?: string;
   owner?: User;
   onEdit?: (channel: Channel) => void;
   onDelete?: (channel: Channel) => void;
@@ -18,7 +20,6 @@ interface ChannelCardProps {
 
 export function ChannelCard({
   channel,
-  description,
   owner,
   onEdit,
   onDelete,
@@ -32,22 +33,14 @@ export function ChannelCard({
     }
   };
 
-  const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
-    return {
-      backgroundColor: colorData?.value || '#c7d2fe',
-      textColor: colorData?.textColor || '#4338ca',
-    };
-  };
-
-  const colors = getColorPair();
+  const colors = getColorPair(channel);
 
   return (
     <Card className='p-4 transition-all'>
-      <div 
+      <div
         className={join(
           'flex items-start justify-between gap-3',
-          onClick && 'cursor-pointer'
+          onClick && 'cursor-pointer',
         )}
         onClick={handleClick}
       >
@@ -56,20 +49,19 @@ export function ChannelCard({
             <Badge
               variant='base'
               className='text-sm font-medium'
-              style={{ 
-                backgroundColor: colors.backgroundColor, 
-                borderColor: colors.backgroundColor,
-                color: colors.textColor
+              style={{
+                backgroundColor: colors.backgroundColor,
+                color: colors.textColor,
               }}
             >
               {channel.name}
             </Badge>
           </div>
-          <p className='text-sm text-foreground/70 line-clamp-1'>
-            {description || 'No description provided'}
+          <p className='text-foreground/70 line-clamp-1 text-sm'>
+            {channel.description || CHANNEL_FALLBACK_DESCRIPTION}
           </p>
           {owner && (
-            <p className='text-xs text-foreground/50'>
+            <p className='text-foreground/50 text-xs'>
               by {owner.firstName} {owner.lastName}
             </p>
           )}
@@ -100,7 +92,7 @@ export function ChannelCard({
                 }}
                 aria-label={`Delete ${channel.name}`}
               >
-                <Trash className='w-4 h-4' />
+                <Trash className='h-4 w-4' />
               </Button>
             )}
           </div>

@@ -14,10 +14,47 @@ service cloud.firestore {
       allow delete: if false;
     }
     
-    // Temporary: Allow all reads/writes for other collections during development
-    // TODO: Add proper security rules for channels, posts, invites, etc.
+    // Channels collection
+    match /channels/{channelId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner() {
+        return isSignedIn() && request.auth.uid == resource.data.ownerId;
+      }
+
+      function isOwnerOnCreate() {
+        return isSignedIn() && request.auth.uid == request.resource.data.ownerId;
+      }
+
+      function isSubscriber() {
+        return isSignedIn()
+          && (resource.data.subscribers is list)
+          && (request.auth.uid in resource.data.subscribers);
+      }
+
+      // Reading: owners and subscribers can read a channel
+      allow read: if isOwner() || isSubscriber();
+
+      // Create: only authenticated users can create a channel for themselves
+      allow create: if isOwnerOnCreate()
+
+      // Update: only owner may modify; ownerId and id cannot be changed
+      allow update: if isOwner()
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.id == resource.data.id
+
+      // Deletion of channels is disallowed from clients
+      allow delete: if false;
+    }
+
+    // Default: authenticated users may read other collections, but writes are
+    // prohibited unless explicitly allowed above. This prevents accidental
+    // open-write rules in development.
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 3, 9);
+      allow read: if request.auth != null;
+      allow write: if false;
     }
   }
 }

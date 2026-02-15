@@ -2,6 +2,7 @@
 export interface Channel {
   id: string;
   name: string;
+  description: string;
   color: string;
   isDaily: boolean | null;
   ownerId: string; // User who owns/created the channel

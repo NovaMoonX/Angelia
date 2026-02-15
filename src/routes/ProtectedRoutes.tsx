@@ -1,9 +1,10 @@
-import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import { useAppSelector } from '@store/hooks';
-import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAuth } from '@hooks/useAuth';
+import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { useAppSelector } from '@store/hooks';
 import Loading from '@ui/Loading';
 import { useMemo } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import DataListenerWrapper from './DataListenerWrapper';
 
 /**
  * ProtectedRoutes component for protecting routes that require authentication.
@@ -60,7 +61,11 @@ export function ProtectedRoutes() {
   }
 
   // User is authenticated and verified, allow access
-  return <Outlet />;
+  return (
+    <DataListenerWrapper>
+      <Outlet />
+    </DataListenerWrapper>
+  );
 }
 
 export default ProtectedRoutes;

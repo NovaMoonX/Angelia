@@ -1,4 +1,4 @@
-import { Channel } from '@/lib/channel';
+import { Channel, getColorPair } from '@/lib/channel';
 import { mockCurrentUser, User } from '@/lib/user';
 import { Modal, Badge, Avatar, Separator, CopyButton } from '@moondreamsdev/dreamer-ui/components';
 
@@ -6,7 +6,6 @@ interface ChannelModalProps {
   isOpen: boolean;
   onClose: () => void;
   channel: Channel | null;
-  description?: string;
   subscribers?: User[];
 }
 
@@ -14,7 +13,6 @@ export function ChannelModal({
   isOpen,
   onClose,
   channel,
-  description,
   subscribers = [],
 }: ChannelModalProps) {
   if (!channel) return null;
@@ -24,6 +22,8 @@ export function ChannelModal({
   const inviteUrl = channel.inviteCode
     ? `${window.location.origin}/invite/${channel.inviteCode}`
     : '';
+
+  const colors = getColorPair(channel);
 
   return (
     <Modal
@@ -36,9 +36,12 @@ export function ChannelModal({
         <div className='space-y-3'>
           <div className='flex items-center gap-2'>
             <Badge
-              variant='secondary'
+              variant='base'
               className='text-base font-medium px-3 py-1'
-              style={{ borderColor: channel.color }}
+              style={{
+                backgroundColor: colors.backgroundColor,
+                color: colors.textColor,
+              }}
             >
               {channel.name}
             </Badge>
@@ -47,8 +50,8 @@ export function ChannelModal({
             )}
           </div>
 
-          {description && (
-            <p className='text-foreground/70 whitespace-pre-wrap'>{description}</p>
+          {channel.description && (
+            <p className='text-foreground/70 whitespace-pre-wrap'>{channel.description}</p>
           )}
 
           {isOwner && (
