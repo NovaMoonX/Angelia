@@ -2,12 +2,11 @@ import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import { Channel } from '@/lib/channel';
+import { Channel, CHANNEL_FALLBACK_DESCRIPTION } from '@/lib/channel';
 import { User } from '@/lib/user';
 
 interface ChannelCardProps {
   channel: Channel;
-  description?: string;
   owner?: User;
   onEdit?: (channel: Channel) => void;
   onDelete?: (channel: Channel) => void;
@@ -18,7 +17,6 @@ interface ChannelCardProps {
 
 export function ChannelCard({
   channel,
-  description,
   owner,
   onEdit,
   onDelete,
@@ -66,7 +64,7 @@ export function ChannelCard({
             </Badge>
           </div>
           <p className='text-sm text-foreground/70 line-clamp-1'>
-            {description || 'No description provided'}
+            {channel.description || CHANNEL_FALLBACK_DESCRIPTION}
           </p>
           {owner && (
             <p className='text-xs text-foreground/50'>

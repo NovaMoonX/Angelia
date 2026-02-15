@@ -1,5 +1,20 @@
 import { mockPosts } from '../post/post.mock';
+import { CHANNEL_FALLBACK_DESCRIPTION } from './channel.constants';
 import { Channel, ChannelInvite, UserChannelInvite } from './channel.types';
+
+
+// Mock channel descriptions (in real app, this would come from database)
+const channelDescriptions: Record<string, string> = {
+  'user1-daily': 'Daily updates and life moments',
+  channel2: 'Sharing delicious recipes and cooking adventures',
+  channel3: 'Celebrating big achievements and special moments',
+  channel4: 'Updates from the garden and growing tips',
+  'user4-daily': 'Daily thoughts and experiences',
+  channel1: 'Family trips, vacations, and adventures together',
+  'user6-daily': 'Daily reflections and musings',
+  'user3-daily': 'Day-to-day life and casual updates',
+  'currentUser-daily': 'My daily updates and life moments',
+};
 
 export const mockChannels: Channel[] = [
   ...Array.from(
@@ -10,6 +25,7 @@ export const mockChannels: Channel[] = [
           id: post.channelId,
           name: post.channelName,
           color: post.channelColor,
+          description: channelDescriptions[post.channelId] || CHANNEL_FALLBACK_DESCRIPTION,
           isDaily: post.isDaily,
           ownerId: post.authorId,
           // Mock subscribers - in real app this would come from database
@@ -36,6 +52,7 @@ export const mockChannels: Channel[] = [
     ownerId: 'user1',
     subscribers: ['user1', 'user2', 'user3'], // currentUser is NOT in this list
     inviteCode: 'INVITE2024',
+    description: 'Photography enthusiasts sharing tips and experiences',
   },
   // Add a demo channel with fixed invite code for testing
   {
@@ -46,6 +63,7 @@ export const mockChannels: Channel[] = [
     ownerId: 'user2',
     subscribers: ['user2', 'user3', 'user4'], // currentUser is NOT in this list
     inviteCode: '6BP6VZWX',
+    description: 'Updates and news from the family',
   },
 ];
 

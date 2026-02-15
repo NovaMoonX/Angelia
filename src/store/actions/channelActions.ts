@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { Channel } from '@lib/channel';
+import { Channel, DAILY_CHANNEL_DESCRIPTION } from '@lib/channel';
 import { addChannel } from '../slices/channelsSlice';
 import { RootState } from '..';
 import { updateAccountProgress } from './authActions';
@@ -80,6 +80,7 @@ export const createDailyChannel = createAsyncThunk(
       const newChannel: Channel = {
         id: channelId,
         name: 'Daily',
+        description: DAILY_CHANNEL_DESCRIPTION,
         color: 'INDIGO',
         isDaily: true,
         ownerId: userId,

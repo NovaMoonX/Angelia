@@ -17,6 +17,7 @@ import {
 } from '@store/actions/authActions';
 import { useAuth } from '@hooks/useAuth';
 import { createDailyChannel } from '@/store/actions/channelActions';
+import Loading from '@/ui/Loading';
 
 interface ProfileFormData {
   firstName: string;
@@ -29,7 +30,7 @@ export function CompleteProfile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { firebaseUser, sendVerificationEmail } = useAuth();
+  const { firebaseUser, sendVerificationEmail, loading } = useAuth();
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileFormData>({
@@ -51,6 +52,10 @@ export function CompleteProfile() {
       return () => clearTimeout(timer);
     }
   }, [currentUser, navigate]);
+
+  if (loading) {
+    return <Loading />
+  }
 
   // Show notice if profile already complete
   if (currentUser?.accountProgress?.signUpComplete) {

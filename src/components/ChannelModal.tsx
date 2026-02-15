@@ -6,7 +6,6 @@ interface ChannelModalProps {
   isOpen: boolean;
   onClose: () => void;
   channel: Channel | null;
-  description?: string;
   subscribers?: User[];
 }
 
@@ -14,7 +13,6 @@ export function ChannelModal({
   isOpen,
   onClose,
   channel,
-  description,
   subscribers = [],
 }: ChannelModalProps) {
   if (!channel) return null;
@@ -47,8 +45,8 @@ export function ChannelModal({
             )}
           </div>
 
-          {description && (
-            <p className='text-foreground/70 whitespace-pre-wrap'>{description}</p>
+          {channel.description && (
+            <p className='text-foreground/70 whitespace-pre-wrap'>{channel.description}</p>
           )}
 
           {isOwner && (
