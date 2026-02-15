@@ -14,7 +14,7 @@ import { AuthContext, AuthContextType } from '@hooks/useAuth';
 import { useAppDispatch } from '@/store/hooks';
 import {
   fetchUserProfile,
-  syncEmailVerified,
+  updateAccountProgress,
 } from '@/store/actions/authActions';
 import { User } from '@/lib/user';
 
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             !resultAsUser.accountProgress.emailVerified
           ) {
             await dispatch(
-              syncEmailVerified({ uid: user.uid, emailVerified: true }),
+              updateAccountProgress({ uid: user.uid, field: 'emailVerified', value: true }),
             );
           }
         } catch (err) {
