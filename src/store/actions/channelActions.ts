@@ -83,7 +83,7 @@ export const createDailyChannel = createAsyncThunk(
         color: 'INDIGO',
         isDaily: true,
         ownerId: userId,
-        subscribers: [userId],
+        subscribers: [],
         inviteCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
       };
 
