@@ -4,6 +4,7 @@ import { db } from '@lib/firebase';
 import { Channel } from '@lib/channel';
 import { addChannel } from '../slices/channelsSlice';
 import { RootState } from '..';
+import { updateAccountProgress } from './authActions';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
@@ -26,6 +27,11 @@ export const ensureDailyChannelExists = createAsyncThunk(
 
       const existingDailyChannel = channels.find((ch) => ch.ownerId === userId && ch.isDaily);
       if (existingDailyChannel) {
+        await dispatch(updateAccountProgress({
+          uid: userId,
+          field: 'dailyChannelCreated',
+          value: true,
+        }));
         return;
       }
 
@@ -36,6 +42,11 @@ export const ensureDailyChannelExists = createAsyncThunk(
       if (channelSnap.exists()) {
         const data = channelSnap.data() as Channel;
         dispatch(addChannel(data));
+        await dispatch(updateAccountProgress({
+          uid: userId,
+          field: 'dailyChannelCreated',
+          value: true,
+        }));
         return;
       }
 
