@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { type User } from '@lib/user';
+import { NewUser, type User } from '@lib/user';
 import { setCurrentUser } from '../slices/usersSlice';
 
 /**
@@ -37,47 +37,26 @@ export const fetchUserProfile = createAsyncThunk(
  */
 export const createUserProfile = createAsyncThunk(
   'auth/createUserProfile',
-  async (
-    {
-      id,
-      email,
-      firstName,
-      lastName,
-      funFact,
-      avatar,
-    }: Omit<User,'joinedAt' | 'accountProgress'>,
-    { dispatch },
-  ) => {
+  async (user: NewUser, { dispatch }) => {
     const newUser: User = {
-      id,
-      email,
-      firstName,
-      lastName,
-      funFact,
-      avatar,
+      ...user,
       joinedAt: Date.now(),
       accountProgress: {
         emailVerified: false,
         signUpComplete: true,
         dailyChannelCreated: false,
       },
+      customChannelCount: 0,
     };
+    debugger
     try {
       // Save user profile to Firestore
-      const userDocRef = doc(db, 'users', id);
-      await setDoc(userDocRef, {
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        funFact: newUser.funFact,
-        avatar: newUser.avatar,
-        accountProgress: newUser.accountProgress,
-        joinedAt: newUser.joinedAt,
-      });
+      const userDocRef = doc(db, 'users', newUser.id);
+      await setDoc(userDocRef, newUser);
+      debugger
 
       // Set the user profile in Redux
       dispatch(setCurrentUser(newUser));
-
       return newUser;
     } catch (err) {
       console.error('Error creating user profile:', err);
@@ -92,7 +71,11 @@ export const createUserProfile = createAsyncThunk(
 export const updateAccountProgress = createAsyncThunk(
   'auth/accountProgress',
   async (
-    { uid, field, value }: { uid: string; field: keyof User['accountProgress']; value: boolean },
+    {
+      uid,
+      field,
+      value,
+    }: { uid: string; field: keyof User['accountProgress']; value: boolean },
     { dispatch },
   ) => {
     try {

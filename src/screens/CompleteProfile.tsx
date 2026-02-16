@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@hooks/useAuth';
 import { createDailyChannel } from '@/store/actions/channelActions';
 import Loading from '@/ui/Loading';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 
 interface ProfileFormData {
   firstName: string;
@@ -29,6 +30,7 @@ interface ProfileFormData {
 export function CompleteProfile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { alert } = useActionModal()
   const dispatch = useAppDispatch();
   const { firebaseUser, sendVerificationEmail, loading } = useAuth();
   const currentUser = useAppSelector((state) => state.users.currentUser);
@@ -86,6 +88,7 @@ export function CompleteProfile() {
         throw new Error('No authenticated user found');
       }
 
+      debugger
       await dispatch(
         createUserProfile({
           id: firebaseUser.uid,
@@ -97,8 +100,10 @@ export function CompleteProfile() {
         }),
       );
 
+      debugger
       await sendVerificationEmail();
 
+      debugger
       await dispatch(createDailyChannel(firebaseUser.uid));
       if (redirectUrl) {
         navigate(redirectUrl);
@@ -107,6 +112,10 @@ export function CompleteProfile() {
       }
     } catch (err) {
       console.error('Profile completion error:', err);
+      alert({
+        title: 'Error Completing Profile',
+        message: err instanceof Error ? err.message : 'An unknown error occurred.',
+      });
     } finally {
       setIsLoading(false);
     }

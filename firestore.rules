@@ -37,8 +37,23 @@ service cloud.firestore {
       // Reading: owners and subscribers can read a channel
       allow read: if isOwner() || isSubscriber();
 
-      // Create: only authenticated users can create a channel for themselves
+      // Create: only authenticated users can create a channel for themselves.
+      // Additionally enforce a limit on custom (non-daily) channels. Clients
+      // must maintain a `customChannelCount` integer on the user's
+      // document (`users/{uid}.customChannelCount`). Creation of a non-daily
+      // channel is allowed only when that count is < 3. Daily channels are
+      // exempt from this limit.
       allow create: if isOwnerOnCreate()
+        && (
+          // Allow creating daily channels regardless of the count
+          request.resource.data.isDaily == true
+          // Or allow creating non-daily channels only when the user's
+          // `customChannelCount` exists and is less than 3
+          || (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.customChannelCount is int
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.customChannelCount < 3
+          )
+        )
 
       // Update: only owner may modify; ownerId and id cannot be changed
       allow update: if isOwner()

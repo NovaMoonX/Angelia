@@ -12,5 +12,8 @@ export interface User {
     signUpComplete: boolean;
     emailVerified: boolean;
     dailyChannelCreated: boolean;
-  }
+  },
+  customChannelCount: number;
 }
+
+export type NewUser = Omit<User,'joinedAt' | 'accountProgress' | 'customChannelCount'>

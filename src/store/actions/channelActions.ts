@@ -1,10 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { Channel, DAILY_CHANNEL_DESCRIPTION } from '@lib/channel';
+import { Channel, CUSTOM_CHANNEL_LIMIT, DAILY_CHANNEL_DESCRIPTION, NewChannel } from '@lib/channel';
 import { addChannel } from '../slices/channelsSlice';
 import { RootState } from '..';
 import { updateAccountProgress } from './authActions';
+import generateId from '@/util/generateId';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
@@ -85,14 +86,51 @@ export const createDailyChannel = createAsyncThunk(
         isDaily: true,
         ownerId: userId,
         subscribers: [],
-        inviteCode: Math.random().toString(36).substring(2, 10).toUpperCase(),
+        inviteCode: generateId('channelInviteCode'),
+        createdAt: Date.now(),
       };
 
       await setDoc(channelDocRef, newChannel);
-      dispatch(addChannel(newChannel));
       return newChannel;
     } catch (err) {
       console.error('Error creating daily channel:', err);
+      throw err;
+    }
+  },
+);
+
+export const createCustomChannel = createAsyncThunk(
+  'channels/createCustomChannel',
+  async (channel: NewChannel, { getState }) => {
+    try {
+      const state = getState() as RootState;
+      const user = state.users?.currentUser;
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Check if user has reached channel limit
+      const userOwnedChannels = state.channels?.items.filter((ch) => ch.ownerId === user.id && !ch.isDaily) || [];
+      if (userOwnedChannels.length >= CUSTOM_CHANNEL_LIMIT) {
+        throw new Error('Maximum custom channels reached.');
+      }
+
+      const channelId = generateId('channel')
+      const channelDocRef = doc(db, 'channels', channelId);
+
+      const newChannel: Channel = {
+        ...channel,
+        id: channelId,
+        isDaily: false,
+        inviteCode: generateId('channelInviteCode'),
+        createdAt: Date.now(),
+      }
+
+      await setDoc(channelDocRef, newChannel);
+      return newChannel;
+    } catch (err) {
+      console.error('Error creating channel:', err);
       throw err;
     }
   },

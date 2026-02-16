@@ -8,7 +8,10 @@ export interface Channel {
   ownerId: string; // User who owns/created the channel
   subscribers: string[]; // Array of user IDs who have access to this channel
   inviteCode: string | null; // Unique invite code for sharing
+  createdAt: number; // Unix timestamp in ms
 }
+
+export type NewChannel = Omit<Channel, 'id' | 'isDaily' | 'inviteCode' | 'createdAt'>
 
 // Channel Invite interface
 export interface ChannelInvite {
