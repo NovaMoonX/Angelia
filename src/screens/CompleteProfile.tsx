@@ -55,7 +55,7 @@ export function CompleteProfile() {
     }
   }, [currentUser, navigate]);
 
-  if (loading || !firebaseUser || !firebaseUser.emailVerified) {
+  if (loading || !firebaseUser) {
     return <Loading />
   }
 
@@ -72,7 +72,7 @@ export function CompleteProfile() {
               Profile Already Complete
             </h1>
             <p className='text-foreground/70 text-center'>
-              Your profile is already set up. Redirecting you to your feed...
+              Your profile is already set up. Redirecting you...
             </p>
           </div>
         </div>
@@ -88,7 +88,6 @@ export function CompleteProfile() {
         throw new Error('No authenticated user found');
       }
 
-      debugger
       await dispatch(
         createUserProfile({
           id: firebaseUser.uid,
@@ -100,10 +99,8 @@ export function CompleteProfile() {
         }),
       );
 
-      debugger
       await sendVerificationEmail();
 
-      debugger
       await dispatch(createDailyChannel(firebaseUser.uid));
       if (redirectUrl) {
         navigate(redirectUrl);

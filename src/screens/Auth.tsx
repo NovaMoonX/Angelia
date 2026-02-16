@@ -136,7 +136,6 @@ export function Auth() {
     error?: { message: string };
   }> => {
     setIsAuthenticating(true);
-    debugger
     try {
       if (action === 'login') {
         // Sign in with Firebase
@@ -148,7 +147,6 @@ export function Auth() {
         // After successful login, redirect to the specified URL or default to feed
         navigate(redirectUrl || '/feed');
       } else {
-        debugger
         // For signup, create Firebase account and redirect to profile completion
         await signUp(data.email, data.password);
 

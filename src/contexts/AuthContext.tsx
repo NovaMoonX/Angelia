@@ -51,11 +51,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             !resultAsUser.accountProgress.emailVerified
           ) {
             await dispatch(
-              updateAccountProgress({ uid: user.uid, field: 'emailVerified', value: true }),
+              updateAccountProgress({
+                uid: user.uid,
+                field: 'emailVerified',
+                value: true,
+              }),
             );
           }
-          
-          await dispatch(ensureDailyChannelExists(user.uid));
+
+          if (
+            user.emailVerified &&
+            resultAsUser?.accountProgress.signUpComplete
+          ) {
+            await dispatch(ensureDailyChannelExists(user.uid));
+          }
         } catch (err) {
           console.error(
             'Error fetching user profile on auth state change:',

@@ -48,12 +48,10 @@ export const createUserProfile = createAsyncThunk(
       },
       customChannelCount: 0,
     };
-    debugger
     try {
       // Save user profile to Firestore
       const userDocRef = doc(db, 'users', newUser.id);
       await setDoc(userDocRef, newUser);
-      debugger
 
       // Set the user profile in Redux
       dispatch(setCurrentUser(newUser));

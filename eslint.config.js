@@ -21,6 +21,7 @@ export default defineConfig([
     },
     rules: {
       "@typescript-eslint/no-unnecessary-condition": "error",
+      "no-debugger": "error",
     }
   },
 ])

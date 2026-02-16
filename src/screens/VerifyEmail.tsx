@@ -20,16 +20,18 @@ export function VerifyEmail() {
 
   // Poll for email verification status every 3 seconds
   useEffect(() => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || firebaseUser.emailVerified) return;
 
     const interval = setInterval(async () => {
-      try {
-        await firebaseUser.reload();
-        // Force re-render by checking emailVerified status
-        // The auth state change listener will pick up the update
-      } catch (err) {
-        console.error('Error reloading user:', err);
-      }
+      // reload page to update emailVerified status in Firebase Auth
+      window.location.reload();
+      // try {
+      //   await firebaseUser.reload();
+      //   // Force re-render by checking emailVerified status
+      //   // The auth state change listener will pick up the update
+      // } catch (err) {
+      //   console.error('Error reloading user:', err);
+      // }
     }, 3000);
 
     return () => clearInterval(interval);
