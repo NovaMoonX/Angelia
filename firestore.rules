@@ -67,8 +67,9 @@ service cloud.firestore {
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.id == resource.data.id
 
-      // Deletion of channels is disallowed from clients
-      allow delete: if false;
+      // Deletion: owners may delete their custom (non-daily) channels.
+      // Daily channels are system-managed and cannot be deleted by clients.
+      allow delete: if isOwner() && resource.data.isDaily == false;
     }
 
     // Default: authenticated users may read other collections, but writes are

@@ -1,10 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction } from 'firebase/firestore';
 import { db } from '@lib/firebase';
 import { Channel, CUSTOM_CHANNEL_LIMIT, DAILY_CHANNEL_DESCRIPTION, NewChannel } from '@lib/channel';
-import { addChannel } from '../slices/channelsSlice';
+import { addChannel, updateChannel, removeChannel } from '../slices/channelsSlice';
 import { RootState } from '..';
-import { updateAccountProgress } from './authActions';
+import { updateAccountProgress, fetchUserProfile } from './authActions';
 import generateId from '@/util/generateId';
 
 /**
@@ -110,13 +110,7 @@ export const createCustomChannel = createAsyncThunk(
         throw new Error('User not found');
       }
 
-      // Check if user has reached channel limit
-      const userOwnedChannels = state.channels?.items.filter((ch) => ch.ownerId === user.id && !ch.isDaily) || [];
-      if (userOwnedChannels.length >= CUSTOM_CHANNEL_LIMIT) {
-        throw new Error('Maximum custom channels reached.');
-      }
-
-      const channelId = generateId('channel')
+      const channelId = generateId('channel');
       const channelDocRef = doc(db, 'channels', channelId);
 
       const newChannel: Channel = {
@@ -125,12 +119,102 @@ export const createCustomChannel = createAsyncThunk(
         isDaily: false,
         inviteCode: generateId('channelInviteCode'),
         createdAt: Date.now(),
-      }
+      };
 
-      await setDoc(channelDocRef, newChannel);
+      // Transaction: ensure user's customChannelCount is below limit,
+      // ensure channel does not already exist, then create channel and
+      // increment the user's customChannelCount atomically.
+      await runTransaction(db, async (tx) => {
+        const userDocRef = doc(db, 'users', user.id);
+        const userSnap = await tx.get(userDocRef);
+        if (!userSnap.exists()) {
+          throw new Error('User profile not found');
+        }
+
+        const userData = userSnap.data() as any;
+        const current = typeof userData.customChannelCount === 'number' ? userData.customChannelCount : 0;
+        if (current >= CUSTOM_CHANNEL_LIMIT) {
+          throw new Error('Maximum custom channels reached.');
+        }
+
+        const channelSnap = await tx.get(channelDocRef);
+        if (channelSnap.exists()) {
+          throw new Error('Channel already exists');
+        }
+
+        tx.set(channelDocRef, newChannel);
+        tx.update(userDocRef, { customChannelCount: current + 1 });
+      });
+
       return newChannel;
     } catch (err) {
       console.error('Error creating channel:', err);
+      throw err;
+    }
+  },
+);
+
+/**
+ * Update a custom channel in Firestore. Only the owner should call this.
+ */
+export const updateCustomChannel = createAsyncThunk(
+  'channels/updateCustom',
+  async (channel: Channel) => {
+    try {
+      const channelDocRef = doc(db, 'channels', channel.id);
+
+      // Prepare update payload - do not allow changing id or ownerId
+      const { id, ownerId, isDaily, createdAt, inviteCode, subscribers, ...updatable } = channel;
+
+      await updateDoc(channelDocRef, updatable);
+
+      return channel;
+    } catch (err) {
+      console.error('Error updating channel:', err);
+      throw err;
+    }
+  },
+);
+      
+/**
+ * Delete a custom (non-daily) channel. Only the owner may delete.
+ */
+export const deleteCustomChannel = createAsyncThunk(
+  'channels/deleteCustom',
+  async (channelId: string) => {
+    try {
+      const channelDocRef = doc(db, 'channels', channelId);
+      // Transaction: delete channel and decrement owner's customChannelCount
+      await runTransaction(db, async (tx) => {
+        const channelSnap = await tx.get(channelDocRef);
+        if (!channelSnap.exists()) {
+          throw new Error('Channel not found');
+        }
+
+        const channel = channelSnap.data() as any;
+        if (channel.isDaily) {
+          throw new Error('Daily channels cannot be deleted');
+        }
+
+        const ownerId = channel.ownerId;
+        const userDocRef = doc(db, 'users', ownerId);
+        const userSnap = await tx.get(userDocRef);
+        if (!userSnap.exists()) {
+          throw new Error('Owner user not found');
+        }
+
+        const userData = userSnap.data() as any;
+        const current = typeof userData.customChannelCount === 'number' ? userData.customChannelCount : 0;
+        const newCount = Math.max(0, current - 1);
+
+        tx.delete(channelDocRef);
+        tx.update(userDocRef, { customChannelCount: newCount });
+      });
+
+      // Return the deleted channel id; callers may update local state.
+      return channelId;
+    } catch (err) {
+      console.error('Error deleting channel:', err);
       throw err;
     }
   },

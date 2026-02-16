@@ -33,7 +33,11 @@ import {
   NewChannel,
   UserChannelInvite,
 } from '@/lib/channel';
-import { createCustomChannel } from '@/store/actions/channelActions';
+import {
+  createCustomChannel,
+  updateCustomChannel,
+  deleteCustomChannel,
+} from '@/store/actions/channelActions';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -279,9 +283,16 @@ export function Account() {
     });
 
     if (confirmed) {
-      // Delete channel using Redux
-      dispatch(removeChannel(channel.id));
-      console.log('Deleting channel:', channel.id);
+      try {
+        await dispatch(deleteCustomChannel(channel.id));
+        console.log('Deleted channel:', channel.id);
+      } catch (err) {
+        console.error('Error deleting channel:', err);
+        actionModal.alert({
+          title: 'Unable to delete channel',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
   };
 
@@ -339,14 +350,23 @@ export function Account() {
         });
       }
     } else if (selectedChannel) {
-      // Update channel using Redux
+      // Update channel using Firestore
       const updatedChannel = {
         ...selectedChannel,
         name: data.name,
+        description: data.description,
         color: data.color,
       };
-      dispatch(updateChannel(updatedChannel));
-      console.log('Updating channel:', selectedChannel.id, data);
+      try {
+        await dispatch(updateCustomChannel(updatedChannel));
+        console.log('Updated channel:', selectedChannel.id, data);
+      } catch (err) {
+        console.error('Error updating channel:', err);
+        actionModal.alert({
+          title: 'Unable to update channel',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
   };
 

@@ -122,7 +122,7 @@ export function ChannelFormModal({
   const initialData = useMemo(
     () => ({
       name: channel?.name || '',
-      description: '',
+      description: channel?.description || '',
       color: channel?.color || DEFAULT_CHANNEL_COLOR,
     }),
     [channel]
