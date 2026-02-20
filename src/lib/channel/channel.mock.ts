@@ -40,6 +40,7 @@ export const mockChannels: Channel[] = [
           // Use fixed code for testing: channel2 = "TESTCODE" (Cooking Corner by Michael Chen)
           inviteCode: post.channelId === 'channel2' ? 'TESTCODE' : Math.random().toString(36).substring(2, 10).toUpperCase(),
           createdAt: Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30), // Random creation time within last 30 days
+          markedForDeletionAt: null,
         },
       ]),
     ).values(),
@@ -55,6 +56,7 @@ export const mockChannels: Channel[] = [
     inviteCode: 'INVITE2024',
     description: 'Photography enthusiasts sharing tips and experiences',
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 10, // Created 10 days ago
+    markedForDeletionAt: null,
   },
   // Add a demo channel with fixed invite code for testing
   {
@@ -67,6 +69,7 @@ export const mockChannels: Channel[] = [
     inviteCode: '6BP6VZWX',
     description: 'Updates and news from the family',
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 7, // Created 7 days ago
+    markedForDeletionAt: null,
   },
 ];
 

@@ -54,9 +54,16 @@ export const ensureDailyChannelExists = createAsyncThunk(
       const channelId = `${userId}-daily`;
       const channelDocRef = doc(db, 'channels', channelId);
       const channelSnap = await getDoc(channelDocRef as any);
-
       if (channelSnap.exists()) {
         const data = channelSnap.data() as Channel;
+        // If the daily channel is marked for deletion, treat it as missing
+        // and recreate/unmark it via createDailyChannel so the owner keeps
+        // their daily channel.
+        if (data.markedForDeletionAt) {
+          await dispatch(createDailyChannel(userId));
+          return;
+        }
+
         dispatch(addChannel(data));
         await dispatch(
           updateAccountProgress({
@@ -91,6 +98,15 @@ export const createDailyChannel = createAsyncThunk(
       const channelSnap = await getDoc(channelDocRef as any);
       if (channelSnap.exists()) {
         const existing = channelSnap.data() as Channel;
+        // If the existing daily channel was previously marked for deletion,
+        // clear the flag so the owner retains their daily channel.
+        if (existing.markedForDeletionAt) {
+          await updateDoc(channelDocRef, { markedForDeletionAt: null });
+          const refreshed = (await getDoc(channelDocRef as any)).data() as Channel;
+          dispatch(addChannel(refreshed));
+          return refreshed;
+        }
+
         dispatch(addChannel(existing));
         return existing;
       }
@@ -105,6 +121,7 @@ export const createDailyChannel = createAsyncThunk(
         subscribers: [],
         inviteCode: generateId('channelInviteCode'),
         createdAt: Date.now(),
+        markedForDeletionAt: null,
       };
 
       await setDoc(channelDocRef, newChannel);
@@ -136,6 +153,7 @@ export const createCustomChannel = createAsyncThunk(
         isDaily: false,
         inviteCode: generateId('channelInviteCode'),
         createdAt: Date.now(),
+        markedForDeletionAt: null,
       };
 
       // Transaction: ensure user's customChannelCount is below limit,
@@ -159,7 +177,12 @@ export const createCustomChannel = createAsyncThunk(
 
         const channelSnap = await tx.get(channelDocRef);
         if (channelSnap.exists()) {
-          throw new Error('Channel already exists');
+          const ch = channelSnap.data() as any;
+          if (!ch.markedForDeletionAt) {
+            throw new Error('Channel already exists');
+          }
+          // If the existing doc was marked for deletion, allow recreation
+          // by overwriting it in this transaction.
         }
 
         tx.set(channelDocRef, newChannel);
@@ -224,6 +247,10 @@ export const deleteCustomChannel = createAsyncThunk(
           throw new Error('Daily channels cannot be deleted');
         }
 
+        if (channel.markedForDeletionAt) {
+          throw new Error('Channel is already marked for deletion');
+        }
+
         const ownerId = channel.ownerId;
         const userDocRef = doc(db, 'users', ownerId);
         const userSnap = await tx.get(userDocRef);
@@ -238,7 +265,9 @@ export const deleteCustomChannel = createAsyncThunk(
             : 0;
         const newCount = Math.max(0, current - 1);
 
-        tx.delete(channelDocRef);
+        // Instead of deleting immediately, mark the channel for deletion.
+        // This allows for a grace period / possible undo before actual removal.
+        tx.update(channelDocRef, { markedForDeletionAt: Date.now() });
         tx.update(userDocRef, { customChannelCount: newCount });
       });
 

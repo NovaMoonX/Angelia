@@ -9,9 +9,12 @@ export interface Channel {
   subscribers: string[]; // Array of user IDs who have access to this channel
   inviteCode: string | null; // Unique invite code for sharing
   createdAt: number; // Unix timestamp in ms
+  // If set, indicates the unix ms timestamp when the owner requested deletion.
+  // `null` means the channel is not scheduled for deletion.
+  markedForDeletionAt: number | null;
 }
 
-export type NewChannel = Omit<Channel, 'id' | 'isDaily' | 'inviteCode' | 'createdAt'>
+export type NewChannel = Omit<Channel, 'id' | 'isDaily' | 'inviteCode' | 'createdAt' | 'markedForDeletionAt'>
 
 // Channel Invite interface
 export interface ChannelInvite {
