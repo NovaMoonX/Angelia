@@ -21,7 +21,7 @@ function ColorPickerField({ value, onValueChange }: FormCustomFieldProps<unknown
   const selectedColor = (value as string) || DEFAULT_CHANNEL_COLOR;
 
   return (
-    <div className='grid grid-cols-6 gap-2'>
+    <div className='grid grid-cols-6 gap-x-2 gap-y-3 pt-2'>
       {CHANNEL_COLORS.map((colorOption) => (
         <button
           key={colorOption.name}
@@ -122,7 +122,7 @@ export function ChannelFormModal({
   const initialData = useMemo(
     () => ({
       name: channel?.name || '',
-      description: '',
+      description: channel?.description || '',
       color: channel?.color || DEFAULT_CHANNEL_COLOR,
     }),
     [channel]

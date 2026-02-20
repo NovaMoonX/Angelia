@@ -1,6 +1,20 @@
+import {
+  Channel,
+  CUSTOM_CHANNEL_LIMIT,
+  getColorPair,
+  NewChannel,
+  UserChannelInvite,
+} from '@/lib/channel';
+import { getUserById, User } from '@/lib/user';
+import {
+  createCustomChannel,
+  deleteCustomChannel,
+  updateCustomChannel,
+} from '@/store/actions/channelActions';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
+import { useAuth } from '@hooks/useAuth';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
@@ -18,19 +32,12 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '@store/hooks';
-import {
-  updateChannel,
-  removeChannel,
-  addChannel,
-} from '@store/slices/channelsSlice';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { updateChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
-import { useAuth } from '@hooks/useAuth';
-import { getUserById, User } from '@/lib/user';
-import { Channel, UserChannelInvite } from '@/lib/channel';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -188,14 +195,18 @@ export function Account() {
 
   // Memoized: Get pending invites
   const pendingInvites = useMemo(() => {
-    const result = userChannelInvites.filter((invite) => invite.status === 'pending');
+    const result = userChannelInvites.filter(
+      (invite) => invite.status === 'pending',
+    );
 
     return result;
   }, [userChannelInvites]);
 
   // Memoized: Get declined invites
   const declinedInvites = useMemo(() => {
-    const result = userChannelInvites.filter((invite) => invite.status === 'declined');
+    const result = userChannelInvites.filter(
+      (invite) => invite.status === 'declined',
+    );
 
     return result;
   }, [userChannelInvites]);
@@ -223,7 +234,7 @@ export function Account() {
     // Update account using Redux
     if (currentUser) {
       dispatch(updateCurrentUser(formData));
-      alert('Account updated successfully!');
+      actionModal.alert({ message: 'Account updated successfully!' });
     }
   };
 
@@ -272,9 +283,16 @@ export function Account() {
     });
 
     if (confirmed) {
-      // Delete channel using Redux
-      dispatch(removeChannel(channel.id));
-      console.log('Deleting channel:', channel.id);
+      try {
+        await dispatch(deleteCustomChannel(channel.id));
+        console.log('Deleted channel:', channel.id);
+      } catch (err) {
+        console.error('Error deleting channel:', err);
+        actionModal.alert({
+          title: 'Unable to delete channel',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
   };
 
@@ -303,38 +321,52 @@ export function Account() {
     setIsChannelDetailOpen(true);
   };
 
-  const handleChannelFormSubmit = (data: ChannelFormData) => {
+  const handleChannelFormSubmit = async (data: ChannelFormData) => {
     if (!currentUser) return;
 
     if (channelFormMode === 'create') {
       if (nonDailyChannelCount >= 3) {
-        alert(
-          'You have reached the maximum number of channels (3). Please delete an existing channel before creating a new one.',
-        );
+        actionModal.alert({
+          message:
+            'You have reached the maximum number of channels (3). Please delete an existing channel before creating a new one.',
+        });
         return;
       }
       // Create channel using Redux
-      const newChannel: Channel = {
-        id: `channel-${Date.now()}`,
+      const newChannel: NewChannel = {
         name: data.name,
         description: data.description,
         color: data.color,
-        isDaily: false,
         ownerId: currentUser.id,
         subscribers: [currentUser.id],
-        inviteCode: null,
       };
-      dispatch(addChannel(newChannel));
-      console.log('Creating channel:', newChannel);
+
+      try {
+        await dispatch(createCustomChannel(newChannel));
+      } catch (err) {
+        actionModal.alert({
+          title: 'Unable to create channel',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     } else if (selectedChannel) {
-      // Update channel using Redux
+      // Update channel using Firestore
       const updatedChannel = {
         ...selectedChannel,
         name: data.name,
+        description: data.description,
         color: data.color,
       };
-      dispatch(updateChannel(updatedChannel));
-      console.log('Updating channel:', selectedChannel.id, data);
+      try {
+        await dispatch(updateCustomChannel(updatedChannel));
+        console.log('Updated channel:', selectedChannel.id, data);
+      } catch (err) {
+        console.error('Error updating channel:', err);
+        actionModal.alert({
+          title: 'Unable to update channel',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
   };
 
@@ -478,9 +510,10 @@ export function Account() {
                       navigate('/auth');
                     } catch (err) {
                       console.error('Sign out error:', err);
-                      alert(
-                        'An error occurred while signing out. Please try again.',
-                      );
+                      actionModal.alert({
+                        message:
+                          'An error occurred while signing out. Please try again.',
+                      });
                     }
                   }}
                   className='w-full'
@@ -520,7 +553,7 @@ export function Account() {
                       Other Channels
                     </p>
                     <p className='text-foreground/60 text-xs'>
-                      {nonDailyChannelCount} / 3 channels
+                      {nonDailyChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
                     </p>
                   </div>
                   <div className='space-y-2'>
@@ -544,17 +577,17 @@ export function Account() {
               <div className='pt-2'>
                 <Button
                   onClick={handleCreateChannel}
-                  disabled={nonDailyChannelCount >= 3}
+                  disabled={nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT}
                   className='w-full'
                 >
-                  {nonDailyChannelCount >= 3
-                    ? 'Maximum Channels Reached (3/3)'
+                  {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT
+                    ? `Maximum Channels Reached (${CUSTOM_CHANNEL_LIMIT}/${CUSTOM_CHANNEL_LIMIT})`
                     : 'Create New Channel'}
                 </Button>
-                {nonDailyChannelCount >= 3 && (
+                {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT && (
                   <p className='text-foreground/60 mt-2 text-center text-xs'>
-                    You can create up to 3 custom channels to encourage
-                    intentionality
+                    You can create up to {CUSTOM_CHANNEL_LIMIT} custom channels
+                    to encourage intentionality
                   </p>
                 )}
               </div>
@@ -706,11 +739,7 @@ export function Account() {
                       return null;
                     }
 
-                    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
-                    const badgeColors = {
-                      backgroundColor: colorData?.value || '#c7d2fe',
-                      textColor: colorData?.textColor || '#4338ca',
-                    };
+                    const badgeColors = getColorPair(channel);
 
                     return (
                       <Card key={invite.id} className='p-4 opacity-60'>

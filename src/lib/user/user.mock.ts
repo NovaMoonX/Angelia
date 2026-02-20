@@ -14,6 +14,7 @@ export const mockCurrentUser: User = {
     emailVerified: true,
     dailyChannelCreated: true,
   },
+  customChannelCount: 2,
 };
 
 // Mock users database
@@ -32,6 +33,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: true,
     },
+    customChannelCount: 1,
   },
   {
     id: 'user2',
@@ -46,6 +48,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: true,
     },
+    customChannelCount: 0,
   },
   {
     id: 'user3',
@@ -60,6 +63,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: true,
     },
+    customChannelCount: 3,
   },
   {
     id: 'user4',
@@ -74,6 +78,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: true,
     },
+    customChannelCount: 2,
   },
   {
     id: 'user5',
@@ -88,6 +93,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: false,
     },
+    customChannelCount: 1,
   },
   {
     id: 'user6',
@@ -102,6 +108,7 @@ export const mockUsers: User[] = [
       emailVerified: true,
       dailyChannelCreated: true,
     },
+    customChannelCount: 0,
   },
 ];
 

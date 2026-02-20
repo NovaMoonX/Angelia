@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@hooks/useAuth';
 import { createDailyChannel } from '@/store/actions/channelActions';
 import Loading from '@/ui/Loading';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 
 interface ProfileFormData {
   firstName: string;
@@ -29,6 +30,7 @@ interface ProfileFormData {
 export function CompleteProfile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { alert } = useActionModal()
   const dispatch = useAppDispatch();
   const { firebaseUser, sendVerificationEmail, loading } = useAuth();
   const currentUser = useAppSelector((state) => state.users.currentUser);
@@ -53,7 +55,7 @@ export function CompleteProfile() {
     }
   }, [currentUser, navigate]);
 
-  if (loading || !firebaseUser || !firebaseUser.emailVerified) {
+  if (loading || !firebaseUser) {
     return <Loading />
   }
 
@@ -70,7 +72,7 @@ export function CompleteProfile() {
               Profile Already Complete
             </h1>
             <p className='text-foreground/70 text-center'>
-              Your profile is already set up. Redirecting you to your feed...
+              Your profile is already set up. Redirecting you...
             </p>
           </div>
         </div>
@@ -107,6 +109,10 @@ export function CompleteProfile() {
       }
     } catch (err) {
       console.error('Profile completion error:', err);
+      alert({
+        title: 'Error Completing Profile',
+        message: err instanceof Error ? err.message : 'An unknown error occurred.',
+      });
     } finally {
       setIsLoading(false);
     }
