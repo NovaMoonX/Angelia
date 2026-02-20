@@ -1,11 +1,22 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction } from 'firebase/firestore';
-import { db } from '@lib/firebase';
-import { Channel, CUSTOM_CHANNEL_LIMIT, DAILY_CHANNEL_DESCRIPTION, NewChannel } from '@lib/channel';
-import { addChannel, updateChannel, removeChannel } from '../slices/channelsSlice';
-import { RootState } from '..';
-import { updateAccountProgress, fetchUserProfile } from './authActions';
 import generateId from '@/util/generateId';
+import {
+  Channel,
+  CUSTOM_CHANNEL_LIMIT,
+  DAILY_CHANNEL_DESCRIPTION,
+  NewChannel,
+} from '@lib/channel';
+import { db } from '@lib/firebase';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  doc,
+  getDoc,
+  runTransaction,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore';
+import { RootState } from '..';
+import { addChannel } from '../slices/channelsSlice';
+import { updateAccountProgress } from './authActions';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
@@ -26,13 +37,17 @@ export const ensureDailyChannelExists = createAsyncThunk(
 
       const channels: Channel[] = state.channels?.items || [];
 
-      const existingDailyChannel = channels.find((ch) => ch.ownerId === userId && ch.isDaily);
+      const existingDailyChannel = channels.find(
+        (ch) => ch.ownerId === userId && ch.isDaily,
+      );
       if (existingDailyChannel) {
-        await dispatch(updateAccountProgress({
-          uid: userId,
-          field: 'dailyChannelCreated',
-          value: true,
-        }));
+        await dispatch(
+          updateAccountProgress({
+            uid: userId,
+            field: 'dailyChannelCreated',
+            value: true,
+          }),
+        );
         return;
       }
 
@@ -43,11 +58,13 @@ export const ensureDailyChannelExists = createAsyncThunk(
       if (channelSnap.exists()) {
         const data = channelSnap.data() as Channel;
         dispatch(addChannel(data));
-        await dispatch(updateAccountProgress({
-          uid: userId,
-          field: 'dailyChannelCreated',
-          value: true,
-        }));
+        await dispatch(
+          updateAccountProgress({
+            uid: userId,
+            field: 'dailyChannelCreated',
+            value: true,
+          }),
+        );
         return;
       }
 
@@ -132,7 +149,10 @@ export const createCustomChannel = createAsyncThunk(
         }
 
         const userData = userSnap.data() as any;
-        const current = typeof userData.customChannelCount === 'number' ? userData.customChannelCount : 0;
+        const current =
+          typeof userData.customChannelCount === 'number'
+            ? userData.customChannelCount
+            : 0;
         if (current >= CUSTOM_CHANNEL_LIMIT) {
           throw new Error('Maximum custom channels reached.');
         }
@@ -164,7 +184,15 @@ export const updateCustomChannel = createAsyncThunk(
       const channelDocRef = doc(db, 'channels', channel.id);
 
       // Prepare update payload - do not allow changing id or ownerId
-      const { id, ownerId, isDaily, createdAt, inviteCode, subscribers, ...updatable } = channel;
+      const {
+        id,
+        ownerId,
+        isDaily,
+        createdAt,
+        inviteCode,
+        subscribers,
+        ...updatable
+      } = channel;
 
       await updateDoc(channelDocRef, updatable);
 
@@ -175,7 +203,7 @@ export const updateCustomChannel = createAsyncThunk(
     }
   },
 );
-      
+
 /**
  * Delete a custom (non-daily) channel. Only the owner may delete.
  */
@@ -204,7 +232,10 @@ export const deleteCustomChannel = createAsyncThunk(
         }
 
         const userData = userSnap.data() as any;
-        const current = typeof userData.customChannelCount === 'number' ? userData.customChannelCount : 0;
+        const current =
+          typeof userData.customChannelCount === 'number'
+            ? userData.customChannelCount
+            : 0;
         const newCount = Math.max(0, current - 1);
 
         tx.delete(channelDocRef);

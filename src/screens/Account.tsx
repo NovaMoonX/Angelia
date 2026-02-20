@@ -1,6 +1,20 @@
+import {
+  Channel,
+  CUSTOM_CHANNEL_LIMIT,
+  getColorPair,
+  NewChannel,
+  UserChannelInvite,
+} from '@/lib/channel';
+import { getUserById, User } from '@/lib/user';
+import {
+  createCustomChannel,
+  deleteCustomChannel,
+  updateCustomChannel,
+} from '@/store/actions/channelActions';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
+import { useAuth } from '@hooks/useAuth';
 import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
@@ -18,26 +32,12 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '@store/hooks';
-import { updateChannel, removeChannel } from '@store/slices/channelsSlice';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { updateChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
 import { updateCurrentUser } from '@store/slices/usersSlice';
-import { useAuth } from '@hooks/useAuth';
-import { getUserById, User } from '@/lib/user';
-import {
-  Channel,
-  CUSTOM_CHANNEL_LIMIT,
-  getColorPair,
-  NewChannel,
-  UserChannelInvite,
-} from '@/lib/channel';
-import {
-  createCustomChannel,
-  updateCustomChannel,
-  deleteCustomChannel,
-} from '@/store/actions/channelActions';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 function formatJoinDate(timestamp: number): string {
   const date = new Date(timestamp);
