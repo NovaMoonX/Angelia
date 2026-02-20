@@ -15,8 +15,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { RootState } from '..';
-import { addChannel } from '../slices/channelsSlice';
 import { updateAccountProgress } from './authActions';
+import { User } from '@/lib/user';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
@@ -53,7 +53,7 @@ export const ensureDailyChannelExists = createAsyncThunk(
 
       const channelId = `${userId}-daily`;
       const channelDocRef = doc(db, 'channels', channelId);
-      const channelSnap = await getDoc(channelDocRef as any);
+      const channelSnap = await getDoc(channelDocRef);
       if (channelSnap.exists()) {
         const data = channelSnap.data() as Channel;
         // If the daily channel is marked for deletion, treat it as missing
@@ -64,7 +64,6 @@ export const ensureDailyChannelExists = createAsyncThunk(
           return;
         }
 
-        dispatch(addChannel(data));
         await dispatch(
           updateAccountProgress({
             uid: userId,
@@ -89,25 +88,23 @@ export const ensureDailyChannelExists = createAsyncThunk(
  */
 export const createDailyChannel = createAsyncThunk(
   'channels/createDaily',
-  async (userId: string, { dispatch }) => {
+  async (userId: string) => {
     try {
       const channelId = `${userId}-daily`;
       const channelDocRef = doc(db, 'channels', channelId);
 
       // Check Firestore first to avoid overwriting
-      const channelSnap = await getDoc(channelDocRef as any);
+      const channelSnap = await getDoc(channelDocRef);
       if (channelSnap.exists()) {
         const existing = channelSnap.data() as Channel;
         // If the existing daily channel was previously marked for deletion,
         // clear the flag so the owner retains their daily channel.
         if (existing.markedForDeletionAt) {
           await updateDoc(channelDocRef, { markedForDeletionAt: null });
-          const refreshed = (await getDoc(channelDocRef as any)).data() as Channel;
-          dispatch(addChannel(refreshed));
+          const refreshed = (await getDoc(channelDocRef)).data() as Channel;
           return refreshed;
         }
 
-        dispatch(addChannel(existing));
         return existing;
       }
 
@@ -166,7 +163,7 @@ export const createCustomChannel = createAsyncThunk(
           throw new Error('User profile not found');
         }
 
-        const userData = userSnap.data() as any;
+        const userData = userSnap.data() as User;
         const current =
           typeof userData.customChannelCount === 'number'
             ? userData.customChannelCount
@@ -177,12 +174,10 @@ export const createCustomChannel = createAsyncThunk(
 
         const channelSnap = await tx.get(channelDocRef);
         if (channelSnap.exists()) {
-          const ch = channelSnap.data() as any;
+          const ch = channelSnap.data() as Channel;
           if (!ch.markedForDeletionAt) {
             throw new Error('Channel already exists');
           }
-          // If the existing doc was marked for deletion, allow recreation
-          // by overwriting it in this transaction.
         }
 
         tx.set(channelDocRef, newChannel);
@@ -242,7 +237,7 @@ export const deleteCustomChannel = createAsyncThunk(
           throw new Error('Channel not found');
         }
 
-        const channel = channelSnap.data() as any;
+        const channel = channelSnap.data() as Channel;
         if (channel.isDaily) {
           throw new Error('Daily channels cannot be deleted');
         }
@@ -258,7 +253,7 @@ export const deleteCustomChannel = createAsyncThunk(
           throw new Error('Owner user not found');
         }
 
-        const userData = userSnap.data() as any;
+        const userData = userSnap.data() as User;
         const current =
           typeof userData.customChannelCount === 'number'
             ? userData.customChannelCount
