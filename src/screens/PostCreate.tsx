@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAppSelector } from '@store/hooks';
-import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
 import { Form, FormFactories, Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { selectUserChannels, selectUserDailyChannel } from '@store/slices/channelsSlice';
@@ -17,6 +17,7 @@ export interface PostFormData {
 export default function PostCreate() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { confirm } =useActionModal()
   const userChannels = useAppSelector(selectUserChannels);
   const userDailyChannel = useAppSelector(selectUserDailyChannel)
 
@@ -39,6 +40,21 @@ export default function PostCreate() {
       </div>
     );
   }
+
+  const confirmDiscard = async () => {
+    const confirmed = await confirm({
+      title: 'Discard Post?',
+      message: 'Are you sure you want to discard this post? All changes will be lost.',
+      confirmText: 'Yes, Discard',
+      cancelText: 'No, Keep Editing',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      navigate('/feed');
+    }
+  }
+
 
   const defaultChannel = userDailyChannel || userChannels[0];
 
@@ -123,17 +139,24 @@ export default function PostCreate() {
   };
 
   return (
-    <div className='w-full max-w-lg mx-auto py-8 px-4'>
-      <h1 className='text-3xl font-bold mb-2 text-foreground'>Create New Post</h1>
-      <p className='mb-6 text-foreground/60'>Share an update with your family</p>
+    <div className='w-full max-w-lg mx-auto pt-20 pb-8 px-4 relative'>
+      <Link
+        to='/feed'
+        className='absolute left-0 top-4 flex items-center text-primary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary px-4 py-2 rounded'
+        aria-label='Back to feed'
+      >
+        ← Back to feed
+      </Link>
+      <h1 className='text-3xl font-bold mb-2 text-foreground text-center'>Create New Post</h1>
+      <p className='mb-6 text-foreground/60 text-center'>Share an update with your family</p>
       <Form<PostFormData>
         form={formFields}
         initialData={initialData}
         onSubmit={handleSubmit}
         submitButton={
           <div className='flex gap-3 pt-2'>
-            <Button type='button' variant='tertiary' onClick={() => navigate('/feed')} className='flex-1'>
-              Nevermind
+            <Button type='button' variant='tertiary' onClick={confirmDiscard} className='flex-1'>
+              Discard
             </Button>
             <Button type='submit' className='flex-1'>
               Share Post
