@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@lib/firebase';
-import { NewUser, type User } from '@lib/user';
+import { NewUser, UpdateUserProfileData, type User } from '@lib/user';
 import { setCurrentUser } from '../slices/usersSlice';
 
 /**
@@ -101,5 +101,26 @@ export const updateAccountProgress = createAsyncThunk(
     }
 
     return null;
+  },
+);
+
+/**
+ * Async thunk to update a user's profile in Firestore.
+ */
+export const updateUserProfile = createAsyncThunk(
+  'auth/updateUserProfile',
+  async (
+    { uid, data }: { uid: string; data: Partial<UpdateUserProfileData> },
+    { rejectWithValue },
+  ) => {
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      // Only update the provided fields
+      await updateDoc(userDocRef, data);
+      return true;
+    } catch (err) {
+      console.error('Error updating user profile:', err);
+      return rejectWithValue(err);
+    }
   },
 );

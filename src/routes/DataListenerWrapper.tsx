@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToChannels } from '@/lib/channel';
+import { subscribeToCurrentUser } from '@/lib/user/user.data';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
 
@@ -12,10 +13,12 @@ function DataListenerWrapper({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const unsubscribe = subscribeToChannels()(dispatch);
+    const unsubscribeChannels = subscribeToChannels()(dispatch);
+    const unsubscribeUser = subscribeToCurrentUser(firebaseUser.uid)(dispatch);
 
     return () => {
-      unsubscribe();
+      unsubscribeChannels();
+      unsubscribeUser();
     };
   }, [firebaseUser, dispatch]);
 

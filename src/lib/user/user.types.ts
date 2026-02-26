@@ -17,3 +17,4 @@ export interface User {
 }
 
 export type NewUser = Omit<User,'joinedAt' | 'accountProgress' | 'customChannelCount'>
+export type UpdateUserProfileData = Pick<User, 'firstName' | 'lastName' | 'funFact' | 'avatar'>;
