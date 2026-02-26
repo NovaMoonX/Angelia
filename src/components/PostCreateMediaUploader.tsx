@@ -1,6 +1,7 @@
 import { MediaItem } from '@/lib/post';
 import { Button, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { X } from '@moondreamsdev/dreamer-ui/symbols';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useState } from 'react';
 
 const MAX_FILES = 5;
@@ -152,7 +153,7 @@ function PostCreateMediaUploader({
               >
                 <X className='size-3' />
               </button>
-              <span className='bg-background/50 absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs'>
+              <span className={join('absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs', item.type === 'image' ? 'bg-slate-900/70 ' : 'bg-slate-100/70 ')}>
                 {item.type === 'image' ? '🖼️' : '🎥'}
               </span>
             </div>
