@@ -1,6 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Channel, mockChannels } from '@lib/channel';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { resetAllState } from '@store/actions/globalActions';
+import { RootState } from '..';
 
 interface ChannelsState {
   items: Channel[];
@@ -50,3 +51,15 @@ export const {
   loadDemoChannels 
 } = channelsSlice.actions;
 export default channelsSlice.reducer;
+
+// Selectors
+export const selectUserChannels = createSelector(
+  [
+    (state: { channels: ChannelsState }) => state.channels.items,
+    (state: RootState) => state.users?.currentUser?.id,
+  ],
+  (channels, userId) => {
+    if (!userId) return [];
+    return channels.filter((channel) => channel.ownerId === userId);
+  }
+);

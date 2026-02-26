@@ -5,8 +5,7 @@ import { db } from '../firebase';
 import { Channel } from './channel.types';
 
 export const subscribeToChannels = () => (dispatch: AppDispatch) => {
-  // Query channels where `markedForDeletionAt` is null (not scheduled).
-  // Using a Firestore query avoids transferring marked docs to the client.
+  // Exclude channels marked for deletion
   const q = query(
     collection(db, 'channels'),
     where('markedForDeletionAt', '==', null),

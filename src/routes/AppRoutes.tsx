@@ -62,6 +62,14 @@ export const router = createBrowserRouter([
             },
           },
           {
+            path: 'post/new',
+            HydrateFallback: Loading,
+            lazy: async () => {
+              const { default: PostCreate } = await import('@screens/PostCreate');
+              return { Component: PostCreate };
+            },
+          },
+          {
             path: 'post/:id',
             HydrateFallback: Loading,
             lazy: async () => {

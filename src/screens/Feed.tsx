@@ -1,5 +1,5 @@
 import { BellIcon } from '@components/BellIcon';
-import { PostFormModal } from '@components/PostFormModal';
+// import { PostFormModal } from '@components/PostFormModal';
 import { SkeletonPostCard } from '@components/SkeletonPostCard';
 import { PostCard } from '@components/PostCard';
 import {
@@ -10,8 +10,7 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { ChevronUp, Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@store/hooks';
 
 type SortOrder = 'newest' | 'oldest';
@@ -21,7 +20,6 @@ const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
 export function Feed() {
   const location = useLocation();
-  const toast = useToast();
   const locationState = location.state as {
     scrollPosition?: number;
     displayedCount?: number;
@@ -44,7 +42,8 @@ export function Feed() {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  // const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const hasRestoredScroll = useRef(false);
   const firstPostRef = useRef<HTMLDivElement>(null);
@@ -319,22 +318,9 @@ export function Feed() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Get user's channels for post creation
-  const userChannels = useMemo(() => {
-    if (!currentUser) return [];
-    return channels.filter((channel) => channel.ownerId === currentUser.id);
-  }, [channels, currentUser]);
-
-  // Handler for post creation
-  const handlePostSubmit = () => {
-    // In a real app, this would save to the database
-    // For now, we'll just show a success message
-    toast.addToast({
-      title: 'Post created successfully!',
-      description: 'This is a demo - post not saved',
-      type: 'success',
-    });
-    setIsPostModalOpen(false);
+  // Handler for navigating to post creation page
+  const handleCreatePost = () => {
+    navigate('/post/new');
   };
 
   const showScrollToTop = !firstPostVisible && !secondPostVisible;
@@ -355,7 +341,7 @@ export function Feed() {
               <Button
                 variant='primary'
                 size='sm'
-                onClick={() => setIsPostModalOpen(true)}
+                onClick={handleCreatePost}
                 className='hidden! sm:flex!'
                 aria-label='Create new post'
               >
@@ -365,7 +351,7 @@ export function Feed() {
               <Button
                 variant='primary'
                 size='sm'
-                onClick={() => setIsPostModalOpen(true)}
+                onClick={handleCreatePost}
                 className='flex sm:hidden p-2'
                 aria-label='Create new post'
               >
@@ -488,13 +474,7 @@ export function Feed() {
         </Button>
       )}
 
-      {/* Post Creation Modal */}
-      <PostFormModal
-        isOpen={isPostModalOpen}
-        onClose={() => setIsPostModalOpen(false)}
-        onSubmit={handlePostSubmit}
-        userChannels={userChannels}
-      />
+      {/* Post Creation Modal removed. Post creation is now a separate page. */}
     </div>
   );
 }
