@@ -31,7 +31,7 @@ import {
   TabsTrigger,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
-import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { updateChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
@@ -62,7 +62,6 @@ interface ChannelFormData {
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const actionModal = useActionModal();
-  const { addToast } = useToast();
   const notificationsRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -239,7 +238,7 @@ export function Account() {
       await dispatch(
         updateUserProfile({ uid: currentUser.id, data: formData }),
       ).unwrap();
-      actionModal.alert({ message: 'Account updated successfully!' });
+      actionModal.alert({ title: 'Success', message: 'Your account has been updated!' });
     } catch (err) {
       console.error('Failed to update profile:', err);
       actionModal.alert({
