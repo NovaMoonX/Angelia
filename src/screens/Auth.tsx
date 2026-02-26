@@ -11,7 +11,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { enterDemoMode } from '@store/actions/demoActions';
-import { fetchUserProfile } from '@store/actions/authActions';
+import { fetchUserProfile } from '@store/actions/userActions';
 import { useAuth } from '@hooks/useAuth';
 import { getAuthErrorMessage } from '@/util/firebaseAuth';
 import Loading from '@ui/Loading';

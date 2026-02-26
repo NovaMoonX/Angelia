@@ -14,7 +14,7 @@ import { AVATAR_PRESETS, REDIRECT_PARAM } from '@lib/app/app.constants';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import {
   createUserProfile,
-} from '@store/actions/authActions';
+} from '@store/actions/userActions';
 import { useAuth } from '@hooks/useAuth';
 import { createDailyChannel } from '@/store/actions/channelActions';
 import Loading from '@/ui/Loading';

@@ -35,7 +35,7 @@ import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { updateChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
-import { updateUserProfile } from '@store/actions/authActions';
+import { updateUserProfile } from '@store/actions/userActions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 

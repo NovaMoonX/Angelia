@@ -15,7 +15,7 @@ import { useAppDispatch } from '@/store/hooks';
 import {
   fetchUserProfile,
   updateAccountProgress,
-} from '@/store/actions/authActions';
+} from '@/store/actions/userActions';
 import { User } from '@/lib/user';
 import { ensureDailyChannelExists } from '@/store/actions/channelActions';
 

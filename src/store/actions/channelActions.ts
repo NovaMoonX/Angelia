@@ -15,7 +15,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { RootState } from '..';
-import { updateAccountProgress } from './authActions';
+import { updateAccountProgress } from './userActions';
 import { User } from '@/lib/user';
 
 /**
