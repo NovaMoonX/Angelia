@@ -13,6 +13,7 @@ import {
 } from '@store/slices/channelsSlice';
 import { MediaItem } from '@/lib/post';
 import PostCreateMediaUploader from '@/components/PostCreateMediaUploader';
+import { useState } from 'react';
 
 export interface PostFormData {
   text: string;
@@ -27,9 +28,27 @@ export default function PostCreate() {
   const { confirm } = useActionModal();
   const userChannels = useAppSelector(selectUserChannels);
   const userDailyChannel = useAppSelector(selectUserDailyChannel);
+  const [formData, setFormData] = useState<PostFormData>();
 
   // Handle form submit
   const handleSubmit = (data: PostFormData) => {
+    if (!data.channelId) {
+      toast.addToast({
+        title: 'Channel selection is required',
+        description: 'Please select a channel to post in.',
+        type: 'error',
+      });
+      return;
+    }
+    if (!data.text.trim()) {
+      toast.addToast({
+        title: 'Post text is required',
+        description: 'Please enter some text for your post.',
+        type: 'error',
+      });
+      return;
+    }
+
     // In a real app, this would save to the database
     toast.addToast({
       title: 'Post created successfully!',
@@ -71,7 +90,6 @@ export default function PostCreate() {
     FormFactories.custom({
       name: 'channelId',
       label: 'Select Channel',
-      required: true,
       renderComponent: (props) => (
         <div className='grid grid-cols-1 gap-2'>
           {userChannels.map((channel) => {
@@ -121,14 +139,13 @@ export default function PostCreate() {
       name: 'text',
       label: "What's on your mind?",
       placeholder: 'Share an update with your family...',
-      required: true,
       rows: 4,
       isValid: (value: unknown) => {
         const text = ((value as string) || '').trim();
         if (!text) {
           return {
             valid: false,
-            message: 'Please share something before posting',
+            message: 'Hmm 🤔 seems like you forgot to write something',
           };
         }
         return { valid: true };
@@ -138,7 +155,6 @@ export default function PostCreate() {
     FormFactories.custom({
       name: 'media',
       label: 'Add Photos or Videos (Optional)',
-      required: false,
       renderComponent: (props) => (
         <PostCreateMediaUploader
           value={props.value}
@@ -178,6 +194,7 @@ export default function PostCreate() {
       <Form<PostFormData>
         form={formFields}
         initialData={initialData}
+        onDataChange={(updatedData) => setFormData(updatedData)}
         onSubmit={handleSubmit}
         submitButton={
           <div className='flex gap-3 pt-2'>
@@ -189,7 +206,11 @@ export default function PostCreate() {
             >
               Discard
             </Button>
-            <Button type='submit' className='flex-1'>
+            <Button
+              type='submit'
+              disabled={!formData?.text || !formData?.channelId}
+              className='flex-1'
+            >
               Share Post
             </Button>
           </div>
