@@ -63,3 +63,8 @@ export const selectUserChannels = createSelector(
     return channels.filter((channel) => channel.ownerId === userId);
   }
 );
+
+export const selectUserDailyChannel = createSelector(
+  [selectUserChannels],
+  (userChannels) => userChannels.find((ch) => ch.isDaily) || null
+);
