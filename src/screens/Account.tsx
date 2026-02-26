@@ -35,7 +35,7 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { updateChannel } from '@store/slices/channelsSlice';
 import { updateInvite } from '@store/slices/invitesSlice';
-import { updateCurrentUser } from '@store/slices/usersSlice';
+import { updateUserProfile } from '@store/actions/userActions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -230,11 +230,21 @@ export function Account() {
     }));
   };
 
-  const handleUpdateAccount = () => {
-    // Update account using Redux
-    if (currentUser) {
-      dispatch(updateCurrentUser(formData));
-      actionModal.alert({ message: 'Account updated successfully!' });
+  const handleUpdateAccount = async () => {
+    if (!currentUser) return;
+
+    try {
+      // Persist changes to Firestore; listener will update local Redux state.
+      await dispatch(
+        updateUserProfile({ uid: currentUser.id, data: formData }),
+      ).unwrap();
+      actionModal.alert({ title: 'Success', message: 'Your account has been updated!' });
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      actionModal.alert({
+        title: 'Update failed',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   };
 

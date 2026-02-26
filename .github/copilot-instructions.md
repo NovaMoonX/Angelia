@@ -157,7 +157,7 @@ import { helper } from '@utils/helper';
 ### 13. Redux State Management
 - **ALWAYS** use `createAsyncThunk` from `@reduxjs/toolkit` for async operations that affect Redux state
 - **NEVER** perform async Firestore operations directly in components - use thunks instead
-- Place async thunks in `src/store/` directory (e.g., `authActions.ts`, `demoActions.ts`)
+- Place async thunks in `src/store/` directory (e.g., `userActions.ts`, `demoActions.ts`)
 - Thunks should handle both the async operation and the Redux state update
 
 **❌ NEVER DO THIS:**
@@ -172,7 +172,7 @@ const handleLogin = async () => {
 
 **✅ ALWAYS DO THIS:**
 ```tsx
-// Good - create async thunk in store/authActions.ts
+// Good - create async thunk in store/userActions.ts
 export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
   async (uid: string, { dispatch }) => {
