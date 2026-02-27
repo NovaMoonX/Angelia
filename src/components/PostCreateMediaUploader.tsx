@@ -1,8 +1,9 @@
 import { MediaItem } from '@/lib/post';
+import generateId from '@/util/generateId';
 import { Button, Callout } from '@moondreamsdev/dreamer-ui/components';
 import { X } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE_MB = 10;
@@ -17,14 +18,29 @@ const ACCEPTED_IMAGE_TYPES = [
 const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
 const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
 
+export type FileUpload = {
+  file: File;
+  id: string;
+}; // Extend File type to include an ID for React keys
+
 function PostCreateMediaUploader({
   value,
   onValueChange,
 }: {
   value: unknown;
-  onValueChange: (value: File[]) => void;
+  onValueChange: (value: FileUpload[]) => void;
 }) {
-  const mediaItems = (value as File[]) || [];
+  const mediaItems = useMemo(() => (value ?? []) as FileUpload[], [value]);
+  const mediaItemsUrlMap = useMemo(() => {
+    const map = mediaItems.reduce(
+      (acc, upload) => {
+        acc[upload.id] = URL.createObjectURL(upload.file);
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+    return map;
+  }, [mediaItems]);
   const [errors, setErrors] = useState<string[]>([]);
 
   function formatFileSize(bytes: number): string {
@@ -70,7 +86,8 @@ function PostCreateMediaUploader({
       }
     }
     if (validFiles.length > 0) {
-      onValueChange([...mediaItems, ...validFiles]);
+      const newMediaItems = validFiles.map((file) => ({ file, id: generateId('postMedia') }));
+      onValueChange([...mediaItems, ...newMediaItems]);
     }
     setErrors(newErrors);
     e.target.value = '';
@@ -131,25 +148,28 @@ function PostCreateMediaUploader({
       {mediaItems.length > 0 && (
         <div className='grid grid-cols-2 gap-3'>
           {mediaItems.map((item, index) => {
-            const fileMediaType = getFileMediaType(item);
+            const fileMediaType = getFileMediaType(item.file);
+            const fileUrl = mediaItemsUrlMap[item.id];
             return (
               <div
-                key={`${item.name}-${index}`}
+                key={item.id}
                 className='group border-foreground/10 bg-foreground/5 relative aspect-video overflow-hidden rounded-lg border'
               >
                 {fileMediaType === 'image' ? (
                   <img
-                    src={URL.createObjectURL(item)}
+                    src={fileUrl}
                     alt={`Upload ${index + 1}`}
                     className='h-full w-full object-cover'
                   />
                 ) : fileMediaType === 'video' ? (
                   <video
-                    src={URL.createObjectURL(item)}
+                    src={fileUrl}
                     className='h-full w-full object-cover'
                     muted
                   />
-                ) : <>UNEXPECTED FILE MEDIA TYPE</>}
+                ) : (
+                  <>UNEXPECTED FILE MEDIA TYPE</>
+                )}
                 <button
                   type='button'
                   onClick={() => handleRemove(index)}

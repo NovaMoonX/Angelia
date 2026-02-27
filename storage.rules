@@ -31,10 +31,19 @@ service firebase.storage {
         (channel.data.subscribers is list) &&
         (request.auth.uid in channel.data.subscribers);
     }
-    // Allow users to upload/read/delete post media if they have access to the post in Firestore
+    // Allow users to upload/read/delete post media based on post status and access
     match /posts/{postId}/{mediaFile} {
-      allow read: if isSignedIn() && (isAuthor(postId) || isChannelSubscriber(postId));
-      allow write, delete: if isSignedIn() && isAuthor(postId);
+      // Allow reading:
+      // - if post is 'uploading', only author can read
+      // - if post is 'ready', author or channel subscriber can read
+      allow read: if isSignedIn() && getPost(postId) != null && (
+        (getPost(postId).data.status == 'uploading' && isAuthor(postId)) ||
+        (getPost(postId).data.status == 'ready' && (isAuthor(postId) || isChannelSubscriber(postId)))
+      );
+      // Only allow writing if post is 'uploading' and user is author
+      allow write: if isSignedIn() && getPost(postId) != null && getPost(postId).data.status == 'uploading' && isAuthor(postId);
+      // Only allow deleting if user is author (regardless of status)
+      allow delete: if isSignedIn() && isAuthor(postId);
     }
     
     // Deny all other access

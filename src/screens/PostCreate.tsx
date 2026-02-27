@@ -1,4 +1,4 @@
-import PostCreateMediaUploader from '@/components/PostCreateMediaUploader';
+import PostCreateMediaUploader, { FileUpload } from '@/components/PostCreateMediaUploader';
 import { Post } from '@/lib/post';
 import {
   Button,
@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export type PostFormData = Pick<Post, 'text' | 'channelId'> & {
-  mediaFiles: File[]; // For handling file uploads in the form
+  fileUploads: FileUpload[]; // For handling file uploads in the form
 };
 
 export default function PostCreate() {
@@ -181,7 +181,7 @@ export default function PostCreate() {
     }),
 
     FormFactories.custom({
-      name: 'media',
+      name: 'fileUploads',
       label: 'Add Photos or Videos (Optional)',
       renderComponent: (props) => (
         <PostCreateMediaUploader
@@ -195,7 +195,7 @@ export default function PostCreate() {
   const initialData: PostFormData = {
     text: '',
     channelId: defaultChannel?.id || '',
-    mediaFiles: [],
+    fileUploads: [],
   };
 
   return (

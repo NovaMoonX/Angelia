@@ -18,6 +18,8 @@ export interface MediaItem {
   url: string;
 }
 
+export type PostStatus = 'uploading' | 'ready' | 'error';
+
 export interface Post {
   id: string;
   authorId: string;
@@ -29,4 +31,5 @@ export interface Post {
   comments: Comment[]; // Array of comments/messages
   conversationEnrollees: string[]; // User IDs who have joined the conversation
   markedForDeletionAt: number | null; // Timestamp for when the post is marked for deletion (for demo purposes)
+  status: PostStatus;
 }
