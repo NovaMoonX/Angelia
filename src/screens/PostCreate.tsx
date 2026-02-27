@@ -1,20 +1,20 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '@store/hooks';
-import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
+import PostCreateMediaUploader from '@/components/PostCreateMediaUploader';
+import { Post } from '@/lib/post';
 import {
+  Button,
   Form,
   FormFactories,
-  Button,
 } from '@moondreamsdev/dreamer-ui/components';
+import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { uploadPost } from '@store/actions/postActions';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
 import {
   selectUserChannels,
   selectUserDailyChannel,
 } from '@store/slices/channelsSlice';
-import { MediaItem, Post } from '@/lib/post';
-import PostCreateMediaUploader from '@/components/PostCreateMediaUploader';
 import { useState } from 'react';
-import { uploadPost } from '@store/actions/postActions';
+import { Link, useNavigate } from 'react-router-dom';
 
 export type PostFormData = Pick<Post, 'text' | 'channelId'> & {
   mediaFiles: File[]; // For handling file uploads in the form

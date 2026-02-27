@@ -82,6 +82,16 @@ function PostCreateMediaUploader({
     setErrors([]);
   };
 
+  const getFileMediaType = (file: File): MediaItem['type'] | 'unknown' => {
+    if (ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      return 'image';
+    }
+    if (ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      return 'video';
+    }
+    return 'unknown';
+  };
+
   return (
     <div className='space-y-3'>
       <div className='flex flex-col gap-2'>
@@ -120,42 +130,49 @@ function PostCreateMediaUploader({
       )}
       {mediaItems.length > 0 && (
         <div className='grid grid-cols-2 gap-3'>
-          {mediaItems.map((item, index) => (
-            <div
-              key={`${item.name}-${index}`}
-              className='group border-foreground/10 bg-foreground/5 relative aspect-video overflow-hidden rounded-lg border'
-            >
-              {item.type === 'image' ? (
-                <img
-                  src={URL.createObjectURL(item)}
-                  alt={`Upload ${index + 1}`}
-                  className='h-full w-full object-cover'
-                />
-              ) : (
-                <video
-                  src={URL.createObjectURL(item)}
-                  className='h-full w-full object-cover'
-                  muted
-                />
-              )}
-              <button
-                type='button'
-                onClick={() => handleRemove(index)}
-                className='absolute top-2 right-2 max-h-fit rounded-full bg-red-500 p-1 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100'
-                aria-label='Remove media'
+          {mediaItems.map((item, index) => {
+            const fileMediaType = getFileMediaType(item);
+            return (
+              <div
+                key={`${item.name}-${index}`}
+                className='group border-foreground/10 bg-foreground/5 relative aspect-video overflow-hidden rounded-lg border'
               >
-                <X className='size-3' />
-              </button>
-              <span
-                className={join(
-                  'absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs',
-                  item.type === 'image' ? 'bg-slate-900/70' : 'bg-slate-100/70',
+                {fileMediaType === 'image' ? (
+                  <img
+                    src={URL.createObjectURL(item)}
+                    alt={`Upload ${index + 1}`}
+                    className='h-full w-full object-cover'
+                  />
+                ) : fileMediaType === 'video' ? (
+                  <video
+                    src={URL.createObjectURL(item)}
+                    className='h-full w-full object-cover'
+                    muted
+                  />
+                ) : <>UNEXPECTED FILE MEDIA TYPE</>}
+                <button
+                  type='button'
+                  onClick={() => handleRemove(index)}
+                  className='absolute top-2 right-2 max-h-fit rounded-full bg-red-500 p-1 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100'
+                  aria-label='Remove media'
+                >
+                  <X className='size-3' />
+                </button>
+                {fileMediaType !== null && (
+                  <span
+                    className={join(
+                      'absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs',
+                      fileMediaType === 'image'
+                        ? 'bg-slate-900/70'
+                        : 'bg-slate-100/70',
+                    )}
+                  >
+                    {fileMediaType === 'image' ? '🖼️' : '🎥'}
+                  </span>
                 )}
-              >
-                {item.type === 'image' ? '🖼️' : '🎥'}
-              </span>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
