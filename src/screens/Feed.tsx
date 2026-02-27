@@ -11,6 +11,7 @@ import { ChevronUp, Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@store/hooks';
+import { selectChannelMapById } from '@/store/slices/channelsSlice';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';
@@ -27,6 +28,7 @@ export function Feed() {
   // Get data from Redux store
   const posts = useAppSelector((state) => state.posts.items);
   const channels = useAppSelector((state) => state.channels.items);
+  const channelMapById = useAppSelector(selectChannelMapById)
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const userChannelInvites = useAppSelector((state) => state.invites.items);
 
@@ -57,16 +59,14 @@ export function Feed() {
     // Filter by channel
     if (selectedChannel === 'daily') {
       // Show all daily channel posts
-      filtered = filtered.filter((post) => post.isDaily);
+      filtered = filtered.filter((post) => {
+        const channel = channelMapById[post.channelId];
+        return channel?.isDaily;
+      });
     } else if (selectedChannel !== 'all') {
       filtered = filtered.filter(
         (post) => post.channelId === selectedChannel,
       );
-    }
-
-    // Filter by priority
-    if (priorityFilter === 'high') {
-      filtered = filtered.filter((post) => post.isHighPriority);
     }
 
     const sorted = [...filtered].sort((a, b) => {

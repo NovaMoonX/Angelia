@@ -5,6 +5,39 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function getPost(postId) {
+      return firestore.exists(/databases/(default)/documents/posts/$(postId))
+        ? firestore.get(/databases/(default)/documents/posts/$(postId))
+        : null;
+    }
+    function isAuthor(postId) {
+      let post = getPost(postId);
+      return post != null && post.data.authorId == request.auth.uid;
+    }
+    function getChannel(channelId) {
+      return firestore.exists(/databases/(default)/documents/channels/$(channelId))
+        ? firestore.get(/databases/(default)/documents/channels/$(channelId))
+        : null;
+    }
+    function isChannelSubscriber(postId) {
+      let post = getPost(postId);
+      let channel = post != null ? getChannel(post.data.channelId) : null;
+      return post != null && channel != null &&
+        (channel.data.markedForDeletionAt == null) &&
+        (channel.data.subscribers != null) &&
+        (channel.data.subscribers is list) &&
+        (request.auth.uid in channel.data.subscribers);
+    }
+    // Allow users to upload/read/delete post media if they have access to the post in Firestore
+    match /posts/{postId}/{mediaFile} {
+      allow read: if isSignedIn() && (isAuthor(postId) || isChannelSubscriber(postId));
+      allow write, delete: if isSignedIn() && isAuthor(postId);
+    }
+    
+    // Deny all other access
     match /{allPaths=**} {
       allow read, write: if false;
     }

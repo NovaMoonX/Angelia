@@ -22,9 +22,9 @@ function PostCreateMediaUploader({
   onValueChange,
 }: {
   value: unknown;
-  onValueChange: (value: MediaItem[]) => void;
+  onValueChange: (value: File[]) => void;
 }) {
-  const mediaItems = (value as MediaItem[]) || [];
+  const mediaItems = (value as File[]) || [];
   const [errors, setErrors] = useState<string[]>([]);
 
   function formatFileSize(bytes: number): string {
@@ -70,14 +70,7 @@ function PostCreateMediaUploader({
       }
     }
     if (validFiles.length > 0) {
-      const newMediaItems: MediaItem[] = validFiles.map((file) => {
-        const type = ACCEPTED_IMAGE_TYPES.includes(file.type)
-          ? 'image'
-          : 'video';
-        const url = URL.createObjectURL(file);
-        return { type, url };
-      });
-      onValueChange([...mediaItems, ...newMediaItems]);
+      onValueChange([...mediaItems, ...validFiles]);
     }
     setErrors(newErrors);
     e.target.value = '';
@@ -129,18 +122,18 @@ function PostCreateMediaUploader({
         <div className='grid grid-cols-2 gap-3'>
           {mediaItems.map((item, index) => (
             <div
-              key={`${item.url}-${index}`}
+              key={`${item.name}-${index}`}
               className='group border-foreground/10 bg-foreground/5 relative aspect-video overflow-hidden rounded-lg border'
             >
               {item.type === 'image' ? (
                 <img
-                  src={item.url}
+                  src={URL.createObjectURL(item)}
                   alt={`Upload ${index + 1}`}
                   className='h-full w-full object-cover'
                 />
               ) : (
                 <video
-                  src={item.url}
+                  src={URL.createObjectURL(item)}
                   className='h-full w-full object-cover'
                   muted
                 />
@@ -153,7 +146,12 @@ function PostCreateMediaUploader({
               >
                 <X className='size-3' />
               </button>
-              <span className={join('absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs', item.type === 'image' ? 'bg-slate-900/70 ' : 'bg-slate-100/70 ')}>
+              <span
+                className={join(
+                  'absolute bottom-2 left-2 rounded px-2 py-0.5 text-xs',
+                  item.type === 'image' ? 'bg-slate-900/70' : 'bg-slate-100/70',
+                )}
+              >
                 {item.type === 'image' ? '🖼️' : '🎥'}
               </span>
             </div>

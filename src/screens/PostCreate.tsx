@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { useAppSelector } from '@store/hooks';
+import { useAppSelector, useAppDispatch } from '@store/hooks';
 import { useActionModal, useToast } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   Form,
@@ -11,27 +11,28 @@ import {
   selectUserChannels,
   selectUserDailyChannel,
 } from '@store/slices/channelsSlice';
-import { MediaItem } from '@/lib/post';
+import { MediaItem, Post } from '@/lib/post';
 import PostCreateMediaUploader from '@/components/PostCreateMediaUploader';
 import { useState } from 'react';
+import { uploadPost } from '@store/actions/postActions';
 
-export interface PostFormData {
-  text: string;
-  channelId: string;
-  media: MediaItem[];
-  isHighPriority: boolean;
-}
+export type PostFormData = Pick<Post, 'text' | 'channelId'> & {
+  mediaFiles: File[]; // For handling file uploads in the form
+};
 
 export default function PostCreate() {
   const navigate = useNavigate();
   const toast = useToast();
   const { confirm } = useActionModal();
+  const dispatch = useAppDispatch();
   const userChannels = useAppSelector(selectUserChannels);
   const userDailyChannel = useAppSelector(selectUserDailyChannel);
+  const currentUser = useAppSelector((state) => state.users.currentUser);
   const [formData, setFormData] = useState<PostFormData>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle form submit
-  const handleSubmit = (data: PostFormData) => {
+  const handleSubmit = async (data: PostFormData) => {
     if (!data.channelId) {
       toast.addToast({
         title: 'Channel selection is required',
@@ -48,14 +49,41 @@ export default function PostCreate() {
       });
       return;
     }
+    if (!currentUser) {
+      toast.addToast({
+        title: 'Not signed in',
+        description: 'You must be signed in to post.',
+        type: 'error',
+      });
+      return;
+    }
 
-    // In a real app, this would save to the database
-    toast.addToast({
-      title: 'Post created successfully!',
-      description: 'This is a demo - post not saved',
-      type: 'success',
-    });
-    navigate('/feed');
+    setIsSubmitting(true);
+    try {
+      await dispatch(
+        uploadPost({
+          formData: data,
+        }),
+      ).unwrap();
+
+      toast.addToast({
+        title: 'Post created successfully!',
+        description: 'Your update has been shared.',
+        type: 'success',
+      });
+      setTimeout(() => {
+        navigate('/feed');
+      }, 1000);
+    } catch (err: any) {
+      toast.addToast({
+        title: 'Failed to create post',
+        description:
+          err?.message || 'Something went wrong uploading your post.',
+        type: 'error',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // If no channels, show error (could redirect or show message)
@@ -162,18 +190,12 @@ export default function PostCreate() {
         />
       ),
     }),
-    FormFactories.checkbox({
-      name: 'isHighPriority',
-      label: 'Mark as High Priority',
-      description: 'Use for important family announcements',
-    }),
   ];
 
-  const initialData = {
+  const initialData: PostFormData = {
     text: '',
     channelId: defaultChannel?.id || '',
-    media: [] as MediaItem[],
-    isHighPriority: false,
+    mediaFiles: [],
   };
 
   return (
@@ -203,13 +225,15 @@ export default function PostCreate() {
               variant='tertiary'
               onClick={confirmDiscard}
               className='flex-1'
+              disabled={isSubmitting}
             >
               Discard
             </Button>
             <Button
               type='submit'
-              disabled={!formData?.text || !formData?.channelId}
+              disabled={!formData?.text || !formData?.channelId || isSubmitting}
               className='flex-1'
+              loading={isSubmitting}
             >
               Share Post
             </Button>
