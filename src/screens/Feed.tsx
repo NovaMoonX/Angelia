@@ -14,7 +14,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 type SortOrder = 'newest' | 'oldest';
-type PriorityFilter = 'all' | 'high';
 
 const CALLOUT_DISMISSED_KEY = 'angelia_feed_callout_dismissed';
 
@@ -34,7 +33,6 @@ export function Feed() {
 
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
   const [displayedCount, setDisplayedCount] = useState(
     locationState?.displayedCount ?? 5,
   );
@@ -78,7 +76,7 @@ export function Feed() {
     });
 
     return sorted;
-  }, [posts, selectedChannel, sortOrder, priorityFilter]);
+  }, [posts, selectedChannel, sortOrder]);
 
   // Get currently displayed posts
   const displayedPosts = useMemo(() => {
@@ -269,12 +267,6 @@ export function Feed() {
     { text: 'Oldest First', value: 'oldest' },
   ];
 
-  // Priority filter options for Select
-  const priorityOptions = [
-    { text: 'All Posts', value: 'all' },
-    { text: 'High Priority Only', value: 'high' },
-  ];
-
   // Handler for channel change
   const handleChannelChange = (value: string) => {
     setSelectedChannel(value);
@@ -284,12 +276,6 @@ export function Feed() {
   // Handler for sort change
   const handleSortChange = (value: string) => {
     setSortOrder(value as SortOrder);
-    setDisplayedCount(5);
-  };
-
-  // Handler for priority filter change
-  const handlePriorityFilterChange = (value: string) => {
-    setPriorityFilter(value as PriorityFilter);
     setDisplayedCount(5);
   };
 
@@ -385,15 +371,6 @@ export function Feed() {
               value={selectedChannel}
               onChange={handleChannelChange}
               placeholder='Filter by channel'
-              className='w-full'
-            />
-          </div>
-          <div className='flex-1'>
-            <Select
-              options={priorityOptions}
-              value={priorityFilter}
-              onChange={handlePriorityFilterChange}
-              placeholder='Filter by priority'
               className='w-full'
             />
           </div>

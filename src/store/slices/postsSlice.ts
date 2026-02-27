@@ -1,8 +1,8 @@
+import { mockPosts, Post } from '@lib/post';
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Post, mockPosts } from '@lib/post';
 import { resetAllState } from '@store/actions/globalActions';
-import { selectChannelById, selectChannelMapById } from './channelsSlice';
 import { RootState } from '..';
+import { selectChannelMapById } from './channelsSlice';
 import { selectAllUsersMapById } from './usersSlice';
 
 interface PostsState {
