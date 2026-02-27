@@ -1,6 +1,7 @@
+import { selectChannelMapById } from '@/store/slices/channelsSlice';
 import { BellIcon } from '@components/BellIcon';
-import { SkeletonPostCard } from '@components/SkeletonPostCard';
 import { PostCard } from '@components/PostCard';
+import { SkeletonPostCard } from '@components/SkeletonPostCard';
 import {
   Avatar,
   Button,
@@ -8,10 +9,9 @@ import {
   Select,
 } from '@moondreamsdev/dreamer-ui/components';
 import { ChevronUp, Plus } from '@moondreamsdev/dreamer-ui/symbols';
+import { useAppSelector } from '@store/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '@store/hooks';
-import { selectChannelMapById } from '@/store/slices/channelsSlice';
 
 type SortOrder = 'newest' | 'oldest';
 type PriorityFilter = 'all' | 'high';

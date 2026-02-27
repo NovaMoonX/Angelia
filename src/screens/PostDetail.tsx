@@ -1,12 +1,13 @@
+import { getColorPair } from '@/lib/channel';
+import { useAppSelector } from '@/store/hooks';
+import {
+  selectPostAuthor,
+  selectPostById,
+  selectPostChannel,
+} from '@/store/slices/postsSlice';
 import { ChatMessage } from '@components/ChatMessage';
 import { ReactionDisplay } from '@components/ReactionDisplay';
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import {
-  mockPosts,
-  type Comment,
-  type Reaction,
-} from '@lib/post';
-import { mockCurrentUser } from '@lib/user';
+import { getPostAuthorName, mockPosts, type Comment, type Reaction } from '@lib/post';
 import {
   COMMON_EMOJIS,
   JOIN_CONVERSATION_PHRASES,
@@ -15,6 +16,7 @@ import {
   isValidEmoji,
 } from '@lib/post/post.constants';
 import { getRelativeTime } from '@lib/timeUtils';
+import { mockCurrentUser } from '@lib/user';
 import {
   Avatar,
   Badge,
@@ -36,8 +38,12 @@ export function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const currentUser = useAppSelector((state) => state.users.currentUser);
+  const post = useAppSelector((state) => selectPostById(state, id));
+  const postAuthor = useAppSelector((state) => selectPostAuthor(state, post));
+  const postChannel = useAppSelector((state) => selectPostChannel(state, post));
 
-  const [post, setPost] = useState(() => {
+  const [, setPost] = useState(() => {
     const foundPost = mockPosts.find((t) => t.id === id);
     return foundPost;
   });
@@ -48,9 +54,13 @@ export function PostDetail() {
 
   // Get saved scroll position from sessionStorage
   const handleBackToFeed = () => {
-    const scrollPosition = Number(sessionStorage.getItem('feedScrollPosition') || 0);
-    const displayedCount = Number(sessionStorage.getItem('feedDisplayedCount') || 5);
-    
+    const scrollPosition = Number(
+      sessionStorage.getItem('feedScrollPosition') || 0,
+    );
+    const displayedCount = Number(
+      sessionStorage.getItem('feedDisplayedCount') || 5,
+    );
+
     navigate('/feed', {
       state: { scrollPosition, displayedCount },
     });
@@ -91,16 +101,7 @@ export function PostDetail() {
 
   const relativeTime = getRelativeTime(post.timestamp);
 
-  const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(post.channelColor);
-
-    return {
-      backgroundColor: colorData?.value || '#c7d2fe',
-      textColor: colorData?.textColor || '#4338ca',
-    };
-  };
-
-  const colors = getColorPair();
+  const colors = getColorPair(postChannel);
 
   const hasUserReacted = post.reactions.some((reaction) =>
     reaction.userIds.includes(mockCurrentUser.id),
@@ -244,10 +245,10 @@ export function PostDetail() {
           <div className='space-y-3 p-4'>
             <div className='flex items-start justify-between gap-3'>
               <div className='flex items-center gap-3'>
-                <Avatar preset={post.authorAvatar} size='md' />
+                <Avatar preset={postAuthor?.avatar} size='md' />
                 <div className='flex flex-col'>
                   <span className='text-foreground font-semibold'>
-                    {post.authorName}
+                    {getPostAuthorName(postAuthor, currentUser)}
                   </span>
                   <span className='text-foreground/60 text-sm'>
                     {relativeTime}
@@ -263,7 +264,7 @@ export function PostDetail() {
                   color: colors.textColor,
                 }}
               >
-                {post.channelName}
+                {postChannel?.name || 'Unknown Channel'}
               </Badge>
             </div>
 
@@ -272,11 +273,11 @@ export function PostDetail() {
             </p>
           </div>
 
-          {mediaItems.length > 0 && (
-            mediaItems.length === 1 ? (
+          {mediaItems.length > 0 &&
+            (mediaItems.length === 1 ? (
               <div className='w-full'>
                 {mediaItems[0].type === 'video' ? (
-                  <div className='relative w-full bg-black flex items-center justify-center'>
+                  <div className='relative flex w-full items-center justify-center bg-black'>
                     <video
                       src={mediaItems[0].url}
                       controls
@@ -295,15 +296,15 @@ export function PostDetail() {
               </div>
             ) : (
               <div className='w-full'>
-                <Carousel 
-                  className='w-full' 
+                <Carousel
+                  className='w-full'
                   buttonPosition='interior'
                   onIndexChange={handleCarouselIndexChange}
                 >
                   {mediaItems.map((item, index) => (
                     <div key={`${post.id}-media-${index}`} className='w-full'>
                       {item.type === 'video' ? (
-                        <div className='relative w-full bg-black flex items-center justify-center min-h-100'>
+                        <div className='relative flex min-h-100 w-full items-center justify-center bg-black'>
                           <video
                             ref={(el) => {
                               if (el) {
@@ -314,7 +315,7 @@ export function PostDetail() {
                             }}
                             src={item.url}
                             controls
-                            className='h-auto w-full max-h-150'
+                            className='h-auto max-h-150 w-full'
                             preload='metadata'
                           />
                         </div>
@@ -330,8 +331,7 @@ export function PostDetail() {
                   ))}
                 </Carousel>
               </div>
-            )
-          )}
+            ))}
         </Card>
 
         {!hasUserReacted ? (

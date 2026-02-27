@@ -1,6 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Post, mockPosts } from '@lib/post';
 import { resetAllState } from '@store/actions/globalActions';
+import { selectChannelById, selectChannelMapById } from './channelsSlice';
+import { RootState } from '..';
+import { selectAllUsersMapById } from './usersSlice';
 
 interface PostsState {
   items: Post[];
@@ -32,5 +35,36 @@ const postsSlice = createSlice({
   },
 });
 
-export const { setPosts, addPost, clearPosts, loadDemoPosts } = postsSlice.actions;
+export const { setPosts, addPost, clearPosts, loadDemoPosts } =
+  postsSlice.actions;
 export default postsSlice.reducer;
+
+const selectPostsMapById = createSelector(
+  (state: { posts: PostsState }) => state.posts.items,
+  (posts) => {
+    const map = posts.reduce(
+      (acc, post) => {
+        acc[post.id] = post;
+        return acc;
+      },
+      {} as Record<string, Post>,
+    );
+    return map;
+  },
+);
+
+export const selectPostById = createSelector(
+  [selectPostsMapById, (_: RootState, postId?: string) => postId],
+  (postsMap, postId) => (postId ? postsMap[postId] : null),
+);
+
+export const selectPostAuthor = createSelector(
+  [selectAllUsersMapById, (_: RootState, post?: Post | null) => post],
+  (allUsersMapById, post) =>
+    post ? allUsersMapById[post.authorId] : null,
+);
+
+export const selectPostChannel = createSelector(
+  [selectChannelMapById, (_: RootState, post?: Post | null) => post],
+  (channelMapById, post) => (post ? channelMapById[post.channelId] : null),
+);
