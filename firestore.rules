@@ -72,6 +72,35 @@ service cloud.firestore {
       allow delete: if isOwner() && resource.data.isDaily == false;
     }
 
+    // Posts collection
+    match /posts/{postId} {
+      function isAuthor() {
+        return isSignedIn() && request.auth.uid == resource.data.authorId;
+      }
+      function isAuthorOnCreate() {
+        return isSignedIn() && request.auth.uid == request.resource.data.authorId;
+      }
+
+      // Only subscribers of the post's channel can read the post
+      function isChannelSubscriber() {
+        return isSignedIn() &&
+          exists(/databases/$(database)/documents/channels/$(resource.data.channelId)) &&
+          (get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.subscribers is list) &&
+          (request.auth.uid in get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.subscribers);
+      }
+      allow read: if isAuthor() || isChannelSubscriber();
+
+      // Only the author can create a post for themselves
+      allow create: if isAuthorOnCreate();
+
+      // Only the author can update their post (cannot change authorId)
+      allow update: if isAuthor()
+        && request.resource.data.authorId == resource.data.authorId;
+
+      // Only the author can delete their post
+      allow delete: if isAuthor();
+    }
+
     // Default: authenticated users may read other collections, but writes are
     // prohibited unless explicitly allowed above. This prevents accidental
     // open-write rules in development.

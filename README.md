@@ -68,7 +68,7 @@ A chronological feed for family updates called "Posts":
 
 - **Create New Post**: 
   - Prominent "+ New Post" button in the feed header
-  - Opens a dedicated modal for post creation
+  - Navigates to a dedicated post creation page (`/post/new`)
   - Enter text content (required)
   - Select which of your channels to post to
   - Attach up to 5 media files (images or videos)

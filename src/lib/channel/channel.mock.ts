@@ -26,7 +26,7 @@ export const mockChannels: Channel[] = [
           name: post.channelName,
           color: post.channelColor,
           description: channelDescriptions[post.channelId] || CHANNEL_FALLBACK_DESCRIPTION,
-          isDaily: post.isDaily,
+          isDaily: post.isDaily ?? null,
           ownerId: post.authorId,
           // Mock subscribers - in real app this would come from database
           subscribers: [

@@ -241,21 +241,6 @@ export function PostDetail() {
         </div>
 
         <Card className='relative overflow-hidden p-0'>
-          {post.isHighPriority && (
-            <div
-              className='absolute top-0 left-0 z-10 h-0 w-0 border-b-50 border-l-50 border-b-transparent border-l-red-500'
-              aria-label='High priority post'
-              role='img'
-            >
-              <span
-                className='absolute -top-11.25 -left-11.25 -rotate-45 transform text-xs font-bold text-white'
-                aria-hidden='true'
-              >
-                !
-              </span>
-            </div>
-          )}
-
           <div className='space-y-3 p-4'>
             <div className='flex items-start justify-between gap-3'>
               <div className='flex items-center gap-3'>

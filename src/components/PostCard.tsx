@@ -1,4 +1,4 @@
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
+import { CHANNEL_COLOR_MAP, DEFAULT_CHANNEL_COLOR } from '@lib/channelColors';
 import {
   Avatar,
   Badge,
@@ -9,6 +9,9 @@ import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRelativeTime } from '@lib/timeUtils';
 import { Post } from '@/lib/post';
+import { useAppSelector } from '@/store/hooks';
+import { selectChannelMapById } from '@/store/slices/channelsSlice';
+import { selectAllUsersMapById } from '@/store/slices/usersSlice';
 
 interface PostCardProps {
   post: Post;
@@ -17,11 +20,15 @@ interface PostCardProps {
 
 export function PostCard({ post, onNavigate }: PostCardProps) {
   const navigate = useNavigate();
+  const channelMapById = useAppSelector(selectChannelMapById)
+  const allUsersMapById = useAppSelector(selectAllUsersMapById)
   const relativeTime = getRelativeTime(post.timestamp);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(post.channelColor);
+    const channel = channelMapById[post.channelId];
+    const postChannelColor = channel?.color || DEFAULT_CHANNEL_COLOR;
+    const colorData = CHANNEL_COLOR_MAP.get(postChannelColor);
     return {
       backgroundColor: colorData?.value || '#c7d2fe',
       textColor: colorData?.textColor || '#4338ca',
@@ -60,36 +67,32 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
     navigate(`/post/${post.id}`);
   };
 
+  const postUser = allUsersMapById[post.authorId];
+  const postChannel = channelMapById[post.channelId];
+
+  const getPostUserName = () => {
+    if (!postUser) return 'Unknown User';
+    let name = `${postUser.firstName} ${postUser.lastName}`;
+
+    if (postUser.id === post.authorId) {
+      name += ' (You)';
+    }
+    return name;
+  }
   return (
     <div
       className='cursor-pointer transition-all hover:shadow-lg'
       onClick={handleClick}
     >
       <Card className='relative overflow-hidden p-0'>
-      {/* High Priority Banner */}
-      {post.isHighPriority && (
-        <div
-          className='absolute top-0 left-0 z-10 h-0 w-0 border-b-50 border-l-50 border-b-transparent border-l-red-500'
-          aria-label='High priority post'
-          role='img'
-        >
-          <span
-            className='absolute -top-11.25 -left-11.25 -rotate-45 transform text-xs font-bold text-white'
-            aria-hidden='true'
-          >
-            !
-          </span>
-        </div>
-      )}
-
       {/* Header */}
       <div className='space-y-3 p-4'>
         <div className='flex items-start justify-between gap-3'>
           <div className='flex items-center gap-3'>
-            <Avatar preset={post.authorAvatar} size='md' />
+            <Avatar preset={postUser?.avatar} size='md' />
             <div className='flex flex-col'>
               <span className='text-foreground font-semibold'>
-                {post.authorName}
+                {getPostUserName()}
               </span>
               <span className='text-foreground/60 text-sm'>{relativeTime}</span>
             </div>
@@ -103,7 +106,7 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
               color: colors.textColor,
             }}
           >
-            {post.channelName}
+            {postChannel?.name || 'Unknown Channel'}
           </Badge>
         </div>
 

@@ -49,3 +49,16 @@ export const {
   loadDemoUsers 
 } = usersSlice.actions;
 export default usersSlice.reducer;
+
+// Selectors
+export const selectAllUsersMapById = (state: { users: UsersState }) => {
+  const { users, currentUser }  = state.users;
+  const map = users.reduce((acc, user) => {
+    acc[user.id] = user;
+    return acc;
+  }, {} as Record<string, User>);
+  if (currentUser) {
+    map[currentUser.id] = currentUser;
+  }
+  return map;
+};
