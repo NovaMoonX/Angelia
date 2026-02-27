@@ -1,6 +1,15 @@
+import { AvatarPreset } from '../app';
 import { Post } from './post.types';
 
-export const mockPosts: Post[] = [
+type MockPost = Post & {
+  authorName: string;
+  authorAvatar: AvatarPreset;
+  channelName: string;
+  channelColor: string;
+  isDaily?: boolean
+}
+
+export const mockPosts: MockPost[] = [
   {
     id: '1',
     authorId: 'user1',
@@ -17,7 +26,6 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
-    isHighPriority: false,
     isDaily: true,
     reactions: [
       { emoji: '😍', userIds: ['user2', 'user3'] },
@@ -25,6 +33,8 @@ export const mockPosts: Post[] = [
     ],
     comments: [],
     conversationEnrollees: [],
+    markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '1a',
@@ -37,11 +47,12 @@ export const mockPosts: Post[] = [
     text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
     media: [],
     timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
-    isHighPriority: false,
     isDaily: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '1a1',
@@ -59,11 +70,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 47, // 47 minutes ago
-    isHighPriority: false,
     reactions: [{ emoji: '😍', userIds: ['user1', 'user2'] }],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '1a2',
@@ -85,11 +96,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 48, // 48 minutes ago
-    isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '1b',
@@ -115,15 +126,14 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 50, // 50 minutes ago
-    isHighPriority: false,
     reactions: [
       { emoji: '😍', userIds: ['user2', 'user3'] },
       { emoji: '👏', userIds: ['user4', 'user5'] },
     ],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '2',
     authorId: 'user2',
@@ -144,7 +154,6 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
-    isHighPriority: false,
     reactions: [
       { emoji: '🤤', userIds: ['currentUser', 'user1', 'user5'] },
       { emoji: '👨‍🍳', userIds: ['user3'] },
@@ -158,8 +167,8 @@ export const mockPosts: Post[] = [
       },
     ],
     conversationEnrollees: ['currentUser'],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '3',
     authorId: 'user3',
@@ -171,7 +180,6 @@ export const mockPosts: Post[] = [
     text: 'BIG NEWS! 🎉 Just got accepted into my dream graduate school! All those late nights studying paid off. So grateful for all your support.',
     media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 5, // 5 hours ago
-    isHighPriority: true,
     reactions: [
       { emoji: '🎉', userIds: ['user1', 'user2', 'user4', 'user5', 'user6'] },
       { emoji: '👏', userIds: ['currentUser'] },
@@ -179,8 +187,8 @@ export const mockPosts: Post[] = [
     ],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '4',
     authorId: 'user1',
@@ -205,12 +213,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
-    isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '5',
     authorId: 'user4',
@@ -227,11 +234,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2, // 2 days ago
-    isHighPriority: false,
-    isDaily: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '6',
@@ -253,12 +260,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3, // 3 days ago
-    isHighPriority: false,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '7',
     authorId: 'user6',
@@ -270,11 +276,11 @@ export const mockPosts: Post[] = [
     text: 'Just finished "The Midnight Library" - what a thought-provoking read! Highly recommend. Anyone else read it?',
     media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
-    isHighPriority: false,
-    isDaily: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '8',
@@ -292,12 +298,11 @@ export const mockPosts: Post[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
-    isHighPriority: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
-    isDaily: null,
-  },
+ markedForDeletionAt: null,
+    status: 'ready',  },
   {
     id: '9',
     authorId: 'user3',
@@ -309,11 +314,11 @@ export const mockPosts: Post[] = [
     text: 'Morning coffee tastes better when you know you have a great day ahead! ☕ Working on my thesis today.',
     media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 6, // 6 hours ago
-    isHighPriority: false,
-    isDaily: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+     markedForDeletionAt: null,
+    status: 'ready',
   },
   {
     id: '10',
@@ -326,10 +331,10 @@ export const mockPosts: Post[] = [
     text: 'Beautiful morning walk today! Found a new coffee shop around the corner - definitely going back.',
     media: [],
     timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
-    isHighPriority: false,
-    isDaily: true,
     reactions: [],
     comments: [],
     conversationEnrollees: [],
+     markedForDeletionAt: null,
+    status: 'ready',
   },
 ];
