@@ -1,4 +1,4 @@
-import { mockPosts, Post } from '@lib/post';
+import { Comment, mockPosts, Post, Reaction } from '@lib/post';
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { resetAllState } from '@store/actions/globalActions';
 import { RootState } from '..';
@@ -7,10 +7,14 @@ import { selectAllUsersMapById } from './usersSlice';
 
 interface PostsState {
   items: Post[];
+  previousReactions: Record<string, Reaction[]>; // For optimistic UI rollback
+  previousComments: Record<string, Comment[]>; // For optimistic UI rollback
 }
 
 const initialState: PostsState = {
   items: [],
+  previousReactions: {},
+  previousComments: {},
 };
 
 const postsSlice = createSlice({
@@ -29,14 +33,66 @@ const postsSlice = createSlice({
     loadDemoPosts: (state) => {
       state.items = mockPosts;
     },
+    updateReactionsOptimistic: (
+      state,
+      action: PayloadAction<{ postId: string; newReaction: Reaction }>,
+    ) => {
+      const { postId, newReaction } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post) {
+        state.previousReactions[postId] = post.reactions;
+        post.reactions = [...post.reactions, newReaction];
+      }
+    },
+    revertReactionsOptimistic: (
+      state,
+      action: PayloadAction<{ postId: string }>,
+    ) => {
+      const { postId } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post && state.previousReactions[postId]) {
+        post.reactions = state.previousReactions[postId];
+        delete state.previousReactions[postId];
+      }
+    },
+    updateCommentsOptimistic: (
+      state,
+      action: PayloadAction<{ postId: string; newComment: Comment }>,
+    ) => {
+      const { postId, newComment } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post) {
+        state.previousComments[postId] = post.comments;
+        post.comments = [...post.comments, newComment];
+      }
+    },
+    revertCommentsOptimistic: (
+      state,
+      action: PayloadAction<{ postId: string }>,
+    ) => {
+      const { postId } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post && state.previousComments[postId]) {
+        post.comments = state.previousComments[postId];
+        delete state.previousComments[postId];
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(resetAllState, () => initialState);
   },
 });
 
-export const { setPosts, addPost, clearPosts, loadDemoPosts } =
-  postsSlice.actions;
+export const {
+  setPosts,
+  addPost,
+  clearPosts,
+  loadDemoPosts,
+  updateReactionsOptimistic,
+  revertReactionsOptimistic,
+  updateCommentsOptimistic,
+  revertCommentsOptimistic,
+} = postsSlice.actions;
 export default postsSlice.reducer;
 
 const selectPostsMapById = createSelector(
@@ -60,8 +116,7 @@ export const selectPostById = createSelector(
 
 export const selectPostAuthor = createSelector(
   [selectAllUsersMapById, (_: RootState, post?: Post | null) => post],
-  (allUsersMapById, post) =>
-    post ? allUsersMapById[post.authorId] : null,
+  (allUsersMapById, post) => (post ? allUsersMapById[post.authorId] : null),
 );
 
 export const selectPostChannel = createSelector(

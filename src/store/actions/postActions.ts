@@ -1,7 +1,10 @@
+import { runTransaction } from 'firebase/firestore';
+
 import { FileUpload } from '@/components/PostCreateMediaUploader';
 import { db, storage } from '@/lib/firebase';
-import { MediaItem, Post } from '@/lib/post';
+import { Comment, MediaItem, Post, Reaction } from '@/lib/post';
 import { PostFormData } from '@/screens/PostCreate';
+import { debounce } from '@/util/debounce';
 import generateId from '@/util/generateId';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
@@ -13,6 +16,12 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { RootState } from '..';
+import {
+  revertCommentsOptimistic,
+  revertReactionsOptimistic,
+  updateCommentsOptimistic,
+  updateReactionsOptimistic,
+} from '../slices/postsSlice';
 
 // Helper to upload a single file to Firebase Storage
 async function uploadMediaFile(
@@ -116,6 +125,82 @@ export const uploadPost = createAsyncThunk(
         await updateDoc(postRef, { status: 'error' });
       } catch {}
       return rejectWithValue(err);
+    }
+  },
+);
+
+// Join conversation (add user to conversationEnrollees) using Firestore transaction
+export const joinConversation = createAsyncThunk(
+  'posts/joinConversation',
+  async (
+    { postId, userId }: { postId: string; userId: string },
+    { rejectWithValue },
+  ) => {
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await runTransaction(db, async (transaction) => {
+        const postSnap = await transaction.get(postRef);
+        if (!postSnap.exists()) throw new Error('Post not found');
+        const enrollees = postSnap.data().conversationEnrollees || [];
+        if (!enrollees.includes(userId)) {
+          transaction.update(postRef, {
+            conversationEnrollees: [...enrollees, userId],
+          });
+        }
+      });
+      return { postId, userId };
+    } catch (err) {
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Optimistic update for reactions
+export const updatePostReactions = createAsyncThunk(
+  'posts/updatePostReactions',
+  async (
+    { postId, newReaction }: { postId: string; newReaction: Reaction },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(updateReactionsOptimistic({ postId, newReaction }));
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await runTransaction(db, async (transaction) => {
+        const postSnap = await transaction.get(postRef);
+        if (!postSnap.exists()) throw new Error('Post not found');
+        const reactions: Reaction[] = postSnap.data().reactions || [];
+        const updatedReactions = [...reactions, newReaction];
+        transaction.update(postRef, { reactions: updatedReactions });
+      });
+      return { postId, newReaction };
+    } catch (err) {
+      dispatch(revertReactionsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Optimistic update for comments
+export const updatePostComments = createAsyncThunk(
+  'posts/updatePostComments',
+  async (
+    { postId, newComment }: { postId: string; newComment: Comment },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(updateCommentsOptimistic({ postId, newComment }));
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await runTransaction(db, async (transaction) => {
+        const postSnap = await transaction.get(postRef);
+        if (!postSnap.exists()) throw new Error('Post not found');
+        const comments: Comment[] = postSnap.data().comments || [];
+        const updatedComments = [...comments, newComment];
+        transaction.update(postRef, { comments: updatedComments });
+      });
+      return { postId, newComment };
+    } catch (err) {
+      dispatch(revertCommentsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
     }
   },
 );

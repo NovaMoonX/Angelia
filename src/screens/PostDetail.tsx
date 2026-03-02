@@ -1,10 +1,12 @@
 import { getColorPair } from '@/lib/channel';
-import { useAppSelector } from '@/store/hooks';
+import { joinConversation, updatePostComments, updatePostReactions } from '@/store/actions/postActions';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   selectPostAuthor,
   selectPostById,
   selectPostChannel,
 } from '@/store/slices/postsSlice';
+import generateId from '@/util/generateId';
 import { ChatMessage } from '@components/ChatMessage';
 import { ReactionDisplay } from '@components/ReactionDisplay';
 import { getPostAuthorName, mockPosts, type Comment, type Reaction } from '@lib/post';
@@ -37,16 +39,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const post = useAppSelector((state) => selectPostById(state, id));
   const postAuthor = useAppSelector((state) => selectPostAuthor(state, post));
   const postChannel = useAppSelector((state) => selectPostChannel(state, post));
-
-  const [, setPost] = useState(() => {
-    const foundPost = mockPosts.find((t) => t.id === id);
-    return foundPost;
-  });
 
   const [newMessage, setNewMessage] = useState('');
   const [customEmoji, setCustomEmoji] = useState('');
@@ -112,72 +110,20 @@ export function PostDetail() {
   );
 
   const handleReaction = (emoji: string) => {
-    setPost((prev) => {
-      if (!prev) return prev;
+    if (!post || !currentUser) return;
 
-      const existingReactionIndex = prev.reactions.findIndex(
-        (r) => r.emoji === emoji,
-      );
+    const newReaction: Reaction = {
+      emoji,
+      userIds: [currentUser.id],
+    };
 
-      let newReactions: Reaction[];
-
-      if (existingReactionIndex !== -1) {
-        const existingReaction = prev.reactions[existingReactionIndex];
-        const userHasReacted = existingReaction.userIds.includes(
-          mockCurrentUser.id,
-        );
-
-        if (userHasReacted) {
-          const updatedUserIds = existingReaction.userIds.filter(
-            (userId) => userId !== mockCurrentUser.id,
-          );
-
-          if (updatedUserIds.length === 0) {
-            newReactions = prev.reactions.filter(
-              (_, i) => i !== existingReactionIndex,
-            );
-          } else {
-            newReactions = [...prev.reactions];
-            newReactions[existingReactionIndex] = {
-              ...existingReaction,
-              userIds: updatedUserIds,
-            };
-          }
-        } else {
-          newReactions = [...prev.reactions];
-          newReactions[existingReactionIndex] = {
-            ...existingReaction,
-            userIds: [...existingReaction.userIds, mockCurrentUser.id],
-          };
-        }
-      } else {
-        newReactions = [
-          ...prev.reactions,
-          { emoji, userIds: [mockCurrentUser.id] },
-        ];
-      }
-
-      const result = {
-        ...prev,
-        reactions: newReactions,
-      };
-
-      return result;
-    });
+    dispatch(updatePostReactions({ postId: post.id, newReaction }));
   };
 
   const handleJoinConversation = () => {
-    setPost((prev) => {
-      if (!prev) return prev;
+    if (!post || !currentUser) return;
 
-      return {
-        ...prev,
-        conversationEnrollees: [
-          ...prev.conversationEnrollees,
-          mockCurrentUser.id,
-        ],
-      };
-    });
+    dispatch(joinConversation({ postId: post.id, userId: currentUser.id }));
   };
 
   const handleCustomEmojiSubmit = () => {
@@ -199,24 +145,16 @@ export function PostDetail() {
   };
 
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !post || !currentUser) return;
 
     const newComment: Comment = {
-      id: `c${Date.now()}`,
-      authorId: mockCurrentUser.id,
+      id: generateId('postComment'),
+      authorId: currentUser.id,
       text: newMessage,
       timestamp: Date.now(),
     };
 
-    setPost((prev) => {
-      if (!prev) return prev;
-
-      return {
-        ...prev,
-        comments: [...prev.comments, newComment],
-      };
-    });
-
+    dispatch(updatePostComments({ postId: post.id, newComment }));
     setNewMessage('');
   };
 
