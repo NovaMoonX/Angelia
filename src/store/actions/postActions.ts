@@ -1,4 +1,4 @@
-import { runTransaction } from 'firebase/firestore';
+import { arrayUnion, runTransaction } from 'firebase/firestore';
 
 import { FileUpload } from '@/components/PostCreateMediaUploader';
 import { db, storage } from '@/lib/firebase';
@@ -137,15 +137,8 @@ export const joinConversation = createAsyncThunk(
   ) => {
     const postRef = doc(db, 'posts', postId);
     try {
-      await runTransaction(db, async (transaction) => {
-        const postSnap = await transaction.get(postRef);
-        if (!postSnap.exists()) throw new Error('Post not found');
-        const enrollees = postSnap.data().conversationEnrollees || [];
-        if (!enrollees.includes(userId)) {
-          transaction.update(postRef, {
-            conversationEnrollees: [...enrollees, userId],
-          });
-        }
+      await updateDoc(postRef, {
+        conversationEnrollees: arrayUnion(userId),
       });
       return { postId, userId };
     } catch (err) {
@@ -164,12 +157,8 @@ export const updatePostReactions = createAsyncThunk(
     dispatch(updateReactionsOptimistic({ postId, newReaction }));
     const postRef = doc(db, 'posts', postId);
     try {
-      await runTransaction(db, async (transaction) => {
-        const postSnap = await transaction.get(postRef);
-        if (!postSnap.exists()) throw new Error('Post not found');
-        const reactions: Reaction[] = postSnap.data().reactions || [];
-        const updatedReactions = [...reactions, newReaction];
-        transaction.update(postRef, { reactions: updatedReactions });
+      await updateDoc(postRef, {
+        reactions: arrayUnion(newReaction),
       });
       return { postId, newReaction };
     } catch (err) {
@@ -189,12 +178,8 @@ export const updatePostComments = createAsyncThunk(
     dispatch(updateCommentsOptimistic({ postId, newComment }));
     const postRef = doc(db, 'posts', postId);
     try {
-      await runTransaction(db, async (transaction) => {
-        const postSnap = await transaction.get(postRef);
-        if (!postSnap.exists()) throw new Error('Post not found');
-        const comments: Comment[] = postSnap.data().comments || [];
-        const updatedComments = [...comments, newComment];
-        transaction.update(postRef, { comments: updatedComments });
+      await updateDoc(postRef, {
+        comments: arrayUnion(newComment),
       });
       return { postId, newComment };
     } catch (err) {
