@@ -1,5 +1,9 @@
 import { getColorPair } from '@/lib/channel';
-import { joinConversation, updatePostComments, updatePostReactions } from '@/store/actions/postActions';
+import {
+  joinConversation,
+  updatePostComments,
+  updatePostReactions,
+} from '@/store/actions/postActions';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   selectPostAuthor,
@@ -9,7 +13,7 @@ import {
 import generateId from '@/util/generateId';
 import { ChatMessage } from '@components/ChatMessage';
 import { ReactionDisplay } from '@components/ReactionDisplay';
-import { getPostAuthorName, mockPosts, type Comment, type Reaction } from '@lib/post';
+import { getPostAuthorName, type Comment, type Reaction } from '@lib/post';
 import {
   COMMON_EMOJIS,
   JOIN_CONVERSATION_PHRASES,

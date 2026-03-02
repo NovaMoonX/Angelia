@@ -4,7 +4,6 @@ import { FileUpload } from '@/components/PostCreateMediaUploader';
 import { db, storage } from '@/lib/firebase';
 import { Comment, MediaItem, Post, Reaction } from '@/lib/post';
 import { PostFormData } from '@/screens/PostCreate';
-import { debounce } from '@/util/debounce';
 import generateId from '@/util/generateId';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
