@@ -44,6 +44,20 @@ const postsSlice = createSlice({
         post.reactions = [...post.reactions, newReaction];
       }
     },
+    removeReactionOptimistic: (
+      state,
+      action: PayloadAction<{ postId: string; emoji: string; userId: string }>,
+    ) => {
+      const { postId, emoji, userId } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post) {
+        state.previousReactions[postId] = post.reactions;
+        // Remove reactions that match the emoji and userId
+        post.reactions = post.reactions.filter(
+          (r) => !(r.emoji === emoji && r.userId === userId),
+        );
+      }
+    },
     revertReactionsOptimistic: (
       state,
       action: PayloadAction<{ postId: string }>,
@@ -89,6 +103,7 @@ export const {
   clearPosts,
   loadDemoPosts,
   updateReactionsOptimistic,
+  removeReactionOptimistic,
   revertReactionsOptimistic,
   updateCommentsOptimistic,
   revertCommentsOptimistic,

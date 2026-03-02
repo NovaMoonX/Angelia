@@ -1,4 +1,4 @@
-import { arrayUnion, runTransaction } from 'firebase/firestore';
+import { arrayRemove, arrayUnion } from 'firebase/firestore';
 
 import { FileUpload } from '@/components/PostCreateMediaUploader';
 import { db, storage } from '@/lib/firebase';
@@ -16,6 +16,7 @@ import {
 } from 'firebase/storage';
 import { RootState } from '..';
 import {
+  removeReactionOptimistic,
   revertCommentsOptimistic,
   revertReactionsOptimistic,
   updateCommentsOptimistic,
@@ -147,7 +148,7 @@ export const joinConversation = createAsyncThunk(
   },
 );
 
-// Optimistic update for reactions
+// Add reaction with optimistic update
 export const updatePostReactions = createAsyncThunk(
   'posts/updatePostReactions',
   async (
@@ -161,6 +162,28 @@ export const updatePostReactions = createAsyncThunk(
         reactions: arrayUnion(newReaction),
       });
       return { postId, newReaction };
+    } catch (err) {
+      dispatch(revertReactionsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Remove reaction with optimistic update
+export const removePostReaction = createAsyncThunk(
+  'posts/removePostReaction',
+  async (
+    { postId, emoji, userId }: { postId: string; emoji: string; userId: string },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(removeReactionOptimistic({ postId, emoji, userId }));
+    const postRef = doc(db, 'posts', postId);
+    const reactionToRemove: Reaction = { emoji, userId };
+    try {
+      await updateDoc(postRef, {
+        reactions: arrayRemove(reactionToRemove),
+      });
+      return { postId, emoji, userId };
     } catch (err) {
       dispatch(revertReactionsOptimistic({ postId }));
       return rejectWithValue(err instanceof Error ? err.message : err);

@@ -1,6 +1,7 @@
 import { getColorPair } from '@/lib/channel';
 import {
   joinConversation,
+  removePostReaction,
   updatePostComments,
   updatePostReactions,
 } from '@/store/actions/postActions';
@@ -68,11 +69,21 @@ export function PostDetail() {
     });
   };
 
-  const sortedReactions = useMemo(() => {
+  // Group reactions by emoji and sort by count
+  const groupedReactions = useMemo(() => {
     if (!post?.reactions) return [];
-    return [...(post?.reactions ?? [])].sort(
-      (a, b) => b.userIds.length - a.userIds.length,
-    );
+    
+    const groups = post.reactions.reduce((acc, reaction) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = [];
+      }
+      acc[reaction.emoji].push(reaction.userId);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    return Object.entries(groups)
+      .map(([emoji, userIds]) => ({ emoji, userIds }))
+      .sort((a, b) => b.userIds.length - a.userIds.length);
   }, [post?.reactions]);
 
   // Use media array if available, otherwise fall back to images
@@ -105,8 +116,8 @@ export function PostDetail() {
 
   const colors = getColorPair(postChannel);
 
-  const hasUserReacted = post.reactions.some((reaction) =>
-    reaction.userIds.includes(mockCurrentUser.id),
+  const hasUserReacted = post.reactions.some(
+    (reaction) => reaction.userId === mockCurrentUser.id,
   );
 
   const isEnrolledInConversation = post.conversationEnrollees.includes(
@@ -116,12 +127,22 @@ export function PostDetail() {
   const handleReaction = (emoji: string) => {
     if (!post || !currentUser) return;
 
-    const newReaction: Reaction = {
-      emoji,
-      userIds: [currentUser.id],
-    };
+    // Check if this reaction already exists with the current user
+    const existingReaction = post.reactions.find(
+      (r) => r.emoji === emoji && r.userId === currentUser.id,
+    );
 
-    dispatch(updatePostReactions({ postId: post.id, newReaction }));
+    if (existingReaction) {
+      // Remove the reaction
+      dispatch(removePostReaction({ postId: post.id, emoji, userId: currentUser.id }));
+    } else {
+      // Add the reaction
+      const newReaction: Reaction = {
+        emoji,
+        userId: currentUser.id,
+      };
+      dispatch(updatePostReactions({ postId: post.id, newReaction }));
+    }
   };
 
   const handleJoinConversation = () => {
@@ -328,8 +349,7 @@ export function PostDetail() {
           <Tabs defaultValue='reactions' tabsWidth='full'>
             <TabsList>
               <TabsTrigger value='reactions'>
-                Reactions (
-                {sortedReactions.reduce((sum, r) => sum + r.userIds.length, 0)})
+                Reactions ({post.reactions.length})
               </TabsTrigger>
               <TabsTrigger value='conversation'>
                 Conversation ({post.comments.length})
@@ -342,20 +362,20 @@ export function PostDetail() {
                   <h3 className='text-foreground text-lg font-semibold'>
                     Reactions
                   </h3>
-                  {sortedReactions.length > 0 ? (
+                  {groupedReactions.length > 0 ? (
                     <div className='flex flex-wrap gap-2'>
-                      {sortedReactions.map((reaction) => {
-                        const isUserReacted = reaction.userIds.includes(
+                      {groupedReactions.map((group) => {
+                        const isUserReacted = group.userIds.includes(
                           mockCurrentUser.id,
                         );
 
                         return (
                           <ReactionDisplay
-                            key={reaction.emoji}
-                            emoji={reaction.emoji}
-                            count={reaction.userIds.length}
+                            key={group.emoji}
+                            emoji={group.emoji}
+                            count={group.userIds.length}
                             isUserReacted={isUserReacted}
-                            onClick={() => handleReaction(reaction.emoji)}
+                            onClick={() => handleReaction(group.emoji)}
                           />
                         );
                       })}
@@ -372,13 +392,9 @@ export function PostDetail() {
                     </p>
                     <div className='flex flex-wrap gap-2'>
                       {COMMON_EMOJIS.map((emoji) => {
-                        const existingReaction = post.reactions.find(
-                          (r) => r.emoji === emoji,
+                        const isUserReacted = post.reactions.some(
+                          (r) => r.emoji === emoji && r.userId === mockCurrentUser.id,
                         );
-                        const isUserReacted =
-                          existingReaction?.userIds.includes(
-                            mockCurrentUser.id,
-                          );
 
                         return (
                           <Button

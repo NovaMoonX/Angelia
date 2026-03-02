@@ -28,8 +28,9 @@ export const mockPosts: MockPost[] = [
     timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
     isDaily: true,
     reactions: [
-      { emoji: '😍', userIds: ['user2', 'user3'] },
-      { emoji: '🏔️', userIds: ['user4'] },
+      { emoji: '😍', userId: 'user2' },
+      { emoji: '😍', userId: 'user3' },
+      { emoji: '🏔️', userId: 'user4' },
     ],
     comments: [],
     conversationEnrollees: [],
@@ -70,7 +71,10 @@ export const mockPosts: MockPost[] = [
       },
     ],
     timestamp: Date.now() - 1000 * 60 * 47, // 47 minutes ago
-    reactions: [{ emoji: '😍', userIds: ['user1', 'user2'] }],
+    reactions: [
+      { emoji: '😍', userId: 'user1' },
+      { emoji: '😍', userId: 'user2' },
+    ],
     comments: [],
     conversationEnrollees: [],
      markedForDeletionAt: null,
@@ -127,8 +131,10 @@ export const mockPosts: MockPost[] = [
     ],
     timestamp: Date.now() - 1000 * 60 * 50, // 50 minutes ago
     reactions: [
-      { emoji: '😍', userIds: ['user2', 'user3'] },
-      { emoji: '👏', userIds: ['user4', 'user5'] },
+      { emoji: '😍', userId: 'user2' },
+      { emoji: '😍', userId: 'user3' },
+      { emoji: '👏', userId: 'user4' },
+      { emoji: '👏', userId: 'user5' },
     ],
     comments: [],
     conversationEnrollees: [],
@@ -155,8 +161,10 @@ export const mockPosts: MockPost[] = [
     ],
     timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
     reactions: [
-      { emoji: '🤤', userIds: ['currentUser', 'user1', 'user5'] },
-      { emoji: '👨‍🍳', userIds: ['user3'] },
+      { emoji: '🤤', userId: 'currentUser' },
+      { emoji: '🤤', userId: 'user1' },
+      { emoji: '🤤', userId: 'user5' },
+      { emoji: '👨‍🍳', userId: 'user3' },
     ],
     comments: [
       {
@@ -181,9 +189,14 @@ export const mockPosts: MockPost[] = [
     media: [],
     timestamp: Date.now() - 1000 * 60 * 60 * 5, // 5 hours ago
     reactions: [
-      { emoji: '🎉', userIds: ['user1', 'user2', 'user4', 'user5', 'user6'] },
-      { emoji: '👏', userIds: ['currentUser'] },
-      { emoji: '🎓', userIds: ['user1', 'user4'] },
+      { emoji: '🎉', userId: 'user1' },
+      { emoji: '🎉', userId: 'user2' },
+      { emoji: '🎉', userId: 'user4' },
+      { emoji: '🎉', userId: 'user5' },
+      { emoji: '🎉', userId: 'user6' },
+      { emoji: '👏', userId: 'currentUser' },
+      { emoji: '🎓', userId: 'user1' },
+      { emoji: '🎓', userId: 'user4' },
     ],
     comments: [],
     conversationEnrollees: [],
