@@ -59,6 +59,39 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
     navigate(`/post/${post.id}`);
   };
 
+  const renderMedia = (item: { type: string; url: string }, index: number) => {
+    return (
+      <div className='relative flex max-h-96 min-h-64 w-full items-center justify-center bg-black'>
+        {item.type === 'video' ? (
+          <video
+            ref={(el) => {
+              if (el) {
+                videoRefs.current.set(index, el);
+              } else {
+                videoRefs.current.delete(index);
+              }
+            }}
+            src={item.url}
+            controls
+            className='h-full w-full object-contain'
+            preload='metadata'
+          />
+        ) : (
+          <img
+            src={item.url}
+            alt={
+              index === 0 && mediaItems.length === 1
+                ? 'Post content'
+                : `Post content ${index + 1}`
+            }
+            className='object-contain block max-h-96'
+            loading='lazy'
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className='cursor-pointer transition-all hover:shadow-lg'
@@ -101,25 +134,7 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
         {/* Media Area */}
         {mediaItems.length > 0 &&
           (mediaItems.length === 1 ? (
-            <div className='w-full'>
-              {mediaItems[0].type === 'video' ? (
-                <div className='relative flex w-full items-center justify-center bg-black'>
-                  <video
-                    src={mediaItems[0].url}
-                    controls
-                    className='h-auto w-full'
-                    preload='metadata'
-                  />
-                </div>
-              ) : (
-                <img
-                  src={mediaItems[0].url}
-                  alt='Post content'
-                  className='h-auto w-full object-cover'
-                  loading='lazy'
-                />
-              )}
-            </div>
+            <div className='w-full'>{renderMedia(mediaItems[0], 0)}</div>
           ) : (
             <div className='w-full'>
               <Carousel
@@ -129,30 +144,7 @@ export function PostCard({ post, onNavigate }: PostCardProps) {
               >
                 {mediaItems.map((item, index) => (
                   <div key={`${post.id}-media-${index}`} className='w-full'>
-                    {item.type === 'video' ? (
-                      <div className='relative flex min-h-100 w-full items-center justify-center bg-black'>
-                        <video
-                          ref={(el) => {
-                            if (el) {
-                              videoRefs.current.set(index, el);
-                            } else {
-                              videoRefs.current.delete(index);
-                            }
-                          }}
-                          src={item.url}
-                          controls
-                          className='h-auto max-h-150 w-full'
-                          preload='metadata'
-                        />
-                      </div>
-                    ) : (
-                      <img
-                        src={item.url}
-                        alt={`Post content ${index + 1}`}
-                        className='h-auto w-full object-cover'
-                        loading='lazy'
-                      />
-                    )}
+                    {renderMedia(item, index)}
                   </div>
                 ))}
               </Carousel>

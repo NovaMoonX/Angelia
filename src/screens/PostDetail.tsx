@@ -103,6 +103,39 @@ export function PostDetail() {
     });
   };
 
+  const renderMedia = (item: { type: string; url: string }, index: number) => {
+    return (
+      <div className='relative flex w-full h-full items-center justify-center bg-black'>
+        {item.type === 'video' ? (
+          <video
+            ref={(el) => {
+              if (el) {
+                videoRefs.current.set(index, el);
+              } else {
+                videoRefs.current.delete(index);
+              }
+            }}
+            src={item.url}
+            controls
+            className='h-auto w-full'
+            preload='metadata'
+          />
+        ) : (
+          <img
+            src={item.url}
+            alt={
+              index === 0 && mediaItems.length === 1
+                ? 'Post content'
+                : `Post content ${index + 1}`
+            }
+            className='h-auto w-full object-cover'
+            loading='lazy'
+          />
+        )}
+      </div>
+    );
+  };
+
   if (!post) {
     return (
       <div className='page flex flex-col items-center justify-center'>
@@ -245,25 +278,7 @@ export function PostDetail() {
 
           {mediaItems.length > 0 &&
             (mediaItems.length === 1 ? (
-              <div className='w-full'>
-                {mediaItems[0].type === 'video' ? (
-                  <div className='relative flex w-full items-center justify-center bg-black'>
-                    <video
-                      src={mediaItems[0].url}
-                      controls
-                      className='h-auto w-full'
-                      preload='metadata'
-                    />
-                  </div>
-                ) : (
-                  <img
-                    src={mediaItems[0].url}
-                    alt='Post content'
-                    className='h-auto w-full object-cover'
-                    loading='lazy'
-                  />
-                )}
-              </div>
+              <div className='w-full'>{renderMedia(mediaItems[0], 0)}</div>
             ) : (
               <div className='w-full'>
                 <Carousel
@@ -272,31 +287,8 @@ export function PostDetail() {
                   onIndexChange={handleCarouselIndexChange}
                 >
                   {mediaItems.map((item, index) => (
-                    <div key={`${post.id}-media-${index}`} className='w-full'>
-                      {item.type === 'video' ? (
-                        <div className='relative flex min-h-100 w-full items-center justify-center bg-black'>
-                          <video
-                            ref={(el) => {
-                              if (el) {
-                                videoRefs.current.set(index, el);
-                              } else {
-                                videoRefs.current.delete(index);
-                              }
-                            }}
-                            src={item.url}
-                            controls
-                            className='h-auto max-h-150 w-full'
-                            preload='metadata'
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={item.url}
-                          alt={`Post content ${index + 1}`}
-                          className='h-auto w-full object-cover'
-                          loading='lazy'
-                        />
-                      )}
+                    <div key={`${post.id}-media-${index}`} className='w-full h-full'>
+                      {renderMedia(item, index)}
                     </div>
                   ))}
                 </Carousel>
