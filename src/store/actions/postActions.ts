@@ -123,7 +123,9 @@ export const uploadPost = createAsyncThunk(
       // Set post status to 'error' if post was created
       try {
         await updateDoc(postRef, { status: 'error' });
-      } catch {}
+      } catch {
+        // Ignore error if we fail to update post status
+      }
       return rejectWithValue(err);
     }
   },

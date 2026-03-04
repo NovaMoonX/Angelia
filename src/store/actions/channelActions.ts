@@ -203,12 +203,12 @@ export const updateCustomChannel = createAsyncThunk(
 
       // Prepare update payload - do not allow changing id or ownerId
       const {
-        id,
-        ownerId,
-        isDaily,
-        createdAt,
-        inviteCode,
-        subscribers,
+        id: __id,
+        ownerId: __ownerId,
+        isDaily: __isDaily,
+        createdAt: __createdAt,
+        inviteCode: __inviteCode,
+        subscribers: __subscribers,
         ...updatable
       } = channel;
 

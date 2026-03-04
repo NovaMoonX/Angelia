@@ -84,6 +84,6 @@ export const selectChannelMapById = createSelector(
 );
 
 export const selectChannelById = createSelector(
-  [selectChannelMapById, (_: any, channelId: string) => channelId],
+  [selectChannelMapById, (_: RootState, channelId: string) => channelId],
   (channelMap, channelId) => channelMap[channelId] || null,
 );

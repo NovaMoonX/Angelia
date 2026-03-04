@@ -76,7 +76,7 @@ export function Feed() {
     });
 
     return sorted;
-  }, [posts, selectedChannel, sortOrder]);
+  }, [posts, selectedChannel, sortOrder, channelMapById]);
 
   // Get currently displayed posts
   const displayedPosts = useMemo(() => {

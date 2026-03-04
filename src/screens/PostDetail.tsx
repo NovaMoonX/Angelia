@@ -23,7 +23,6 @@ import {
   isValidEmoji,
 } from '@lib/post/post.constants';
 import { getRelativeTime } from '@lib/timeUtils';
-import { mockCurrentUser } from '@lib/user';
 import {
   Avatar,
   Badge,
@@ -72,14 +71,17 @@ export function PostDetail() {
   // Group reactions by emoji and sort by count
   const groupedReactions = useMemo(() => {
     if (!post?.reactions) return [];
-    
-    const groups = post.reactions.reduce((acc, reaction) => {
-      if (!acc[reaction.emoji]) {
-        acc[reaction.emoji] = [];
-      }
-      acc[reaction.emoji].push(reaction.userId);
-      return acc;
-    }, {} as Record<string, string[]>);
+
+    const groups = post?.reactions.reduce(
+      (acc, reaction) => {
+        if (!acc[reaction.emoji]) {
+          acc[reaction.emoji] = [];
+        }
+        acc[reaction.emoji].push(reaction.userId);
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
 
     return Object.entries(groups)
       .map(([emoji, userIds]) => ({ emoji, userIds }))
@@ -116,13 +118,12 @@ export function PostDetail() {
 
   const colors = getColorPair(postChannel);
 
-  const hasUserReacted = post.reactions.some(
-    (reaction) => reaction.userId === mockCurrentUser.id,
-  );
+  const hasUserReacted =
+    currentUser &&
+    post.reactions.some((reaction) => reaction.userId === currentUser.id);
 
-  const isEnrolledInConversation = post.conversationEnrollees.includes(
-    mockCurrentUser.id,
-  );
+  const isEnrolledInConversation =
+    currentUser && post.conversationEnrollees.includes(currentUser.id);
 
   const handleReaction = (emoji: string) => {
     if (!post || !currentUser) return;
@@ -134,7 +135,9 @@ export function PostDetail() {
 
     if (existingReaction) {
       // Remove the reaction
-      dispatch(removePostReaction({ postId: post.id, emoji, userId: currentUser.id }));
+      dispatch(
+        removePostReaction({ postId: post.id, emoji, userId: currentUser.id }),
+      );
     } else {
       // Add the reaction
       const newReaction: Reaction = {
@@ -183,6 +186,10 @@ export function PostDetail() {
     setNewMessage('');
   };
 
+  if (!currentUser) {
+    return null;
+  }
+
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
       <div className='w-full max-w-2xl space-y-6 px-4 py-6'>
@@ -200,7 +207,7 @@ export function PostDetail() {
             aria-label='Go to account'
             className='focus:ring-primary ml-auto rounded-full focus:ring-2 focus:outline-none'
           >
-            <Avatar preset={mockCurrentUser.avatar} size='md' />
+            <Avatar preset={currentUser.avatar} size='md' />
           </Link>
         </div>
 
@@ -366,7 +373,7 @@ export function PostDetail() {
                     <div className='flex flex-wrap gap-2'>
                       {groupedReactions.map((group) => {
                         const isUserReacted = group.userIds.includes(
-                          mockCurrentUser.id,
+                          currentUser.id,
                         );
 
                         return (
@@ -393,7 +400,8 @@ export function PostDetail() {
                     <div className='flex flex-wrap gap-2'>
                       {COMMON_EMOJIS.map((emoji) => {
                         const isUserReacted = post.reactions.some(
-                          (r) => r.emoji === emoji && r.userId === mockCurrentUser.id,
+                          (r) =>
+                            r.emoji === emoji && r.userId === currentUser.id,
                         );
 
                         return (
@@ -484,9 +492,7 @@ export function PostDetail() {
                             authorId={comment.authorId}
                             text={comment.text}
                             timestamp={comment.timestamp}
-                            isCurrentUser={
-                              comment.authorId === mockCurrentUser.id
-                            }
+                            isCurrentUser={comment.authorId === currentUser.id}
                           />
                         ))}
                       </div>

@@ -74,11 +74,12 @@ export default function PostCreate() {
       setTimeout(() => {
         navigate('/feed');
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string };
       toast.addToast({
         title: 'Failed to create post',
         description:
-          err?.message || 'Something went wrong uploading your post.',
+          error?.message || 'Something went wrong uploading your post.',
         type: 'error',
       });
     } finally {
