@@ -105,7 +105,12 @@ export function PostDetail() {
 
   const renderMedia = (item: { type: string; url: string }, index: number) => {
     return (
-      <div className='relative flex w-full h-full items-center justify-center bg-black'>
+      <a
+        href={item.url}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='relative flex h-full w-full items-center justify-center bg-black'
+      >
         {item.type === 'video' ? (
           <video
             ref={(el) => {
@@ -132,7 +137,7 @@ export function PostDetail() {
             loading='lazy'
           />
         )}
-      </div>
+      </a>
     );
   };
 
@@ -287,7 +292,10 @@ export function PostDetail() {
                   onIndexChange={handleCarouselIndexChange}
                 >
                   {mediaItems.map((item, index) => (
-                    <div key={`${post.id}-media-${index}`} className='w-full h-full'>
+                    <div
+                      key={`${post.id}-media-${index}`}
+                      className='h-full w-full'
+                    >
                       {renderMedia(item, index)}
                     </div>
                   ))}
