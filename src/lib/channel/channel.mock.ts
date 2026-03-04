@@ -1,6 +1,6 @@
 import { mockPosts } from '../post/post.mock';
 import { CHANNEL_FALLBACK_DESCRIPTION } from './channel.constants';
-import { Channel, ChannelInvite, UserChannelInvite } from './channel.types';
+import { Channel, ChannelJoinRequest } from './channel.types';
 
 
 // Mock channel descriptions (in real app, this would come from database)
@@ -87,63 +87,39 @@ export function getChannelByInviteCode(inviteCode: string): Channel | undefined 
   return result;
 }
 
-// Mock channel invites
-export const mockInvites: ChannelInvite[] = [];
-
-// Helper function to create invite for a channel
-export function createChannelInvite(channelId: string): ChannelInvite {
-  const channel = mockChannels.find((ch) => ch.id === channelId);
-  if (!channel) {
-    throw new Error('Channel not found');
-  }
-
-  const inviteCode = channel.inviteCode || generateInviteCode();
-  
-  // Update channel with invite code if it doesn't have one
-  if (!channel.inviteCode) {
-    channel.inviteCode = inviteCode;
-  }
-
-  const invite: ChannelInvite = {
-    id: `invite-${Date.now()}`,
-    channelId,
-    inviteCode,
-    createdAt: Date.now(),
-    expiresAt: null, // No expiration for now
-  };
-
-  const result = invite;
-  
-  return result;
-}
-
-// Mock user invites - invites sent to the current user
-export const mockUserChannelInvites: UserChannelInvite[] = [
-  // Pending invite to Photography Club from Sarah
+// Mock join requests - requests sent to join channels via invite URL
+export const mockJoinRequests: ChannelJoinRequest[] = [
+  // Pending request to Photography Club from currentUser
   {
-    id: 'user-invite-1',
-    channelId: 'test-invite-channel', // Photography Club
-    invitedBy: 'user1', // Sarah Johnson
-    invitedAt: Date.now() - 1000 * 60 * 60 * 12, // 12 hours ago
+    id: 'join-req-1',
+    channelId: 'test-invite-channel',
+    channelOwnerId: 'user1',
+    requesterId: 'currentUser',
+    message: "It's me, Alex! We met at the hiking trip last summer 🏔️",
     status: 'pending',
+    createdAt: Date.now() - 1000 * 60 * 60 * 12,
     respondedAt: null,
   },
-  // Pending invite to Family Updates from Michael
+  // Accepted request to Cooking Corner - currentUser is owner
   {
-    id: 'user-invite-2',
-    channelId: 'demo-channel', // Family Updates
-    invitedBy: 'user2', // Michael Chen
-    invitedAt: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
+    id: 'join-req-2',
+    channelId: 'channel2',
+    channelOwnerId: 'currentUser',
+    requesterId: 'user3',
+    message: "Hey, it's Emma! You know me from book club 📚",
     status: 'pending',
+    createdAt: Date.now() - 1000 * 60 * 60 * 3,
     respondedAt: null,
   },
-  // Declined invite to Garden Updates from Sarah (older)
+  // Another pending incoming request
   {
-    id: 'user-invite-3',
-    channelId: 'channel4', // Garden Updates
-    invitedBy: 'user1', // Sarah Johnson
-    invitedAt: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
-    status: 'declined',
-    respondedAt: Date.now() - 1000 * 60 * 60 * 24 * 4, // 4 days ago
+    id: 'join-req-3',
+    channelId: 'channel2',
+    channelOwnerId: 'currentUser',
+    requesterId: 'user5',
+    message: "It's James, your neighbor! You invited me last weekend 🤝",
+    status: 'pending',
+    createdAt: Date.now() - 1000 * 60 * 30,
+    respondedAt: null,
   },
 ];

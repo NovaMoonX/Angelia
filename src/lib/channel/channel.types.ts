@@ -16,21 +16,14 @@ export interface Channel {
 
 export type NewChannel = Omit<Channel, 'id' | 'isDaily' | 'inviteCode' | 'createdAt' | 'markedForDeletionAt'>
 
-// Channel Invite interface
-export interface ChannelInvite {
+// Join request - a user asks to subscribe to a channel via invite URL
+export interface ChannelJoinRequest {
   id: string;
   channelId: string;
-  inviteCode: string;
-  createdAt: number; // Unix timestamp in ms
-  expiresAt: number | null; // Unix timestamp in ms, null for no expiration
-}
-
-// User Invite interface - for tracking invites sent to a user
-export interface UserChannelInvite {
-  id: string;
-  channelId: string;
-  invitedBy: string; // User ID who sent the invite
-  invitedAt: number; // Unix timestamp in ms
+  channelOwnerId: string; // Stored for efficient querying by channel owner
+  requesterId: string; // User ID of the person requesting to join
+  message: string; // How should the owner know it's really you?
   status: 'pending' | 'accepted' | 'declined';
+  createdAt: number; // Unix timestamp in ms
   respondedAt: number | null; // Unix timestamp in ms when accepted/declined
 }

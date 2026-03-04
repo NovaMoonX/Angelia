@@ -25,7 +25,7 @@ Multi-step authentication experience using Dreamer UI components:
   - "Back to Login" navigation
 - **Protected Routes**: Intelligent route protection with demo mode support
   - When **demo mode is DISABLED**:
-    - Requires user authentication for protected routes (`/feed`, `/post/:id`, `/account`, `/invite/:inviteCode`)
+    - Requires user authentication for protected routes (`/feed`, `/post/:id`, `/account`, `/invite/:channelId/:inviteCode`)
     - Unauthenticated users are redirected to `/auth` with redirect parameter to return after login
     - Authenticated users must have verified their email to access protected routes
     - Unverified users are redirected to `/verify-email` page
@@ -153,82 +153,61 @@ A comprehensive interface for creating and managing channels to organize your up
   - Cannot delete daily channel
   - Immediate UI update after deletion
 
-### 🔗 Channel Invite Flow
+### 🔗 Channel Invite & Join Request Flow
 
-An intuitive system for inviting others to join your channels:
+A privacy-first system for joining channels via URL-based invite links and owner-reviewed join requests:
 
-- **For Channel Owners (Inviter)**:
+- **For Channel Owners**:
   - **Copy Invite Link Button**: Available in the Channel Detail Modal for owned channels
-  - **Clipboard Integration**: One-click copy of shareable invite URL
-  - **Success Feedback**: Toast notification confirms "Link copied to clipboard"
-  - **Unique Invite Codes**: Each channel has a unique, shareable invite code
+  - **Clipboard Integration**: One-click copy of shareable invite URL (`/invite/:channelId/:inviteCode`)
+  - **Unique Invite Codes**: Each channel has a unique code embedded in the URL
   - **Owner-Only Feature**: Invite section only visible to channel owners
 
-- **For Invitees (Recipients)**:
-  - **Dedicated Invite Page** (`/invite/:inviteCode`): Beautiful landing page for invite acceptance
-  - **Personalized Invitation**: Shows inviter's name, avatar, and channel name
+- **For People Joining (via Invite URL)**:
+  - **Dedicated Invite Page** (`/invite/:channelId/:inviteCode`): Landing page that shows channel info
+  - **Authentication Required**: Redirects to `/auth` if the user is not signed in
   - **Smart State Handling**:
-    - **New Subscriber**: "Join Channel" button to accept invitation
-    - **Already Subscribed**: "Go to Channel" button with notification
-    - **Invalid/Expired**: Clear error message with option to return to feed
-  - **Action Buttons**:
-    - **Join Channel**: Subscribes user and redirects to feed with success toast
-    - **Decline**: Returns to feed without joining
-  - **Authentication Support**: Ready for future integration to handle logged-in and non-logged-in states
+    - **Already Subscribed**: Friendly "you're already in!" message
+    - **Request Already Sent**: Shows the request status (pending / accepted / declined)
+    - **Invalid Link**: Clear error message with option to return to feed
+  - **Identification Prompt**: "Hey, how should [channel owner] know it's really you? 👀"
+    - Playful, friendly tone encouraging an identifying message
+    - Up to 300 characters
+  - **Submit**: Creates a join request in Firestore; owner reviews before access is granted
 
-- **User Experience**:
-  - Loading state while fetching invitation details
-  - Consumer-friendly messaging throughout
-  - Seamless integration with existing channel subscription system
-  - Toast notifications for all key actions
+### 🔔 Notifications & Join Request Management
 
-### 🔔 Notifications & Invite Management
-
-A streamlined notification system for managing channel invitations:
+A clear notification system for tracking who wants to join your channels and the status of your own requests:
 
 - **Bell Icon with Badge**: Located in the Feed header next to the user avatar
-  - Shows a red notification dot when there are pending invites
-  - Clicking navigates to the Notifications tab on the Account page
-  - Accessible design with proper ARIA labels
-  
-- **Notifications Tab**: Dedicated section in the Account page for invite management
-  - **Tab Badge**: Displays count of pending invites (e.g., "Notifications (2)")
-  - **Pending Invites Section**:
-    - Shows active channel invitations awaiting response
-    - Each invite card displays:
-      - Inviter's name
-      - Channel name badge
-      - Time since invitation (e.g., "12h ago", "1d ago")
-      - Accept/Decline action buttons
-    - **Accept Action**: 
-      - Subscribes user to the channel
-      - Updates invite status to "accepted"
-      - Removes from pending list
-      - User gains access to channel content
-    - **Decline Action**:
-      - Updates invite status to "declined"
-      - Moves invite to Declined section
-      - No channel subscription created
-  
-  - **Declined Invites Section**:
-    - Shows previously declined invitations
-    - Read-only view with inviter, channel, and decline timestamp
-    - Reduced opacity to indicate inactive status
-    - No action buttons available
-  
-  - **Empty State**: Friendly message when no invites exist
-    - "No notifications yet. When someone invites you to a channel, you'll see it here."
-  
-- **Data Model**: `UserChannelInvite` interface tracks:
-  - Channel ID and inviter user ID
-  - Invitation timestamp
-  - Status (pending/accepted/declined)
-  - Response timestamp for accepted/declined invites
-  
+  - Shows a red notification dot when there are pending incoming join requests
+  - Clicking navigates to the Notifications section on the Account page
+
+- **Notifications Section** (Account page):
+  - **Incoming Requests** (for channel owners):
+    - Shows all pending requests from people who want to join your channels
+    - Each card displays: requester avatar & name, channel badge, their identification message, and time sent
+    - **Accept**: Adds the requester as a subscriber and updates the request in Firestore
+    - **Decline**: Marks the request as declined in Firestore
+  - **Your Requests** (requests you have sent):
+    - Shows all join requests you have submitted
+    - Displays the channel, your identification message, and current status
+    - Status labels: "Pending review", "Accepted", "Declined"
+  - **Empty State**: "Nothing here yet. Share your channel invite link and join requests will appear here."
+
+
+
+- **Data Model**: `ChannelJoinRequest` interface tracks:
+  - Channel ID and channel owner ID (for efficient querying)
+  - Requester user ID
+  - Identification message from the requester
+  - Status (`pending` / `accepted` / `declined`)
+  - Request timestamp and response timestamp
+
 - **Consumer-Friendly Design**:
+  - Playful identification prompt encourages personal, recognisable messages
   - Human-readable timestamps
   - Clear action buttons with primary/secondary styling
-  - Organized separation between pending and declined invites
   - Visual hierarchy with count badges and sections
 
 ### 🎨 Design & Visual Aesthetic

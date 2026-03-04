@@ -20,7 +20,7 @@ export function ChannelModal({
   const isOwner = channel.ownerId === mockCurrentUser.id;
 
   const inviteUrl = channel.inviteCode
-    ? `${window.location.origin}/invite/${channel.inviteCode}`
+    ? `${window.location.origin}/invite/${channel.id}/${channel.inviteCode}`
     : '';
 
   const colors = getColorPair(channel);

@@ -1,21 +1,21 @@
 import {
   Channel,
+  ChannelJoinRequest,
   CUSTOM_CHANNEL_LIMIT,
   getColorPair,
   NewChannel,
-  UserChannelInvite,
 } from '@/lib/channel';
 import { getUserById, User } from '@/lib/user';
 import {
   createCustomChannel,
   deleteCustomChannel,
+  respondToJoinRequest,
   updateCustomChannel,
 } from '@/store/actions/channelActions';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { useAuth } from '@hooks/useAuth';
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
@@ -32,23 +32,11 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { updateChannel } from '@store/slices/channelsSlice';
-import { updateInvite } from '@store/slices/invitesSlice';
 import { updateUserProfile } from '@store/actions/userActions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-
-function formatJoinDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  const result = date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  return result;
-}
 
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
 type AccountTab = 'account' | 'my-channels' | 'subscribed';
@@ -71,7 +59,8 @@ export function Account() {
   const channels = useAppSelector((state) => state.channels.items);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const users = useAppSelector((state) => state.users.users);
-  const userChannelInvites = useAppSelector((state) => state.invites.items);
+  const incomingRequests = useAppSelector((state) => state.invites.incoming);
+  const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
 
   // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
@@ -193,34 +182,21 @@ export function Account() {
     return result;
   }, [selectedChannel, users]);
 
-  // Memoized: Get pending invites
-  const pendingInvites = useMemo(() => {
-    const result = userChannelInvites.filter(
-      (invite) => invite.status === 'pending',
-    );
-
-    return result;
-  }, [userChannelInvites]);
-
-  // Memoized: Get declined invites
-  const declinedInvites = useMemo(() => {
-    const result = userChannelInvites.filter(
-      (invite) => invite.status === 'declined',
-    );
-
-    return result;
-  }, [userChannelInvites]);
-
-  // Memoized: Count of pending invites for badge
+  // Memoized: Total pending notification count (incoming requests for my channels)
   const pendingInviteCount = useMemo(() => {
-    const result = pendingInvites.length;
-
+    const result = incomingRequests.length;
     return result;
-  }, [pendingInvites]);
+  }, [incomingRequests]);
 
   const formattedJoinDate = useMemo(() => {
     if (!currentUser?.joinedAt) return 'N/A';
-    return formatJoinDate(currentUser.joinedAt);
+    const date = new Date(currentUser.joinedAt);
+    const result = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    return result;
   }, [currentUser]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
@@ -316,12 +292,7 @@ export function Account() {
     });
 
     if (confirmed && currentUser) {
-      // Unsubscribe using Redux
-      const updatedChannel = {
-        ...channel,
-        subscribers: channel.subscribers.filter((id) => id !== currentUser.id),
-      };
-      dispatch(updateChannel(updatedChannel));
+      // Unsubscribe: dispatch Firestore update (channel data listener will update local state)
       console.log('Unsubscribing from channel:', channel.id);
     }
   };
@@ -380,38 +351,27 @@ export function Account() {
     }
   };
 
-  // Invite handlers
-  const handleAcceptInvite = (invite: UserChannelInvite, timestamp: number) => {
-    if (!currentUser) return;
-
-    // Accept invite using Redux
-    const updatedInvite: UserChannelInvite = {
-      ...invite,
-      status: 'accepted' as const,
-      respondedAt: timestamp,
-    };
-    dispatch(updateInvite(updatedInvite));
-
-    // Add current user to channel subscribers if not already subscribed
-    const channel = channels.find((ch) => ch.id === invite.channelId);
-    if (channel && !channel.subscribers.includes(currentUser.id)) {
-      const updatedChannel = {
-        ...channel,
-        subscribers: [...channel.subscribers, currentUser.id],
-      };
-      dispatch(updateChannel(updatedChannel));
+  // Join request handlers (for channel owners)
+  const handleAcceptRequest = async (request: ChannelJoinRequest) => {
+    try {
+      await dispatch(respondToJoinRequest({ requestId: request.id, accept: true })).unwrap();
+    } catch (err) {
+      actionModal.alert({
+        title: 'Unable to accept request',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   };
 
-  const handleDeclineInvite = (invite: UserChannelInvite) => {
-    const now = Date.now();
-    // Decline invite using Redux
-    const updatedInvite: UserChannelInvite = {
-      ...invite,
-      status: 'declined' as const,
-      respondedAt: now,
-    };
-    dispatch(updateInvite(updatedInvite));
+  const handleDeclineRequest = async (request: ChannelJoinRequest) => {
+    try {
+      await dispatch(respondToJoinRequest({ requestId: request.id, accept: false })).unwrap();
+    } catch (err) {
+      actionModal.alert({
+        title: 'Unable to decline request',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
   };
 
   return (
@@ -647,67 +607,64 @@ export function Account() {
               )}
             </h2>
             <p className='text-foreground/60 mt-1 text-sm'>
-              Manage your channel invitations
+              Manage join requests for your channels
             </p>
           </div>
 
           <Card className='space-y-4 p-6'>
-            {/* Pending Invites Section */}
-            {pendingInvites.length > 0 && (
+            {/* Incoming join requests (for channels I own) */}
+            {incomingRequests.length > 0 && (
               <div className='space-y-2'>
                 <p className='text-foreground/80 text-sm font-medium'>
-                  Pending Invites ({pendingInvites.length})
+                  Requests to join your channels ({incomingRequests.length})
                 </p>
                 <div className='space-y-2'>
-                  {pendingInvites.map((invite) => {
-                    const channel = channelsMap.get(invite.channelId);
-                    const inviter = usersMap.get(invite.invitedBy);
-
-                    if (!channel || !inviter) {
-                      return null;
-                    }
-
-                    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
-                    const badgeColors = {
-                      backgroundColor: colorData?.value || '#c7d2fe',
-                      textColor: colorData?.textColor || '#4338ca',
-                    };
+                  {incomingRequests.map((request) => {
+                    const channel = channelsMap.get(request.channelId);
+                    const requester = usersMap.get(request.requesterId);
+                    const badgeColors = getColorPair(channel);
 
                     return (
-                      <Card key={invite.id} className='p-4'>
+                      <Card key={request.id} className='p-4'>
                         <div className='space-y-3'>
-                          <div className='flex items-start justify-between gap-3'>
-                            <div className='flex-1 space-y-1'>
-                              <div className='flex items-center gap-2'>
+                          <div className='flex items-start gap-3'>
+                            {requester && (
+                              <Avatar preset={requester.avatar} size='sm' />
+                            )}
+                            <div className='flex-1 space-y-1 min-w-0'>
+                              <div className='flex flex-wrap items-center gap-2'>
                                 <p className='text-foreground text-sm font-medium'>
-                                  {inviter.firstName} {inviter.lastName}
+                                  {requester
+                                    ? `${requester.firstName} ${requester.lastName}`
+                                    : 'Someone'}
                                 </p>
-                                <span className='text-foreground/40 text-xs'>
-                                  invited you to
-                                </span>
+                                <span className='text-foreground/40 text-xs'>wants to join</span>
+                                {channel && (
+                                  <Badge
+                                    variant='base'
+                                    className='text-xs font-medium'
+                                    style={{
+                                      backgroundColor: badgeColors.backgroundColor,
+                                      borderColor: badgeColors.backgroundColor,
+                                      color: badgeColors.textColor,
+                                    }}
+                                  >
+                                    {channel.name}
+                                  </Badge>
+                                )}
                               </div>
-                              <Badge
-                                variant='base'
-                                className='text-sm font-medium'
-                                style={{
-                                  backgroundColor: badgeColors.backgroundColor,
-                                  borderColor: badgeColors.backgroundColor,
-                                  color: badgeColors.textColor,
-                                }}
-                              >
-                                {channel.name}
-                              </Badge>
-                              <p className='text-foreground/60 text-xs'>
-                                {getRelativeTime(invite.invitedAt)}
+                              <p className='text-foreground/70 text-sm italic'>
+                                "{request.message}"
+                              </p>
+                              <p className='text-foreground/40 text-xs'>
+                                {getRelativeTime(request.createdAt)}
                               </p>
                             </div>
                           </div>
                           <div className='flex gap-2'>
                             <Button
                               size='sm'
-                              onClick={() =>
-                                handleAcceptInvite(invite, Date.now())
-                              }
+                              onClick={() => handleAcceptRequest(request)}
                               className='flex-1'
                             >
                               Accept
@@ -715,7 +672,7 @@ export function Account() {
                             <Button
                               variant='secondary'
                               size='sm'
-                              onClick={() => handleDeclineInvite(invite)}
+                              onClick={() => handleDeclineRequest(request)}
                               className='flex-1'
                             >
                               Decline
@@ -729,53 +686,66 @@ export function Account() {
               </div>
             )}
 
-            {/* Separator between pending and declined */}
-            {pendingInvites.length > 0 && declinedInvites.length > 0 && (
+            {incomingRequests.length > 0 && outgoingRequests.length > 0 && (
               <Separator />
             )}
 
-            {/* Declined Invites Section */}
-            {declinedInvites.length > 0 && (
+            {/* Outgoing join requests (requests I've sent) */}
+            {outgoingRequests.length > 0 && (
               <div className='space-y-2'>
                 <p className='text-foreground/80 text-sm font-medium'>
-                  Declined Invites ({declinedInvites.length})
+                  Your join requests ({outgoingRequests.length})
                 </p>
                 <div className='space-y-2'>
-                  {declinedInvites.map((invite) => {
-                    const channel = channelsMap.get(invite.channelId);
-                    const inviter = usersMap.get(invite.invitedBy);
-
-                    if (!channel || !inviter) {
-                      return null;
-                    }
-
+                  {outgoingRequests.map((request) => {
+                    const channel = channelsMap.get(request.channelId);
                     const badgeColors = getColorPair(channel);
+                    const statusColors: Record<string, string> = {
+                      pending: 'text-foreground/60',
+                      accepted: 'text-green-600',
+                      declined: 'text-destructive',
+                    };
+                    const statusLabels: Record<string, string> = {
+                      pending: 'Pending review',
+                      accepted: 'Accepted',
+                      declined: 'Declined',
+                    };
 
                     return (
-                      <Card key={invite.id} className='p-4 opacity-60'>
+                      <Card
+                        key={request.id}
+                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                      >
                         <div className='space-y-1'>
-                          <div className='flex items-center gap-2'>
-                            <p className='text-foreground text-sm font-medium'>
-                              {inviter.firstName} {inviter.lastName}
+                          <div className='flex flex-wrap items-center gap-2'>
+                            <span className='text-foreground/60 text-xs'>Requested to join</span>
+                            {channel ? (
+                              <Badge
+                                variant='base'
+                                className='text-xs font-medium'
+                                style={{
+                                  backgroundColor: badgeColors.backgroundColor,
+                                  borderColor: badgeColors.backgroundColor,
+                                  color: badgeColors.textColor,
+                                }}
+                              >
+                                {channel.name}
+                              </Badge>
+                            ) : (
+                              <span className='text-foreground/60 text-xs'>a channel</span>
+                            )}
+                          </div>
+                          <p className='text-foreground/70 text-sm italic'>
+                            "{request.message}"
+                          </p>
+                          <div className='flex items-center justify-between'>
+                            <p className='text-foreground/40 text-xs'>
+                              {getRelativeTime(request.createdAt)}
                             </p>
-                            <span className='text-foreground/40 text-xs'>
-                              invited you to
+                            <span className={join('text-xs font-medium', statusColors[request.status])}>
+                              {statusLabels[request.status]}
                             </span>
                           </div>
-                          <Badge
-                            variant='base'
-                            className='text-sm font-medium'
-                            style={{
-                              backgroundColor: badgeColors.backgroundColor,
-                              borderColor: badgeColors.backgroundColor,
-                              color: badgeColors.textColor,
-                            }}
-                          >
-                            {channel.name}
-                          </Badge>
-                          <p className='text-foreground/60 text-xs'>
-                            Declined {getRelativeTime(invite.respondedAt!)}
-                          </p>
                         </div>
                       </Card>
                     );
@@ -785,10 +755,9 @@ export function Account() {
             )}
 
             {/* Empty State */}
-            {pendingInvites.length === 0 && declinedInvites.length === 0 && (
+            {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
               <p className='text-foreground/60 py-8 text-center text-sm'>
-                No notifications yet. When someone invites you to a channel,
-                you'll see it here.
+                Nothing here yet. Share your channel invite link and join requests will appear here.
               </p>
             )}
           </Card>

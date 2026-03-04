@@ -29,7 +29,7 @@ export function Feed() {
   const channels = useAppSelector((state) => state.channels.items);
   const channelMapById = useAppSelector(selectChannelMapById)
   const currentUser = useAppSelector((state) => state.users.currentUser);
-  const userChannelInvites = useAppSelector((state) => state.invites.items);
+  const incomingRequests = useAppSelector((state) => state.invites.incoming);
 
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
@@ -285,10 +285,10 @@ export function Feed() {
     setIsCalloutDismissed(true);
   };
 
-  // Memoized: Check for pending invites
+  // Memoized: Check for pending join requests to my channels
   const hasPendingInvites = useMemo(() => {
-    return userChannelInvites.some((invite) => invite.status === 'pending');
-  }, [userChannelInvites]);
+    return incomingRequests.length > 0;
+  }, [incomingRequests]);
 
   // Save scroll position before navigating to post
   const saveScrollPosition = () => {
