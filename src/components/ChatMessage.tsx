@@ -1,7 +1,8 @@
 import { Avatar } from '@moondreamsdev/dreamer-ui/components';
 import { getRelativeTime } from '@lib/timeUtils';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { getUserById } from '@/lib/user';
+import { useAppSelector } from '@/store/hooks';
+import { selectAllUsersMapById } from '@/store/slices/usersSlice';
 
 interface ChatMessageProps {
   authorId: string;
@@ -16,8 +17,9 @@ export function ChatMessage({
   timestamp,
   isCurrentUser = false,
 }: ChatMessageProps) {
+  const allUsersMapId = useAppSelector(selectAllUsersMapById);
   const relativeTime = getRelativeTime(timestamp);
-  const author = getUserById(authorId);
+  const author = allUsersMapId[authorId];
 
   if (!author) {
     return null;

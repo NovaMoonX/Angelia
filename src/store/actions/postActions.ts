@@ -1,6 +1,8 @@
+import { arrayRemove, arrayUnion } from 'firebase/firestore';
+
 import { FileUpload } from '@/components/PostCreateMediaUploader';
 import { db, storage } from '@/lib/firebase';
-import { MediaItem, Post } from '@/lib/post';
+import { Comment, MediaItem, Post, Reaction } from '@/lib/post';
 import { PostFormData } from '@/screens/PostCreate';
 import generateId from '@/util/generateId';
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -13,6 +15,13 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { RootState } from '..';
+import {
+  removeReactionOptimistic,
+  revertCommentsOptimistic,
+  revertReactionsOptimistic,
+  updateCommentsOptimistic,
+  updateReactionsOptimistic,
+} from '../slices/postsSlice';
 
 // Helper to upload a single file to Firebase Storage
 async function uploadMediaFile(
@@ -114,8 +123,93 @@ export const uploadPost = createAsyncThunk(
       // Set post status to 'error' if post was created
       try {
         await updateDoc(postRef, { status: 'error' });
-      } catch {}
+      } catch {
+        // Ignore error if we fail to update post status
+      }
       return rejectWithValue(err);
+    }
+  },
+);
+
+// Join conversation (add user to conversationEnrollees) using Firestore transaction
+export const joinConversation = createAsyncThunk(
+  'posts/joinConversation',
+  async (
+    { postId, userId }: { postId: string; userId: string },
+    { rejectWithValue },
+  ) => {
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await updateDoc(postRef, {
+        conversationEnrollees: arrayUnion(userId),
+      });
+      return { postId, userId };
+    } catch (err) {
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Add reaction with optimistic update
+export const updatePostReactions = createAsyncThunk(
+  'posts/updatePostReactions',
+  async (
+    { postId, newReaction }: { postId: string; newReaction: Reaction },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(updateReactionsOptimistic({ postId, newReaction }));
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await updateDoc(postRef, {
+        reactions: arrayUnion(newReaction),
+      });
+      return { postId, newReaction };
+    } catch (err) {
+      dispatch(revertReactionsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Remove reaction with optimistic update
+export const removePostReaction = createAsyncThunk(
+  'posts/removePostReaction',
+  async (
+    { postId, emoji, userId }: { postId: string; emoji: string; userId: string },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(removeReactionOptimistic({ postId, emoji, userId }));
+    const postRef = doc(db, 'posts', postId);
+    const reactionToRemove: Reaction = { emoji, userId };
+    try {
+      await updateDoc(postRef, {
+        reactions: arrayRemove(reactionToRemove),
+      });
+      return { postId, emoji, userId };
+    } catch (err) {
+      dispatch(revertReactionsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
+    }
+  },
+);
+
+// Optimistic update for comments
+export const updatePostComments = createAsyncThunk(
+  'posts/updatePostComments',
+  async (
+    { postId, newComment }: { postId: string; newComment: Comment },
+    { dispatch, rejectWithValue },
+  ) => {
+    dispatch(updateCommentsOptimistic({ postId, newComment }));
+    const postRef = doc(db, 'posts', postId);
+    try {
+      await updateDoc(postRef, {
+        comments: arrayUnion(newComment),
+      });
+      return { postId, newComment };
+    } catch (err) {
+      dispatch(revertCommentsOptimistic({ postId }));
+      return rejectWithValue(err instanceof Error ? err.message : err);
     }
   },
 );

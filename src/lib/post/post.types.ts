@@ -1,7 +1,7 @@
 // Reaction interface
 export interface Reaction {
   emoji: string; // Single character emoji
-  userIds: string[]; // Array of user IDs who reacted with this emoji
+  userId: string; // User ID who created this reaction
 }
 
 // Comment/Message interface

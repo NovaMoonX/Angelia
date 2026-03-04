@@ -1,12 +1,20 @@
+import { getColorPair } from '@/lib/channel';
+import {
+  joinConversation,
+  removePostReaction,
+  updatePostComments,
+  updatePostReactions,
+} from '@/store/actions/postActions';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  selectPostAuthor,
+  selectPostById,
+  selectPostChannel,
+} from '@/store/slices/postsSlice';
+import generateId from '@/util/generateId';
 import { ChatMessage } from '@components/ChatMessage';
 import { ReactionDisplay } from '@components/ReactionDisplay';
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
-import {
-  mockPosts,
-  type Comment,
-  type Reaction,
-} from '@lib/post';
-import { mockCurrentUser } from '@lib/user';
+import { getPostAuthorName, type Comment, type Reaction } from '@lib/post';
 import {
   COMMON_EMOJIS,
   JOIN_CONVERSATION_PHRASES,
@@ -35,12 +43,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 export function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
-
-  const [post, setPost] = useState(() => {
-    const foundPost = mockPosts.find((t) => t.id === id);
-    return foundPost;
-  });
+  const currentUser = useAppSelector((state) => state.users.currentUser);
+  const post = useAppSelector((state) => selectPostById(state, id));
+  const postAuthor = useAppSelector((state) => selectPostAuthor(state, post));
+  const postChannel = useAppSelector((state) => selectPostChannel(state, post));
 
   const [newMessage, setNewMessage] = useState('');
   const [customEmoji, setCustomEmoji] = useState('');
@@ -48,19 +56,36 @@ export function PostDetail() {
 
   // Get saved scroll position from sessionStorage
   const handleBackToFeed = () => {
-    const scrollPosition = Number(sessionStorage.getItem('feedScrollPosition') || 0);
-    const displayedCount = Number(sessionStorage.getItem('feedDisplayedCount') || 5);
-    
+    const scrollPosition = Number(
+      sessionStorage.getItem('feedScrollPosition') || 0,
+    );
+    const displayedCount = Number(
+      sessionStorage.getItem('feedDisplayedCount') || 5,
+    );
+
     navigate('/feed', {
       state: { scrollPosition, displayedCount },
     });
   };
 
-  const sortedReactions = useMemo(() => {
+  // Group reactions by emoji and sort by count
+  const groupedReactions = useMemo(() => {
     if (!post?.reactions) return [];
-    return [...(post?.reactions ?? [])].sort(
-      (a, b) => b.userIds.length - a.userIds.length,
+
+    const groups = post?.reactions.reduce(
+      (acc, reaction) => {
+        if (!acc[reaction.emoji]) {
+          acc[reaction.emoji] = [];
+        }
+        acc[reaction.emoji].push(reaction.userId);
+        return acc;
+      },
+      {} as Record<string, string[]>,
     );
+
+    return Object.entries(groups)
+      .map(([emoji, userIds]) => ({ emoji, userIds }))
+      .sort((a, b) => b.userIds.length - a.userIds.length);
   }, [post?.reactions]);
 
   // Use media array if available, otherwise fall back to images
@@ -78,6 +103,44 @@ export function PostDetail() {
     });
   };
 
+  const renderMedia = (item: { type: string; url: string }, index: number) => {
+    return (
+      <a
+        href={item.url}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='relative flex h-full w-full items-center justify-center bg-black'
+      >
+        {item.type === 'video' ? (
+          <video
+            ref={(el) => {
+              if (el) {
+                videoRefs.current.set(index, el);
+              } else {
+                videoRefs.current.delete(index);
+              }
+            }}
+            src={item.url}
+            controls
+            className='h-auto w-full'
+            preload='metadata'
+          />
+        ) : (
+          <img
+            src={item.url}
+            alt={
+              index === 0 && mediaItems.length === 1
+                ? 'Post content'
+                : `Post content ${index + 1}`
+            }
+            className='h-auto w-full object-cover'
+            loading='lazy'
+          />
+        )}
+      </a>
+    );
+  };
+
   if (!post) {
     return (
       <div className='page flex flex-col items-center justify-center'>
@@ -91,92 +154,42 @@ export function PostDetail() {
 
   const relativeTime = getRelativeTime(post.timestamp);
 
-  const getColorPair = () => {
-    const colorData = CHANNEL_COLOR_MAP.get(post.channelColor);
+  const colors = getColorPair(postChannel);
 
-    return {
-      backgroundColor: colorData?.value || '#c7d2fe',
-      textColor: colorData?.textColor || '#4338ca',
-    };
-  };
+  const hasUserReacted =
+    currentUser &&
+    post.reactions.some((reaction) => reaction.userId === currentUser.id);
 
-  const colors = getColorPair();
-
-  const hasUserReacted = post.reactions.some((reaction) =>
-    reaction.userIds.includes(mockCurrentUser.id),
-  );
-
-  const isEnrolledInConversation = post.conversationEnrollees.includes(
-    mockCurrentUser.id,
-  );
+  const isEnrolledInConversation =
+    currentUser && post.conversationEnrollees.includes(currentUser.id);
 
   const handleReaction = (emoji: string) => {
-    setPost((prev) => {
-      if (!prev) return prev;
+    if (!post || !currentUser) return;
 
-      const existingReactionIndex = prev.reactions.findIndex(
-        (r) => r.emoji === emoji,
+    // Check if this reaction already exists with the current user
+    const existingReaction = post.reactions.find(
+      (r) => r.emoji === emoji && r.userId === currentUser.id,
+    );
+
+    if (existingReaction) {
+      // Remove the reaction
+      dispatch(
+        removePostReaction({ postId: post.id, emoji, userId: currentUser.id }),
       );
-
-      let newReactions: Reaction[];
-
-      if (existingReactionIndex !== -1) {
-        const existingReaction = prev.reactions[existingReactionIndex];
-        const userHasReacted = existingReaction.userIds.includes(
-          mockCurrentUser.id,
-        );
-
-        if (userHasReacted) {
-          const updatedUserIds = existingReaction.userIds.filter(
-            (userId) => userId !== mockCurrentUser.id,
-          );
-
-          if (updatedUserIds.length === 0) {
-            newReactions = prev.reactions.filter(
-              (_, i) => i !== existingReactionIndex,
-            );
-          } else {
-            newReactions = [...prev.reactions];
-            newReactions[existingReactionIndex] = {
-              ...existingReaction,
-              userIds: updatedUserIds,
-            };
-          }
-        } else {
-          newReactions = [...prev.reactions];
-          newReactions[existingReactionIndex] = {
-            ...existingReaction,
-            userIds: [...existingReaction.userIds, mockCurrentUser.id],
-          };
-        }
-      } else {
-        newReactions = [
-          ...prev.reactions,
-          { emoji, userIds: [mockCurrentUser.id] },
-        ];
-      }
-
-      const result = {
-        ...prev,
-        reactions: newReactions,
+    } else {
+      // Add the reaction
+      const newReaction: Reaction = {
+        emoji,
+        userId: currentUser.id,
       };
-
-      return result;
-    });
+      dispatch(updatePostReactions({ postId: post.id, newReaction }));
+    }
   };
 
   const handleJoinConversation = () => {
-    setPost((prev) => {
-      if (!prev) return prev;
+    if (!post || !currentUser) return;
 
-      return {
-        ...prev,
-        conversationEnrollees: [
-          ...prev.conversationEnrollees,
-          mockCurrentUser.id,
-        ],
-      };
-    });
+    dispatch(joinConversation({ postId: post.id, userId: currentUser.id }));
   };
 
   const handleCustomEmojiSubmit = () => {
@@ -198,26 +211,22 @@ export function PostDetail() {
   };
 
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !post || !currentUser) return;
 
     const newComment: Comment = {
-      id: `c${Date.now()}`,
-      authorId: mockCurrentUser.id,
+      id: generateId('postComment'),
+      authorId: currentUser.id,
       text: newMessage,
       timestamp: Date.now(),
     };
 
-    setPost((prev) => {
-      if (!prev) return prev;
-
-      return {
-        ...prev,
-        comments: [...prev.comments, newComment],
-      };
-    });
-
+    dispatch(updatePostComments({ postId: post.id, newComment }));
     setNewMessage('');
   };
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <div className='page flex flex-col items-center overflow-y-auto'>
@@ -236,7 +245,7 @@ export function PostDetail() {
             aria-label='Go to account'
             className='focus:ring-primary ml-auto rounded-full focus:ring-2 focus:outline-none'
           >
-            <Avatar preset={mockCurrentUser.avatar} size='md' />
+            <Avatar preset={currentUser.avatar} size='md' />
           </Link>
         </div>
 
@@ -244,10 +253,10 @@ export function PostDetail() {
           <div className='space-y-3 p-4'>
             <div className='flex items-start justify-between gap-3'>
               <div className='flex items-center gap-3'>
-                <Avatar preset={post.authorAvatar} size='md' />
+                <Avatar preset={postAuthor?.avatar} size='md' />
                 <div className='flex flex-col'>
                   <span className='text-foreground font-semibold'>
-                    {post.authorName}
+                    {getPostAuthorName(postAuthor, currentUser)}
                   </span>
                   <span className='text-foreground/60 text-sm'>
                     {relativeTime}
@@ -263,7 +272,7 @@ export function PostDetail() {
                   color: colors.textColor,
                 }}
               >
-                {post.channelName}
+                {postChannel?.name || 'Unknown Channel'}
               </Badge>
             </div>
 
@@ -272,66 +281,27 @@ export function PostDetail() {
             </p>
           </div>
 
-          {mediaItems.length > 0 && (
-            mediaItems.length === 1 ? (
-              <div className='w-full'>
-                {mediaItems[0].type === 'video' ? (
-                  <div className='relative w-full bg-black flex items-center justify-center'>
-                    <video
-                      src={mediaItems[0].url}
-                      controls
-                      className='h-auto w-full'
-                      preload='metadata'
-                    />
-                  </div>
-                ) : (
-                  <img
-                    src={mediaItems[0].url}
-                    alt='Post content'
-                    className='h-auto w-full object-cover'
-                    loading='lazy'
-                  />
-                )}
-              </div>
+          {mediaItems.length > 0 &&
+            (mediaItems.length === 1 ? (
+              <div className='w-full'>{renderMedia(mediaItems[0], 0)}</div>
             ) : (
               <div className='w-full'>
-                <Carousel 
-                  className='w-full' 
+                <Carousel
+                  className='w-full'
                   buttonPosition='interior'
                   onIndexChange={handleCarouselIndexChange}
                 >
                   {mediaItems.map((item, index) => (
-                    <div key={`${post.id}-media-${index}`} className='w-full'>
-                      {item.type === 'video' ? (
-                        <div className='relative w-full bg-black flex items-center justify-center min-h-100'>
-                          <video
-                            ref={(el) => {
-                              if (el) {
-                                videoRefs.current.set(index, el);
-                              } else {
-                                videoRefs.current.delete(index);
-                              }
-                            }}
-                            src={item.url}
-                            controls
-                            className='h-auto w-full max-h-150'
-                            preload='metadata'
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={item.url}
-                          alt={`Post content ${index + 1}`}
-                          className='h-auto w-full object-cover'
-                          loading='lazy'
-                        />
-                      )}
+                    <div
+                      key={`${post.id}-media-${index}`}
+                      className='h-full w-full'
+                    >
+                      {renderMedia(item, index)}
                     </div>
                   ))}
                 </Carousel>
               </div>
-            )
-          )}
+            ))}
         </Card>
 
         {!hasUserReacted ? (
@@ -386,8 +356,7 @@ export function PostDetail() {
           <Tabs defaultValue='reactions' tabsWidth='full'>
             <TabsList>
               <TabsTrigger value='reactions'>
-                Reactions (
-                {sortedReactions.reduce((sum, r) => sum + r.userIds.length, 0)})
+                Reactions ({post.reactions.length})
               </TabsTrigger>
               <TabsTrigger value='conversation'>
                 Conversation ({post.comments.length})
@@ -400,20 +369,20 @@ export function PostDetail() {
                   <h3 className='text-foreground text-lg font-semibold'>
                     Reactions
                   </h3>
-                  {sortedReactions.length > 0 ? (
+                  {groupedReactions.length > 0 ? (
                     <div className='flex flex-wrap gap-2'>
-                      {sortedReactions.map((reaction) => {
-                        const isUserReacted = reaction.userIds.includes(
-                          mockCurrentUser.id,
+                      {groupedReactions.map((group) => {
+                        const isUserReacted = group.userIds.includes(
+                          currentUser.id,
                         );
 
                         return (
                           <ReactionDisplay
-                            key={reaction.emoji}
-                            emoji={reaction.emoji}
-                            count={reaction.userIds.length}
+                            key={group.emoji}
+                            emoji={group.emoji}
+                            count={group.userIds.length}
                             isUserReacted={isUserReacted}
-                            onClick={() => handleReaction(reaction.emoji)}
+                            onClick={() => handleReaction(group.emoji)}
                           />
                         );
                       })}
@@ -430,13 +399,10 @@ export function PostDetail() {
                     </p>
                     <div className='flex flex-wrap gap-2'>
                       {COMMON_EMOJIS.map((emoji) => {
-                        const existingReaction = post.reactions.find(
-                          (r) => r.emoji === emoji,
+                        const isUserReacted = post.reactions.some(
+                          (r) =>
+                            r.emoji === emoji && r.userId === currentUser.id,
                         );
-                        const isUserReacted =
-                          existingReaction?.userIds.includes(
-                            mockCurrentUser.id,
-                          );
 
                         return (
                           <Button
@@ -526,9 +492,7 @@ export function PostDetail() {
                             authorId={comment.authorId}
                             text={comment.text}
                             timestamp={comment.timestamp}
-                            isCurrentUser={
-                              comment.authorId === mockCurrentUser.id
-                            }
+                            isCurrentUser={comment.authorId === currentUser.id}
                           />
                         ))}
                       </div>
