@@ -354,15 +354,13 @@ export const respondToJoinRequest = createAsyncThunk(
       if (!requestSnap.exists()) throw new Error('Join request not found.');
 
       const joinRequest = requestSnap.data() as ChannelJoinRequest;
+      const channelDocRef = doc(db, 'channels', joinRequest.channelId);
       const now = Date.now();
 
       await runTransaction(db, async (tx) => {
-        const status = accept ? 'accepted' : 'declined';
-        tx.update(requestDocRef, { status, respondedAt: now });
+        const channelSnap = await tx.get(channelDocRef);
 
         if (accept) {
-          const channelDocRef = doc(db, 'channels', joinRequest.channelId);
-          const channelSnap = await tx.get(channelDocRef);
           if (!channelSnap.exists()) throw new Error('Channel not found.');
           const channel = channelSnap.data() as Channel;
           if (!channel.subscribers.includes(joinRequest.requesterId)) {
@@ -371,6 +369,9 @@ export const respondToJoinRequest = createAsyncThunk(
             });
           }
         }
+
+        const status = accept ? 'accepted' : 'declined';
+        tx.update(requestDocRef, { status, respondedAt: now });
       });
 
       return { requestId, accept, respondedAt: now };

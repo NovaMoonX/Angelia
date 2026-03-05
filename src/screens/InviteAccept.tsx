@@ -130,7 +130,7 @@ export function InviteAccept() {
       <div className='page flex items-center justify-center'>
         <div className='w-full max-w-md px-4'>
           <Card className='space-y-6 p-8 text-center'>
-            <div className='space-y-2'>
+            <div className='space-y-2 pb-4'>
               <h1 className='text-foreground text-2xl font-bold'>
                 Invalid Invite Link
               </h1>
@@ -182,7 +182,7 @@ export function InviteAccept() {
       <div className='page flex items-center justify-center'>
         <div className='w-full max-w-md px-4'>
           <Card className='space-y-6 p-8 text-center'>
-            <div className='space-y-2'>
+            <div className='space-y-2 pb-4'>
               <h1 className='text-foreground text-2xl font-bold'>
                 {"You're already in!"}
               </h1>
@@ -212,7 +212,7 @@ export function InviteAccept() {
       <div className='page flex items-center justify-center'>
         <div className='w-full max-w-md px-4'>
           <Card className='space-y-6 p-8 text-center'>
-            <div className='space-y-2'>
+            <div className='space-y-2 pb-4'>
               <h1 className='text-foreground text-2xl font-bold'>
                 {existingRequest.status === 'accepted'
                   ? "You're in!"
@@ -271,7 +271,7 @@ export function InviteAccept() {
           {/* Identification prompt */}
           <div className='space-y-3 pt-4'>
             <div className='space-y-1'>
-              <p className='text-foreground font-medium'>
+              <p className='text-foreground font-medium text-pretty'>
                 Hey, how should {ownerDisplayName} know it's really you? 👀
               </p>
               <p className='text-foreground/50 text-sm'>
