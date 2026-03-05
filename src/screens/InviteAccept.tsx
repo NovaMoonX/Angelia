@@ -167,7 +167,7 @@ export function InviteAccept() {
             <Button onClick={() => navigate('/account?tab=my-channels')} className='w-full'>
               View all channels
             </Button>
-            <Button variant='link' onClick={() => navigate('/feed')} className='w-full'>
+            <Button variant='tertiary' onClick={() => navigate('/feed')} className='w-full'>
               Head back to Feed
             </Button>
             </div>

@@ -1,4 +1,8 @@
-import { Channel, getColorPair } from '@/lib/channel';
+import {
+  Channel,
+  generateChannelInviteLink,
+  getColorPair,
+} from '@/lib/channel';
 import { User } from '@/lib/user';
 import { useAppSelector } from '@/store/hooks';
 import {
@@ -27,9 +31,7 @@ export function ChannelModal({
 
   const isOwner = channel.ownerId === currentUser.id;
 
-  const inviteUrl = channel.inviteCode
-    ? `${window.location.origin}/invite/${channel.id}/${channel.inviteCode}`
-    : '';
+  const inviteUrl = generateChannelInviteLink(channel);
 
   const colors = getColorPair(channel);
 
@@ -79,10 +81,10 @@ export function ChannelModal({
                 Share this link with others to invite them to join this channel
               </p>
               <CopyButton
-                textToCopy={inviteUrl}
+                textToCopy={inviteUrl || ''}
                 variant='secondary'
                 className='w-full'
-                disabled={!channel.inviteCode}
+                disabled={!inviteUrl}
               >
                 Copy Invite Link
               </CopyButton>
