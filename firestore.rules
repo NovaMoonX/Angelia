@@ -38,10 +38,9 @@ service cloud.firestore {
           && (request.auth.uid in resource.data.subscribers);
       }
 
-      // Reading: owners and subscribers can read a channel.
-      // Any authenticated user may also read a channel document in order to
+      // Any authenticated user may read a channel document in order to
       // look it up by channelId when following an invite URL.
-      allow read: if isOwner() || isSubscriber() || isSignedIn();
+      allow read: if isSignedIn();
 
       // Create: only authenticated users can create a channel for themselves.
       // Require that the creating user has a profile document in `/users/{uid}`.
