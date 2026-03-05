@@ -17,15 +17,15 @@ function DataListenerWrapper({ children }: { children: React.ReactNode }) {
     const unsubscribeUser = subscribeToCurrentUser(firebaseUser.uid)(dispatch);
     const unsubscribeChannels = subscribeToChannels()(dispatch);
     const unsubscribePosts = subscribeToPosts()(dispatch);
-    const unsubscribeIncoming = subscribeToIncomingJoinRequests(firebaseUser.uid)(dispatch);
-    const unsubscribeOutgoing = subscribeToOutgoingJoinRequests(firebaseUser.uid)(dispatch);
+    const unsubscribeIncomingJoinRequest = subscribeToIncomingJoinRequests(firebaseUser.uid)(dispatch);
+    const unsubscribeOutgoingJoinRequest = subscribeToOutgoingJoinRequests(firebaseUser.uid)(dispatch);
 
     return () => {
       unsubscribeUser();
       unsubscribeChannels();
       unsubscribePosts();
-      unsubscribeIncoming();
-      unsubscribeOutgoing();
+      unsubscribeIncomingJoinRequest();
+      unsubscribeOutgoingJoinRequest();
     };
   }, [firebaseUser, dispatch]);
 

@@ -1,3 +1,4 @@
+import { User } from '@/lib/user';
 import generateId from '@/util/generateId';
 import {
   Channel,
@@ -21,8 +22,6 @@ import {
 } from 'firebase/firestore';
 import { RootState } from '..';
 import { updateAccountProgress } from './userActions';
-import { User } from '@/lib/user';
-import { updateChannel } from '../slices/channelsSlice';
 
 /**
  * Check whether a user's daily channel exists. This will consult local Redux
@@ -272,7 +271,6 @@ export const deleteCustomChannel = createAsyncThunk(
         tx.update(userDocRef, { customChannelCount: newCount });
       });
 
-      // Return the deleted channel id; callers may update local state.
       return channelId;
     } catch (err) {
       console.error('Error deleting channel:', err);
@@ -281,7 +279,6 @@ export const deleteCustomChannel = createAsyncThunk(
   },
 );
 
-
 /**
  * Submit a join request for a channel via invite URL.
  * Verifies the inviteCode matches the channel before creating the request.
@@ -289,21 +286,28 @@ export const deleteCustomChannel = createAsyncThunk(
 export const createJoinRequest = createAsyncThunk(
   'channels/createJoinRequest',
   async (
-    { channelId, inviteCode, message }: { channelId: string; inviteCode: string; message: string },
+    {
+      channelId,
+      inviteCode,
+      message,
+    }: { channelId: string; inviteCode: string; message: string },
     { getState },
   ) => {
     try {
       const state = getState() as RootState;
       const requesterId = state.users.currentUser?.id;
-      if (!requesterId) throw new Error('You must be signed in to request to join.');
+      if (!requesterId)
+        throw new Error('You must be signed in to request to join.');
 
       const channelDocRef = doc(db, 'channels', channelId);
       const channelSnap = await getDoc(channelDocRef);
       if (!channelSnap.exists()) throw new Error('Channel not found.');
 
       const channel = channelSnap.data() as Channel;
-      if (channel.inviteCode !== inviteCode) throw new Error('Invalid invite link.');
-      if (channel.subscribers.includes(requesterId)) throw new Error('You are already subscribed to this channel.');
+      if (channel.inviteCode !== inviteCode)
+        throw new Error('Invalid invite link.');
+      if (channel.subscribers.includes(requesterId))
+        throw new Error('You are already subscribed to this channel.');
 
       // Check for an existing pending request
       const existingQ = query(
@@ -313,7 +317,8 @@ export const createJoinRequest = createAsyncThunk(
         where('status', '==', 'pending'),
       );
       const existingSnap = await getDocs(existingQ);
-      if (!existingSnap.empty) throw new Error('You already have a pending request for this channel.');
+      if (!existingSnap.empty)
+        throw new Error('You already have a pending request for this channel.');
 
       const requestId = generateId('joinRequest');
       const joinRequest: ChannelJoinRequest = {
@@ -342,10 +347,7 @@ export const createJoinRequest = createAsyncThunk(
  */
 export const respondToJoinRequest = createAsyncThunk(
   'channels/respondToJoinRequest',
-  async (
-    { requestId, accept }: { requestId: string; accept: boolean },
-    { dispatch },
-  ) => {
+  async ({ requestId, accept }: { requestId: string; accept: boolean }) => {
     try {
       const requestDocRef = doc(db, 'channelJoinRequests', requestId);
       const requestSnap = await getDoc(requestDocRef);
@@ -370,15 +372,6 @@ export const respondToJoinRequest = createAsyncThunk(
           }
         }
       });
-
-      if (accept) {
-        // Refresh local channel state
-        const channelDocRef = doc(db, 'channels', joinRequest.channelId);
-        const channelSnap = await getDoc(channelDocRef);
-        if (channelSnap.exists()) {
-          dispatch(updateChannel(channelSnap.data() as Channel));
-        }
-      }
 
       return { requestId, accept, respondedAt: now };
     } catch (err) {

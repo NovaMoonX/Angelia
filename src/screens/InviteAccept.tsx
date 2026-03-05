@@ -1,8 +1,9 @@
-import { REDIRECT_PARAM } from '@lib/app/app.constants';
+import { User } from '@/lib/user';
+import { fetchUserById } from '@/lib/user/user.data';
+import { useAuth } from '@hooks/useAuth';
 import { fetchChannelById } from '@lib/channel/channel.data';
 import { Channel } from '@lib/channel/channel.types';
-import { createJoinRequest } from '@store/actions/channelActions';
-import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
   Badge,
@@ -11,14 +12,16 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useToast } from '@moondreamsdev/dreamer-ui/hooks';
-import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { getRelativeTime } from '@lib/timeUtils';
+import { createJoinRequest } from '@store/actions/channelActions';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
 
 export function InviteAccept() {
-  const { channelId, inviteCode } = useParams<{ channelId: string; inviteCode: string }>();
+  const { channelId, inviteCode } = useParams<{
+    channelId: string;
+    inviteCode: string;
+  }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { addToast } = useToast();
@@ -28,15 +31,9 @@ export function InviteAccept() {
   const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
 
   const [channel, setChannel] = useState<Channel | null | undefined>(undefined); // undefined = loading
+  const [channelOwner, setChannelOwner] = useState<User | null | undefined>(undefined);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!firebaseUser) {
-      navigate(`/auth?${REDIRECT_PARAM}=/invite/${channelId}/${inviteCode}`);
-    }
-  }, [firebaseUser, channelId, inviteCode, navigate]);
 
   // Fetch channel info from Firestore
   useEffect(() => {
@@ -49,43 +46,65 @@ export function InviteAccept() {
     });
   }, [channelId]);
 
-  // Validate invite code
+  // Fetch channel owner info from Firestore
+  useEffect(() => {
+    if (!channel || !channel.ownerId) {
+      setChannelOwner(null);
+      return;
+    }
+    fetchUserById(channel.ownerId).then((user) => {
+      setChannelOwner(user ?? null);
+    });
+  }, [channel]);
+
   const isValidInvite = useMemo(() => {
     if (!channel || !inviteCode) return false;
     const result = channel.inviteCode === inviteCode;
     return result;
   }, [channel, inviteCode]);
 
-  // Check if already subscribed
+  const isChannelOwner = useMemo(() => {
+    if (!channel || !currentUser) return false;
+    const result = channel.ownerId === currentUser.id;
+    return result;
+  }, [channel, currentUser]);
+
   const isAlreadySubscribed = useMemo(() => {
     if (!channel || !currentUser) return false;
     const result = channel.subscribers.includes(currentUser.id);
     return result;
   }, [channel, currentUser]);
 
-  // Check if user already has a pending or accepted request for this channel
   const existingRequest = useMemo(() => {
     if (!channelId) return null;
-    const result = outgoingRequests.find((r) => r.channelId === channelId) ?? null;
+    const result =
+      outgoingRequests.find((r) => r.channelId === channelId) ?? null;
     return result;
   }, [outgoingRequests, channelId]);
 
-  // Owner info from subscribers (we may not have users loaded — show placeholder)
   const ownerDisplayName = useMemo(() => {
-    if (!channel) return 'the channel owner';
-    return 'the channel owner';
-  }, [channel]);
+    if (!channel || !channelOwner) return 'the channel owner';
+    return channelOwner.firstName || channelOwner.email || 'the channel owner';
+  }, [channel, channelOwner]);
 
   const handleSubmit = async () => {
     if (!channelId || !inviteCode || !message.trim()) return;
     setIsSubmitting(true);
     try {
-      await dispatch(createJoinRequest({ channelId, inviteCode, message: message.trim() })).unwrap();
-      addToast({ title: 'Request sent! The owner will review it shortly.', type: 'success' });
+      await dispatch(
+        createJoinRequest({ channelId, inviteCode, message: message.trim() }),
+      ).unwrap();
+      addToast({
+        title: 'Request sent! The owner will review it shortly.',
+        type: 'success',
+      });
       navigate('/feed');
     } catch (err) {
       addToast({
-        title: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+        title:
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong. Please try again.',
         type: 'error',
       });
     } finally {
@@ -95,7 +114,6 @@ export function InviteAccept() {
 
   if (!firebaseUser) return null;
 
-  // Loading state
   if (channel === undefined) {
     return (
       <div className='page flex items-center justify-center'>
@@ -117,7 +135,8 @@ export function InviteAccept() {
                 Invalid Invite Link
               </h1>
               <p className='text-foreground/60'>
-                This invite link is invalid or has expired. Ask the channel owner to share a new one.
+                This invite link is invalid or has expired. Ask the channel
+                owner to share a new one.
               </p>
             </div>
             <Button onClick={() => navigate('/feed')} className='w-full'>
@@ -129,7 +148,35 @@ export function InviteAccept() {
     );
   }
 
-  // Already subscribed
+  if (isChannelOwner) {
+    return (
+      <div className='page flex items-center justify-center'>
+        <div className='w-full max-w-md px-4'>
+          <Card className='space-y-6 p-8 text-center'>
+            <div className='space-y-2 pb-4'>
+              <h1 className='text-foreground text-2xl font-bold'>
+                Hey, that's your channel!
+              </h1>
+              <p className='text-foreground/60'>
+                Looks like you're the owner of{' '}
+                <span className='font-semibold'>{channel.name}</span>. You
+                don't need to accept your own invite!
+              </p>
+            </div>
+            <div className='space-y-2'>
+            <Button onClick={() => navigate('/account?tab=my-channels')} className='w-full'>
+              View all channels
+            </Button>
+            <Button variant='link' onClick={() => navigate('/feed')} className='w-full'>
+              Head back to Feed
+            </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (isAlreadySubscribed) {
     return (
       <div className='page flex items-center justify-center'>
@@ -153,7 +200,6 @@ export function InviteAccept() {
     );
   }
 
-  // Existing request
   if (existingRequest) {
     const statusLabel =
       existingRequest.status === 'pending'
@@ -168,7 +214,9 @@ export function InviteAccept() {
           <Card className='space-y-6 p-8 text-center'>
             <div className='space-y-2'>
               <h1 className='text-foreground text-2xl font-bold'>
-                {existingRequest.status === 'accepted' ? "You're in!" : 'Request already sent'}
+                {existingRequest.status === 'accepted'
+                  ? "You're in!"
+                  : 'Request already sent'}
               </h1>
               <p className='text-foreground/60'>{statusLabel}</p>
               {existingRequest.createdAt && (
@@ -190,7 +238,6 @@ export function InviteAccept() {
     <div className='page flex items-center justify-center'>
       <div className='w-full max-w-md px-4'>
         <Card className='space-y-6 p-8'>
-          {/* Header */}
           <div className='space-y-4 pb-2 text-center'>
             {currentUser && (
               <div className='flex justify-center'>
@@ -210,36 +257,35 @@ export function InviteAccept() {
                 >
                   {channel.name}
                 </Badge>
+                <br />
+                by {ownerDisplayName}.
               </p>
-              {channel.description && (
-                <p className='text-foreground/50 text-sm'>{channel.description}</p>
+              {!channel.isDaily && channel.description && (
+                <p className='text-foreground/50 text-sm'>
+                  {channel.description}
+                </p>
               )}
             </div>
           </div>
 
           {/* Identification prompt */}
-          <div className='space-y-3'>
+          <div className='space-y-3 pt-4'>
             <div className='space-y-1'>
               <p className='text-foreground font-medium'>
                 Hey, how should {ownerDisplayName} know it's really you? 👀
               </p>
               <p className='text-foreground/50 text-sm'>
-                Share something that helps them recognise you — an inside joke, where you met, or anything fun!
+                Share something that helps them recognize you — an inside joke,
+                where you met, or anything fun!
               </p>
             </div>
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="e.g. &quot;It's me, Alex! We met at the hiking trip last summer 🏔️&quot;"
+              placeholder='e.g. "It&apos;s me, Alex! We met at the hiking trip last summer 🏔️"'
               rows={4}
               maxLength={300}
             />
-            <p className={join(
-              'text-xs text-right',
-              message.length >= 300 ? 'text-destructive' : 'text-foreground/40',
-            )}>
-              {message.length}/300
-            </p>
           </div>
 
           {/* Actions */}
@@ -266,4 +312,3 @@ export function InviteAccept() {
 }
 
 export default InviteAccept;
-

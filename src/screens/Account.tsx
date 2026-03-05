@@ -55,14 +55,12 @@ export function Account() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
-  // Get data from Redux store
   const channels = useAppSelector((state) => state.channels.items);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const users = useAppSelector((state) => state.users.users);
   const incomingRequests = useAppSelector((state) => state.invites.incoming);
   const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
 
-  // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') || '';
     const validTabs: AccountTab[] = ['my-channels', 'subscribed'];
@@ -75,7 +73,6 @@ export function Account() {
   useEffect(() => {
     const view = searchParams.get('view');
     if (view === 'notifications' && notificationsRef.current) {
-      // Use requestAnimationFrame to ensure DOM is fully rendered before scrolling
       requestAnimationFrame(() => {
         notificationsRef.current?.scrollIntoView({
           behavior: 'smooth',
@@ -85,7 +82,6 @@ export function Account() {
     }
   }, [searchParams]);
 
-  // Combined form state
   const [formData, setFormData] = useState<AccountFormData>({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
@@ -104,7 +100,6 @@ export function Account() {
     }
   }, [currentUser]);
 
-  // Channel modal states
   const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
   const [isChannelDetailOpen, setIsChannelDetailOpen] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -112,7 +107,6 @@ export function Account() {
     'create',
   );
 
-  // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
     if (!currentUser) return [];
     const result = channels.filter(
@@ -122,14 +116,12 @@ export function Account() {
     return result;
   }, [channels, currentUser]);
 
-  // Memoized: Find user's daily channel (from owned channels)
   const userDailyChannel = useMemo(() => {
     const result = userOwnedChannels.find((channel) => channel.isDaily);
 
     return result;
   }, [userOwnedChannels]);
 
-  // Memoized: Find channels the user has access to (subscribed)
   const subscribedChannels = useMemo(() => {
     if (!currentUser) return [];
     const result = channels.filter(
@@ -141,35 +133,30 @@ export function Account() {
     return result;
   }, [channels, currentUser]);
 
-  // Memoized: Create channel map for O(1) lookups
   const channelsMap = useMemo(() => {
     const result = new Map(channels.map((ch) => [ch.id, ch]));
 
     return result;
   }, [channels]);
 
-  // Memoized: Create users map for O(1) lookups
   const usersMap = useMemo(() => {
     const result = new Map(users.map((user) => [user.id, user]));
 
     return result;
   }, [users]);
 
-  // Memoized: Count non-daily channels owned by user
-  const nonDailyChannelCount = useMemo(() => {
-    const result = userOwnedChannels.filter((ch) => !ch.isDaily).length;
-
+  const nonDailyUserChannels = useMemo(() => {
+    const result = userOwnedChannels.filter((ch) => !ch.isDaily);
     return result;
   }, [userOwnedChannels]);
+  const nonDailyUserChannelCount = nonDailyUserChannels.length;
 
-  // Memoized: Get all existing channel names owned by user
   const existingChannelNames = useMemo(() => {
     const result = userOwnedChannels.map((ch) => ch.name);
 
     return result;
   }, [userOwnedChannels]);
 
-  // Memoized: Get subscribers for selected channel
   const selectedChannelSubscribers = useMemo(() => {
     if (!selectedChannel) {
       return [];
@@ -182,7 +169,6 @@ export function Account() {
     return result;
   }, [selectedChannel, users]);
 
-  // Memoized: Total pending notification count (incoming requests for my channels)
   const pendingInviteCount = useMemo(() => {
     const result = incomingRequests.length;
     return result;
@@ -210,7 +196,6 @@ export function Account() {
     if (!currentUser) return;
 
     try {
-      // Persist changes to Firestore; listener will update local Redux state.
       await dispatch(
         updateUserProfile({ uid: currentUser.id, data: formData }),
       ).unwrap();
@@ -246,7 +231,6 @@ export function Account() {
     );
   };
 
-  // Channel handlers
   const handleCreateChannel = () => {
     setChannelFormMode('create');
     setSelectedChannel(null);
@@ -292,7 +276,7 @@ export function Account() {
     });
 
     if (confirmed && currentUser) {
-      // Unsubscribe: dispatch Firestore update (channel data listener will update local state)
+      // NEXT: Unsubscribe: dispatch Firestore update (channel data listener will update local state)
       console.log('Unsubscribing from channel:', channel.id);
     }
   };
@@ -306,14 +290,13 @@ export function Account() {
     if (!currentUser) return;
 
     if (channelFormMode === 'create') {
-      if (nonDailyChannelCount >= 3) {
+      if (nonDailyUserChannelCount >= 3) {
         actionModal.alert({
           message:
             'You have reached the maximum number of channels (3). Please delete an existing channel before creating a new one.',
         });
         return;
       }
-      // Create channel using Redux
       const newChannel: NewChannel = {
         name: data.name,
         description: data.description,
@@ -331,7 +314,6 @@ export function Account() {
         });
       }
     } else if (selectedChannel) {
-      // Update channel using Firestore
       const updatedChannel = {
         ...selectedChannel,
         name: data.name,
@@ -351,7 +333,6 @@ export function Account() {
     }
   };
 
-  // Join request handlers (for channel owners)
   const handleAcceptRequest = async (request: ChannelJoinRequest) => {
     try {
       await dispatch(respondToJoinRequest({ requestId: request.id, accept: true })).unwrap();
@@ -509,26 +490,25 @@ export function Account() {
                       isOwner={true}
                     />
                   </div>
-                  {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
+                  {nonDailyUserChannelCount > 0 && (
                     <Separator />
                   )}
                 </>
               )}
 
               {/* Other Channels Section */}
-              {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
+              {nonDailyUserChannelCount > 0 && (
                 <div className='space-y-2'>
                   <div className='flex items-center justify-between'>
                     <p className='text-foreground/80 text-sm font-medium'>
                       Other Channels
                     </p>
                     <p className='text-foreground/60 text-xs'>
-                      {nonDailyChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
+                      {nonDailyUserChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
                     </p>
                   </div>
                   <div className='space-y-2'>
-                    {userOwnedChannels
-                      .filter((ch) => !ch.isDaily)
+                    {nonDailyUserChannels
                       .map((channel) => (
                         <ChannelCard
                           key={channel.id}
@@ -547,14 +527,14 @@ export function Account() {
               <div className='pt-2'>
                 <Button
                   onClick={handleCreateChannel}
-                  disabled={nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT}
+                  disabled={nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT}
                   className='w-full'
                 >
-                  {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT
+                  {nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT
                     ? `Maximum Channels Reached (${CUSTOM_CHANNEL_LIMIT}/${CUSTOM_CHANNEL_LIMIT})`
                     : 'Create New Channel'}
                 </Button>
-                {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT && (
+                {nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT && (
                   <p className='text-foreground/60 mt-2 text-center text-xs'>
                     You can create up to {CUSTOM_CHANNEL_LIMIT} custom channels
                     to encourage intentionality

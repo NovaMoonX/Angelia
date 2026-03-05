@@ -24,7 +24,6 @@ export function Feed() {
     displayedCount?: number;
   } | null;
 
-  // Get data from Redux store
   const posts = useAppSelector((state) => state.posts.items);
   const channels = useAppSelector((state) => state.channels.items);
   const channelMapById = useAppSelector(selectChannelMapById)
@@ -41,7 +40,6 @@ export function Feed() {
     const dismissed = localStorage.getItem(CALLOUT_DISMISSED_KEY);
     return dismissed === 'true';
   });
-  // const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const hasRestoredScroll = useRef(false);
@@ -50,13 +48,10 @@ export function Feed() {
   const [firstPostVisible, setFirstPostVisible] = useState(true);
   const [secondPostVisible, setSecondPostVisible] = useState(true);
 
-  // Filter and sort posts
   const filteredAndSortedPosts = useMemo(() => {
     let filtered = posts;
 
-    // Filter by channel
     if (selectedChannel === 'daily') {
-      // Show all daily channel posts
       filtered = filtered.filter((post) => {
         const channel = channelMapById[post.channelId];
         return channel?.isDaily;
@@ -78,7 +73,6 @@ export function Feed() {
     return sorted;
   }, [posts, selectedChannel, sortOrder, channelMapById]);
 
-  // Get currently displayed posts
   const displayedPosts = useMemo(() => {
     const result = filteredAndSortedPosts.slice(0, displayedCount);
 
@@ -249,7 +243,6 @@ export function Feed() {
     };
   }, [displayedPosts]);
 
-  // Channel options for Select
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
     { text: 'Daily Updates', value: 'daily' },
@@ -261,36 +254,30 @@ export function Feed() {
       })),
   ];
 
-  // Sort options for Select
   const sortOptions = [
     { text: 'Newest First', value: 'newest' },
     { text: 'Oldest First', value: 'oldest' },
   ];
 
-  // Handler for channel change
   const handleChannelChange = (value: string) => {
     setSelectedChannel(value);
     setDisplayedCount(5);
   };
 
-  // Handler for sort change
   const handleSortChange = (value: string) => {
     setSortOrder(value as SortOrder);
     setDisplayedCount(5);
   };
 
-  // Handler for callout dismiss
   const handleCalloutDismiss = () => {
     localStorage.setItem(CALLOUT_DISMISSED_KEY, 'true');
     setIsCalloutDismissed(true);
   };
 
-  // Memoized: Check for pending join requests to my channels
   const hasPendingInvites = useMemo(() => {
     return incomingRequests.length > 0;
   }, [incomingRequests]);
 
-  // Save scroll position before navigating to post
   const saveScrollPosition = () => {
     const scrollPosition = window.scrollY;
     // Store in sessionStorage as backup
@@ -298,12 +285,10 @@ export function Feed() {
     sessionStorage.setItem('feedDisplayedCount', String(displayedCount));
   };
 
-  // Scroll to top handler
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handler for navigating to post creation page
   const handleCreatePost = () => {
     navigate('/post/new');
   };
