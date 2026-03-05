@@ -170,7 +170,7 @@ export function Account() {
   }, [selectedChannel, users]);
 
   const pendingInviteCount = useMemo(() => {
-    const result = incomingRequests.length;
+    const result = incomingRequests.filter((r) => r.status === 'pending').length;
     return result;
   }, [incomingRequests]);
 
@@ -605,7 +605,10 @@ export function Account() {
                     const badgeColors = getColorPair(channel);
 
                     return (
-                      <Card key={request.id} className='p-4'>
+                      <Card
+                        key={request.id}
+                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                      >
                         <div className='space-y-3'>
                           <div className='flex items-start gap-3'>
                             {requester && (
@@ -636,28 +639,40 @@ export function Account() {
                               <p className='text-foreground/70 text-sm italic'>
                                 "{request.message}"
                               </p>
-                              <p className='text-foreground/40 text-xs'>
-                                {getRelativeTime(request.createdAt)}
-                              </p>
+                              <div className='flex items-center justify-between'>
+                                <p className='text-foreground/40 text-xs'>
+                                  {getRelativeTime(request.createdAt)}
+                                </p>
+                                {request.status !== 'pending' && (
+                                  <span className={join(
+                                    'text-xs font-medium',
+                                    request.status === 'accepted' ? 'text-green-600' : 'text-destructive',
+                                  )}>
+                                    {request.status === 'accepted' ? 'Accepted' : 'Declined'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className='flex gap-2'>
-                            <Button
-                              size='sm'
-                              onClick={() => handleAcceptRequest(request)}
-                              className='flex-1'
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              variant='secondary'
-                              size='sm'
-                              onClick={() => handleDeclineRequest(request)}
-                              className='flex-1'
-                            >
-                              Decline
-                            </Button>
-                          </div>
+                          {request.status === 'pending' && (
+                            <div className='flex gap-2'>
+                              <Button
+                                size='sm'
+                                onClick={() => handleAcceptRequest(request)}
+                                className='flex-1'
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                variant='secondary'
+                                size='sm'
+                                onClick={() => handleDeclineRequest(request)}
+                                className='flex-1'
+                              >
+                                Decline
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     );

@@ -275,7 +275,7 @@ export function Feed() {
   };
 
   const hasPendingInvites = useMemo(() => {
-    return incomingRequests.length > 0;
+    return incomingRequests.some((r) => r.status === 'pending');
   }, [incomingRequests]);
 
   const saveScrollPosition = () => {

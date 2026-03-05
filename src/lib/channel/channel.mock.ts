@@ -89,7 +89,7 @@ export function getChannelByInviteCode(inviteCode: string): Channel | undefined 
 
 // Mock join requests - requests sent to join channels via invite URL
 export const mockJoinRequests: ChannelJoinRequest[] = [
-  // Pending request to Photography Club from currentUser
+  // Pending request to Photography Club from currentUser (outgoing)
   {
     id: 'join-req-1',
     channelId: 'test-invite-channel',
@@ -100,7 +100,7 @@ export const mockJoinRequests: ChannelJoinRequest[] = [
     createdAt: Date.now() - 1000 * 60 * 60 * 12,
     respondedAt: null,
   },
-  // Accepted request to Cooking Corner - currentUser is owner
+  // Pending incoming request to Cooking Corner - currentUser is owner
   {
     id: 'join-req-2',
     channelId: 'channel2',
@@ -121,5 +121,27 @@ export const mockJoinRequests: ChannelJoinRequest[] = [
     status: 'pending',
     createdAt: Date.now() - 1000 * 60 * 30,
     respondedAt: null,
+  },
+  // Accepted incoming request (currentUser already responded)
+  {
+    id: 'join-req-4',
+    channelId: 'channel2',
+    channelOwnerId: 'currentUser',
+    requesterId: 'user4',
+    message: "Hi! It's Laura from yoga class 🧘",
+    status: 'accepted',
+    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+    respondedAt: Date.now() - 1000 * 60 * 60 * 24,
+  },
+  // Declined incoming request
+  {
+    id: 'join-req-5',
+    channelId: 'channel2',
+    channelOwnerId: 'currentUser',
+    requesterId: 'user6',
+    message: "Hey it's me from the internet 👋",
+    status: 'declined',
+    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
+    respondedAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
   },
 ];

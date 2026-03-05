@@ -29,12 +29,11 @@ export const fetchChannelById = async (channelId: string): Promise<Channel | nul
   return snap.data() as Channel;
 };
 
-/** Listen to all pending join requests sent to channels owned by uid. */
+/** Listen to all join requests sent to channels owned by uid (all statuses). */
 export const subscribeToIncomingJoinRequests = (uid: string) => (dispatch: AppDispatch) => {
   const q = query(
     collection(db, 'channelJoinRequests'),
     where('channelOwnerId', '==', uid),
-    where('status', '==', 'pending'),
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
