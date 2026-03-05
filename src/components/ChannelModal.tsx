@@ -1,6 +1,17 @@
-import { Channel, getColorPair } from '@/lib/channel';
-import { mockCurrentUser, User } from '@/lib/user';
-import { Modal, Badge, Avatar, Separator, CopyButton } from '@moondreamsdev/dreamer-ui/components';
+import {
+  Channel,
+  generateChannelInviteLink,
+  getColorPair,
+} from '@/lib/channel';
+import { User } from '@/lib/user';
+import { useAppSelector } from '@/store/hooks';
+import {
+  Avatar,
+  Badge,
+  CopyButton,
+  Modal,
+  Separator,
+} from '@moondreamsdev/dreamer-ui/components';
 
 interface ChannelModalProps {
   isOpen: boolean;
@@ -15,29 +26,24 @@ export function ChannelModal({
   channel,
   subscribers = [],
 }: ChannelModalProps) {
-  if (!channel) return null;
+  const currentUser = useAppSelector((state) => state.users.currentUser);
+  if (!channel || !currentUser) return null;
 
-  const isOwner = channel.ownerId === mockCurrentUser.id;
+  const isOwner = channel.ownerId === currentUser.id;
 
-  const inviteUrl = channel.inviteCode
-    ? `${window.location.origin}/invite/${channel.inviteCode}`
-    : '';
+  const inviteUrl = generateChannelInviteLink(channel);
 
   const colors = getColorPair(channel);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title='Channel Details'
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title='Channel Details'>
       <div className='space-y-6'>
         {/* Channel Info */}
         <div className='space-y-3'>
           <div className='flex items-center gap-2'>
             <Badge
               variant='base'
-              className='text-base font-medium px-3 py-1'
+              className='px-3 py-1 text-base font-medium'
               style={{
                 backgroundColor: colors.backgroundColor,
                 color: colors.textColor,
@@ -46,16 +52,20 @@ export function ChannelModal({
               {channel.name}
             </Badge>
             {channel.isDaily && (
-              <span className='text-sm text-foreground/60'>Daily Channel</span>
+              <span className='text-foreground/60 text-sm'>Daily Channel</span>
             )}
           </div>
 
           {channel.description && (
-            <p className='text-foreground/70 whitespace-pre-wrap'>{channel.description}</p>
+            <p className='text-foreground/70 whitespace-pre-wrap'>
+              {channel.description}
+            </p>
           )}
 
           {isOwner && (
-            <p className='text-sm text-foreground/60 italic'>You own this channel</p>
+            <p className='text-foreground/60 text-sm italic'>
+              You own this channel
+            </p>
           )}
         </div>
 
@@ -64,17 +74,17 @@ export function ChannelModal({
           <>
             <Separator />
             <div className='space-y-3'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-foreground text-lg font-semibold'>
                 Invite People
               </h3>
-              <p className='text-sm text-foreground/60'>
+              <p className='text-foreground/60 text-sm'>
                 Share this link with others to invite them to join this channel
               </p>
               <CopyButton
-                textToCopy={inviteUrl}
+                textToCopy={inviteUrl || ''}
                 variant='secondary'
                 className='w-full'
-                disabled={!channel.inviteCode}
+                disabled={!inviteUrl}
               >
                 Copy Invite Link
               </CopyButton>
@@ -86,28 +96,30 @@ export function ChannelModal({
 
         {/* Subscribers List */}
         <div className='space-y-3'>
-          <h3 className='text-lg font-semibold text-foreground'>
+          <h3 className='text-foreground text-lg font-semibold'>
             Subscribers ({subscribers.length})
           </h3>
 
-          <div className='space-y-2 max-h-60 overflow-y-auto'>
+          <div className='max-h-60 space-y-2 overflow-y-auto'>
             {subscribers.length > 0 ? (
               subscribers.map((subscriber) => (
                 <div
                   key={subscriber.id}
-                  className='flex items-center gap-3 p-2 rounded-lg hover:bg-muted/20'
+                  className='hover:bg-muted/20 flex items-center gap-3 rounded-lg p-2'
                 >
                   <Avatar preset={subscriber.avatar} size='sm' />
                   <div className='flex-1'>
-                    <p className='text-sm font-medium text-foreground'>
+                    <p className='text-foreground text-sm font-medium'>
                       {subscriber.firstName} {subscriber.lastName}
                     </p>
-                    <p className='text-xs text-foreground/60'>{subscriber.email}</p>
+                    <p className='text-foreground/60 text-xs'>
+                      {subscriber.email}
+                    </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className='text-sm text-foreground/60'>No subscribers yet</p>
+              <p className='text-foreground/60 text-sm'>No subscribers yet</p>
             )}
           </div>
         </div>

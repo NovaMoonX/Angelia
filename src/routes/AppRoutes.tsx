@@ -87,7 +87,7 @@ export const router = createBrowserRouter([
             },
           },
           {
-            path: 'invite/:inviteCode',
+            path: 'invite/:channelId/:inviteCode',
             HydrateFallback: Loading,
             lazy: async () => {
               const { default: InviteAccept } =

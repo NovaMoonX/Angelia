@@ -1,33 +1,48 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserChannelInvite, mockUserChannelInvites } from '@lib/channel';
+import { ChannelJoinRequest, mockJoinRequests } from '@lib/channel';
 import { resetAllState } from '@store/actions/globalActions';
 
 interface InvitesState {
-  items: UserChannelInvite[];
+  /** Join requests sent to channels the current user owns */
+  incoming: ChannelJoinRequest[];
+  /** Join requests the current user has sent to other channels */
+  outgoing: ChannelJoinRequest[];
 }
 
 const initialState: InvitesState = {
-  items: [],
+  incoming: [],
+  outgoing: [],
 };
 
 const invitesSlice = createSlice({
   name: 'invites',
   initialState,
   reducers: {
-    setInvites: (state, action: PayloadAction<UserChannelInvite[]>) => {
-      state.items = action.payload;
+    setIncomingRequests: (state, action: PayloadAction<ChannelJoinRequest[]>) => {
+      state.incoming = action.payload;
     },
-    updateInvite: (state, action: PayloadAction<UserChannelInvite>) => {
-      const index = state.items.findIndex(inv => inv.id === action.payload.id);
-      if (index !== -1) {
-        state.items[index] = action.payload;
+    setOutgoingRequests: (state, action: PayloadAction<ChannelJoinRequest[]>) => {
+      state.outgoing = action.payload;
+    },
+    updateJoinRequest: (state, action: PayloadAction<ChannelJoinRequest>) => {
+      const inIdx = state.incoming.findIndex((r) => r.id === action.payload.id);
+      if (inIdx !== -1) {
+        state.incoming[inIdx] = action.payload;
+        return;
+      }
+      const outIdx = state.outgoing.findIndex((r) => r.id === action.payload.id);
+      if (outIdx !== -1) {
+        state.outgoing[outIdx] = action.payload;
       }
     },
     clearInvites: (state) => {
-      state.items = [];
+      state.incoming = [];
+      state.outgoing = [];
     },
     loadDemoInvites: (state) => {
-      state.items = mockUserChannelInvites;
+      const currentUserId = 'currentUser';
+      state.incoming = mockJoinRequests.filter((r) => r.channelOwnerId === currentUserId);
+      state.outgoing = mockJoinRequests.filter((r) => r.requesterId === currentUserId);
     },
   },
   extraReducers: (builder) => {
@@ -35,10 +50,11 @@ const invitesSlice = createSlice({
   },
 });
 
-export const { 
-  setInvites, 
-  updateInvite, 
-  clearInvites, 
-  loadDemoInvites 
+export const {
+  setIncomingRequests,
+  setOutgoingRequests,
+  updateJoinRequest,
+  clearInvites,
+  loadDemoInvites,
 } = invitesSlice.actions;
 export default invitesSlice.reducer;

@@ -1,10 +1,11 @@
 import {
   Channel,
   CHANNEL_FALLBACK_DESCRIPTION,
+  generateChannelInviteLink,
   getColorPair,
 } from '@/lib/channel';
 import { User } from '@/lib/user';
-import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
+import { Badge, Button, Card, CopyButton } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 
@@ -34,6 +35,7 @@ export function ChannelCard({
   };
 
   const colors = getColorPair(channel);
+  const inviteUrl = generateChannelInviteLink(channel);
 
   return (
     <Card className='p-4 transition-all'>
@@ -45,10 +47,9 @@ export function ChannelCard({
         onClick={handleClick}
       >
         <div className='flex-1 space-y-2'>
-          <div className='flex items-center gap-2'>
+          <div className='flex justify-between items-center gap-2'>
             <Badge
               variant='base'
-              className='text-sm font-medium'
               style={{
                 backgroundColor: colors.backgroundColor,
                 color: colors.textColor,
@@ -56,6 +57,15 @@ export function ChannelCard({
             >
               {channel.name}
             </Badge>
+            <CopyButton
+              textToCopy={inviteUrl || ''}
+              variant='tertiary'
+              size='sm'
+              disabled={!inviteUrl}
+              onClick={e => e.stopPropagation()}
+            >
+              Copy Invite Link
+            </CopyButton>
           </div>
           <p className='text-foreground/70 line-clamp-1 text-sm'>
             {channel.description || CHANNEL_FALLBACK_DESCRIPTION}

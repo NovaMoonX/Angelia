@@ -38,8 +38,9 @@ service cloud.firestore {
           && (request.auth.uid in resource.data.subscribers);
       }
 
-      // Reading: owners and subscribers can read a channel
-      allow read: if isOwner() || isSubscriber();
+      // Any authenticated user may read a channel document in order to
+      // look it up by channelId when following an invite URL.
+      allow read: if isSignedIn();
 
       // Create: only authenticated users can create a channel for themselves.
       // Require that the creating user has a profile document in `/users/{uid}`.
@@ -99,6 +100,37 @@ service cloud.firestore {
 
       // Only the author can delete their post
       allow delete: if isAuthor();
+    }
+
+    // Channel join requests
+    match /channelJoinRequests/{requestId} {
+      function isRequester() {
+        return isSignedIn() && request.auth.uid == resource.data.requesterId;
+      }
+      function isRequesterOnCreate() {
+        return isSignedIn() && request.auth.uid == request.resource.data.requesterId;
+      }
+      function isChannelOwner() {
+        return isSignedIn() && request.auth.uid == resource.data.channelOwnerId;
+      }
+
+      // The requester and the channel owner may read a join request
+      allow read: if isRequester() || isChannelOwner();
+
+      // Only authenticated users can create a request for themselves
+      // and the channelOwnerId must match the actual channel document
+      allow create: if isRequesterOnCreate()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.respondedAt == null
+        && exists(/databases/$(database)/documents/channels/$(request.resource.data.channelId));
+
+      // Only the channel owner may update status (accept/decline)
+      allow update: if isChannelOwner()
+        && request.resource.data.requesterId == resource.data.requesterId
+        && request.resource.data.channelId == resource.data.channelId
+        && request.resource.data.channelOwnerId == resource.data.channelOwnerId;
+
+      allow delete: if false;
     }
 
     // Default: authenticated users may read other collections, but writes are

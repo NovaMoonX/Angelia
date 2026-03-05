@@ -1,21 +1,21 @@
 import {
   Channel,
+  ChannelJoinRequest,
   CUSTOM_CHANNEL_LIMIT,
   getColorPair,
   NewChannel,
-  UserChannelInvite,
 } from '@/lib/channel';
 import { getUserById, User } from '@/lib/user';
 import {
   createCustomChannel,
   deleteCustomChannel,
+  respondToJoinRequest,
   updateCustomChannel,
 } from '@/store/actions/channelActions';
 import { ChannelCard } from '@components/ChannelCard';
 import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { useAuth } from '@hooks/useAuth';
-import { CHANNEL_COLOR_MAP } from '@lib/channelColors';
 import { getRelativeTime } from '@lib/timeUtils';
 import {
   Avatar,
@@ -32,23 +32,11 @@ import {
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { updateChannel } from '@store/slices/channelsSlice';
-import { updateInvite } from '@store/slices/invitesSlice';
 import { updateUserProfile } from '@store/actions/userActions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-
-function formatJoinDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  const result = date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  return result;
-}
 
 type AccountFormData = Pick<User, 'firstName' | 'lastName' | 'funFact'>;
 type AccountTab = 'account' | 'my-channels' | 'subscribed';
@@ -67,13 +55,12 @@ export function Account() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
-  // Get data from Redux store
   const channels = useAppSelector((state) => state.channels.items);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const users = useAppSelector((state) => state.users.users);
-  const userChannelInvites = useAppSelector((state) => state.invites.items);
+  const incomingRequests = useAppSelector((state) => state.invites.incoming);
+  const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
 
-  // Get active tab from query params, default to 'account'
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') || '';
     const validTabs: AccountTab[] = ['my-channels', 'subscribed'];
@@ -86,7 +73,6 @@ export function Account() {
   useEffect(() => {
     const view = searchParams.get('view');
     if (view === 'notifications' && notificationsRef.current) {
-      // Use requestAnimationFrame to ensure DOM is fully rendered before scrolling
       requestAnimationFrame(() => {
         notificationsRef.current?.scrollIntoView({
           behavior: 'smooth',
@@ -96,7 +82,6 @@ export function Account() {
     }
   }, [searchParams]);
 
-  // Combined form state
   const [formData, setFormData] = useState<AccountFormData>({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
@@ -115,7 +100,6 @@ export function Account() {
     }
   }, [currentUser]);
 
-  // Channel modal states
   const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
   const [isChannelDetailOpen, setIsChannelDetailOpen] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -123,7 +107,6 @@ export function Account() {
     'create',
   );
 
-  // Memoized: Find channels owned by the current user
   const userOwnedChannels = useMemo(() => {
     if (!currentUser) return [];
     const result = channels.filter(
@@ -133,14 +116,12 @@ export function Account() {
     return result;
   }, [channels, currentUser]);
 
-  // Memoized: Find user's daily channel (from owned channels)
   const userDailyChannel = useMemo(() => {
     const result = userOwnedChannels.find((channel) => channel.isDaily);
 
     return result;
   }, [userOwnedChannels]);
 
-  // Memoized: Find channels the user has access to (subscribed)
   const subscribedChannels = useMemo(() => {
     if (!currentUser) return [];
     const result = channels.filter(
@@ -152,35 +133,30 @@ export function Account() {
     return result;
   }, [channels, currentUser]);
 
-  // Memoized: Create channel map for O(1) lookups
   const channelsMap = useMemo(() => {
     const result = new Map(channels.map((ch) => [ch.id, ch]));
 
     return result;
   }, [channels]);
 
-  // Memoized: Create users map for O(1) lookups
   const usersMap = useMemo(() => {
     const result = new Map(users.map((user) => [user.id, user]));
 
     return result;
   }, [users]);
 
-  // Memoized: Count non-daily channels owned by user
-  const nonDailyChannelCount = useMemo(() => {
-    const result = userOwnedChannels.filter((ch) => !ch.isDaily).length;
-
+  const nonDailyUserChannels = useMemo(() => {
+    const result = userOwnedChannels.filter((ch) => !ch.isDaily);
     return result;
   }, [userOwnedChannels]);
+  const nonDailyUserChannelCount = nonDailyUserChannels.length;
 
-  // Memoized: Get all existing channel names owned by user
   const existingChannelNames = useMemo(() => {
     const result = userOwnedChannels.map((ch) => ch.name);
 
     return result;
   }, [userOwnedChannels]);
 
-  // Memoized: Get subscribers for selected channel
   const selectedChannelSubscribers = useMemo(() => {
     if (!selectedChannel) {
       return [];
@@ -193,34 +169,20 @@ export function Account() {
     return result;
   }, [selectedChannel, users]);
 
-  // Memoized: Get pending invites
-  const pendingInvites = useMemo(() => {
-    const result = userChannelInvites.filter(
-      (invite) => invite.status === 'pending',
-    );
-
-    return result;
-  }, [userChannelInvites]);
-
-  // Memoized: Get declined invites
-  const declinedInvites = useMemo(() => {
-    const result = userChannelInvites.filter(
-      (invite) => invite.status === 'declined',
-    );
-
-    return result;
-  }, [userChannelInvites]);
-
-  // Memoized: Count of pending invites for badge
   const pendingInviteCount = useMemo(() => {
-    const result = pendingInvites.length;
-
+    const result = incomingRequests.filter((r) => r.status === 'pending').length;
     return result;
-  }, [pendingInvites]);
+  }, [incomingRequests]);
 
   const formattedJoinDate = useMemo(() => {
     if (!currentUser?.joinedAt) return 'N/A';
-    return formatJoinDate(currentUser.joinedAt);
+    const date = new Date(currentUser.joinedAt);
+    const result = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    return result;
   }, [currentUser]);
 
   const handleFormChange = (field: keyof AccountFormData, value: string) => {
@@ -234,7 +196,6 @@ export function Account() {
     if (!currentUser) return;
 
     try {
-      // Persist changes to Firestore; listener will update local Redux state.
       await dispatch(
         updateUserProfile({ uid: currentUser.id, data: formData }),
       ).unwrap();
@@ -270,7 +231,6 @@ export function Account() {
     );
   };
 
-  // Channel handlers
   const handleCreateChannel = () => {
     setChannelFormMode('create');
     setSelectedChannel(null);
@@ -316,12 +276,7 @@ export function Account() {
     });
 
     if (confirmed && currentUser) {
-      // Unsubscribe using Redux
-      const updatedChannel = {
-        ...channel,
-        subscribers: channel.subscribers.filter((id) => id !== currentUser.id),
-      };
-      dispatch(updateChannel(updatedChannel));
+      // NEXT: Unsubscribe: dispatch Firestore update (channel data listener will update local state)
       console.log('Unsubscribing from channel:', channel.id);
     }
   };
@@ -335,14 +290,13 @@ export function Account() {
     if (!currentUser) return;
 
     if (channelFormMode === 'create') {
-      if (nonDailyChannelCount >= 3) {
+      if (nonDailyUserChannelCount >= 3) {
         actionModal.alert({
           message:
             'You have reached the maximum number of channels (3). Please delete an existing channel before creating a new one.',
         });
         return;
       }
-      // Create channel using Redux
       const newChannel: NewChannel = {
         name: data.name,
         description: data.description,
@@ -360,7 +314,6 @@ export function Account() {
         });
       }
     } else if (selectedChannel) {
-      // Update channel using Firestore
       const updatedChannel = {
         ...selectedChannel,
         name: data.name,
@@ -380,38 +333,26 @@ export function Account() {
     }
   };
 
-  // Invite handlers
-  const handleAcceptInvite = (invite: UserChannelInvite, timestamp: number) => {
-    if (!currentUser) return;
-
-    // Accept invite using Redux
-    const updatedInvite: UserChannelInvite = {
-      ...invite,
-      status: 'accepted' as const,
-      respondedAt: timestamp,
-    };
-    dispatch(updateInvite(updatedInvite));
-
-    // Add current user to channel subscribers if not already subscribed
-    const channel = channels.find((ch) => ch.id === invite.channelId);
-    if (channel && !channel.subscribers.includes(currentUser.id)) {
-      const updatedChannel = {
-        ...channel,
-        subscribers: [...channel.subscribers, currentUser.id],
-      };
-      dispatch(updateChannel(updatedChannel));
+  const handleAcceptRequest = async (request: ChannelJoinRequest) => {
+    try {
+      await dispatch(respondToJoinRequest({ requestId: request.id, accept: true })).unwrap();
+    } catch (err) {
+      actionModal.alert({
+        title: 'Unable to accept request',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   };
 
-  const handleDeclineInvite = (invite: UserChannelInvite) => {
-    const now = Date.now();
-    // Decline invite using Redux
-    const updatedInvite: UserChannelInvite = {
-      ...invite,
-      status: 'declined' as const,
-      respondedAt: now,
-    };
-    dispatch(updateInvite(updatedInvite));
+  const handleDeclineRequest = async (request: ChannelJoinRequest) => {
+    try {
+      await dispatch(respondToJoinRequest({ requestId: request.id, accept: false })).unwrap();
+    } catch (err) {
+      actionModal.alert({
+        title: 'Unable to decline request',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
   };
 
   return (
@@ -549,26 +490,25 @@ export function Account() {
                       isOwner={true}
                     />
                   </div>
-                  {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
+                  {nonDailyUserChannelCount > 0 && (
                     <Separator />
                   )}
                 </>
               )}
 
               {/* Other Channels Section */}
-              {userOwnedChannels.filter((ch) => !ch.isDaily).length > 0 && (
+              {nonDailyUserChannelCount > 0 && (
                 <div className='space-y-2'>
                   <div className='flex items-center justify-between'>
                     <p className='text-foreground/80 text-sm font-medium'>
                       Other Channels
                     </p>
                     <p className='text-foreground/60 text-xs'>
-                      {nonDailyChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
+                      {nonDailyUserChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
                     </p>
                   </div>
                   <div className='space-y-2'>
-                    {userOwnedChannels
-                      .filter((ch) => !ch.isDaily)
+                    {nonDailyUserChannels
                       .map((channel) => (
                         <ChannelCard
                           key={channel.id}
@@ -587,14 +527,14 @@ export function Account() {
               <div className='pt-2'>
                 <Button
                   onClick={handleCreateChannel}
-                  disabled={nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT}
+                  disabled={nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT}
                   className='w-full'
                 >
-                  {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT
+                  {nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT
                     ? `Maximum Channels Reached (${CUSTOM_CHANNEL_LIMIT}/${CUSTOM_CHANNEL_LIMIT})`
                     : 'Create New Channel'}
                 </Button>
-                {nonDailyChannelCount >= CUSTOM_CHANNEL_LIMIT && (
+                {nonDailyUserChannelCount >= CUSTOM_CHANNEL_LIMIT && (
                   <p className='text-foreground/60 mt-2 text-center text-xs'>
                     You can create up to {CUSTOM_CHANNEL_LIMIT} custom channels
                     to encourage intentionality
@@ -647,80 +587,92 @@ export function Account() {
               )}
             </h2>
             <p className='text-foreground/60 mt-1 text-sm'>
-              Manage your channel invitations
+              Manage join requests for your channels
             </p>
           </div>
 
           <Card className='space-y-4 p-6'>
-            {/* Pending Invites Section */}
-            {pendingInvites.length > 0 && (
+            {/* Incoming join requests (for channels I own) */}
+            {incomingRequests.length > 0 && (
               <div className='space-y-2'>
                 <p className='text-foreground/80 text-sm font-medium'>
-                  Pending Invites ({pendingInvites.length})
+                  Requests to join your channels ({incomingRequests.length})
                 </p>
                 <div className='space-y-2'>
-                  {pendingInvites.map((invite) => {
-                    const channel = channelsMap.get(invite.channelId);
-                    const inviter = usersMap.get(invite.invitedBy);
-
-                    if (!channel || !inviter) {
-                      return null;
-                    }
-
-                    const colorData = CHANNEL_COLOR_MAP.get(channel.color);
-                    const badgeColors = {
-                      backgroundColor: colorData?.value || '#c7d2fe',
-                      textColor: colorData?.textColor || '#4338ca',
-                    };
+                  {incomingRequests.map((request) => {
+                    const channel = channelsMap.get(request.channelId);
+                    const requester = usersMap.get(request.requesterId);
+                    const badgeColors = getColorPair(channel);
 
                     return (
-                      <Card key={invite.id} className='p-4'>
+                      <Card
+                        key={request.id}
+                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                      >
                         <div className='space-y-3'>
-                          <div className='flex items-start justify-between gap-3'>
-                            <div className='flex-1 space-y-1'>
-                              <div className='flex items-center gap-2'>
+                          <div className='flex items-start gap-3'>
+                            {requester && (
+                              <Avatar preset={requester.avatar} size='sm' />
+                            )}
+                            <div className='flex-1 space-y-1 min-w-0'>
+                              <div className='flex flex-wrap items-center gap-2'>
                                 <p className='text-foreground text-sm font-medium'>
-                                  {inviter.firstName} {inviter.lastName}
+                                  {requester
+                                    ? `${requester.firstName} ${requester.lastName}`
+                                    : 'Someone'}
                                 </p>
-                                <span className='text-foreground/40 text-xs'>
-                                  invited you to
-                                </span>
+                                <span className='text-foreground/40 text-xs'>wants to join</span>
+                                {channel && (
+                                  <Badge
+                                    variant='base'
+                                    className='text-xs font-medium'
+                                    style={{
+                                      backgroundColor: badgeColors.backgroundColor,
+                                      borderColor: badgeColors.backgroundColor,
+                                      color: badgeColors.textColor,
+                                    }}
+                                  >
+                                    {channel.name}
+                                  </Badge>
+                                )}
                               </div>
-                              <Badge
-                                variant='base'
-                                className='text-sm font-medium'
-                                style={{
-                                  backgroundColor: badgeColors.backgroundColor,
-                                  borderColor: badgeColors.backgroundColor,
-                                  color: badgeColors.textColor,
-                                }}
-                              >
-                                {channel.name}
-                              </Badge>
-                              <p className='text-foreground/60 text-xs'>
-                                {getRelativeTime(invite.invitedAt)}
+                              <p className='text-foreground/70 text-sm italic'>
+                                "{request.message}"
                               </p>
+                              <div className='flex items-center justify-between'>
+                                <p className='text-foreground/40 text-xs'>
+                                  {getRelativeTime(request.createdAt)}
+                                </p>
+                                {request.status !== 'pending' && (
+                                  <span className={join(
+                                    'text-xs font-medium',
+                                    request.status === 'accepted' ? 'text-green-600' : 'text-destructive',
+                                  )}>
+                                    {request.status === 'accepted' ? 'Accepted' : 'Declined'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className='flex gap-2'>
-                            <Button
-                              size='sm'
-                              onClick={() =>
-                                handleAcceptInvite(invite, Date.now())
-                              }
-                              className='flex-1'
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              variant='secondary'
-                              size='sm'
-                              onClick={() => handleDeclineInvite(invite)}
-                              className='flex-1'
-                            >
-                              Decline
-                            </Button>
-                          </div>
+                          {request.status === 'pending' && (
+                            <div className='flex gap-2'>
+                              <Button
+                                size='sm'
+                                onClick={() => handleAcceptRequest(request)}
+                                className='flex-1'
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                variant='secondary'
+                                size='sm'
+                                onClick={() => handleDeclineRequest(request)}
+                                className='flex-1'
+                              >
+                                Decline
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     );
@@ -729,53 +681,66 @@ export function Account() {
               </div>
             )}
 
-            {/* Separator between pending and declined */}
-            {pendingInvites.length > 0 && declinedInvites.length > 0 && (
+            {incomingRequests.length > 0 && outgoingRequests.length > 0 && (
               <Separator />
             )}
 
-            {/* Declined Invites Section */}
-            {declinedInvites.length > 0 && (
+            {/* Outgoing join requests (requests I've sent) */}
+            {outgoingRequests.length > 0 && (
               <div className='space-y-2'>
                 <p className='text-foreground/80 text-sm font-medium'>
-                  Declined Invites ({declinedInvites.length})
+                  Your join requests ({outgoingRequests.length})
                 </p>
                 <div className='space-y-2'>
-                  {declinedInvites.map((invite) => {
-                    const channel = channelsMap.get(invite.channelId);
-                    const inviter = usersMap.get(invite.invitedBy);
-
-                    if (!channel || !inviter) {
-                      return null;
-                    }
-
+                  {outgoingRequests.map((request) => {
+                    const channel = channelsMap.get(request.channelId);
                     const badgeColors = getColorPair(channel);
+                    const statusColors: Record<string, string> = {
+                      pending: 'text-foreground/60',
+                      accepted: 'text-green-600',
+                      declined: 'text-destructive',
+                    };
+                    const statusLabels: Record<string, string> = {
+                      pending: 'Pending review',
+                      accepted: 'Accepted',
+                      declined: 'Declined',
+                    };
 
                     return (
-                      <Card key={invite.id} className='p-4 opacity-60'>
+                      <Card
+                        key={request.id}
+                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                      >
                         <div className='space-y-1'>
-                          <div className='flex items-center gap-2'>
-                            <p className='text-foreground text-sm font-medium'>
-                              {inviter.firstName} {inviter.lastName}
+                          <div className='flex flex-wrap items-center gap-2'>
+                            <span className='text-foreground/60 text-xs'>Requested to join</span>
+                            {channel ? (
+                              <Badge
+                                variant='base'
+                                className='text-xs font-medium'
+                                style={{
+                                  backgroundColor: badgeColors.backgroundColor,
+                                  borderColor: badgeColors.backgroundColor,
+                                  color: badgeColors.textColor,
+                                }}
+                              >
+                                {channel.name}
+                              </Badge>
+                            ) : (
+                              <span className='text-foreground/60 text-xs'>a channel</span>
+                            )}
+                          </div>
+                          <p className='text-foreground/70 text-sm italic'>
+                            "{request.message}"
+                          </p>
+                          <div className='flex items-center justify-between'>
+                            <p className='text-foreground/40 text-xs'>
+                              {getRelativeTime(request.createdAt)}
                             </p>
-                            <span className='text-foreground/40 text-xs'>
-                              invited you to
+                            <span className={join('text-xs font-medium', statusColors[request.status])}>
+                              {statusLabels[request.status]}
                             </span>
                           </div>
-                          <Badge
-                            variant='base'
-                            className='text-sm font-medium'
-                            style={{
-                              backgroundColor: badgeColors.backgroundColor,
-                              borderColor: badgeColors.backgroundColor,
-                              color: badgeColors.textColor,
-                            }}
-                          >
-                            {channel.name}
-                          </Badge>
-                          <p className='text-foreground/60 text-xs'>
-                            Declined {getRelativeTime(invite.respondedAt!)}
-                          </p>
                         </div>
                       </Card>
                     );
@@ -785,10 +750,9 @@ export function Account() {
             )}
 
             {/* Empty State */}
-            {pendingInvites.length === 0 && declinedInvites.length === 0 && (
+            {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
               <p className='text-foreground/60 py-8 text-center text-sm'>
-                No notifications yet. When someone invites you to a channel,
-                you'll see it here.
+                Nothing here yet. Share your channel invite link and join requests will appear here.
               </p>
             )}
           </Card>
