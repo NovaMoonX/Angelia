@@ -9,7 +9,9 @@ import { getUserById, User } from '@/lib/user';
 import {
   createCustomChannel,
   deleteCustomChannel,
+  refreshChannelInviteCode,
   respondToJoinRequest,
+  unsubscribeFromChannel,
   updateCustomChannel,
 } from '@/store/actions/channelActions';
 import { ChannelCard } from '@components/ChannelCard';
@@ -276,8 +278,42 @@ export function Account() {
     });
 
     if (confirmed && currentUser) {
-      // NEXT: Unsubscribe: dispatch Firestore update (channel data listener will update local state)
-      console.log('Unsubscribing from channel:', channel.id);
+      try {
+        await dispatch(unsubscribeFromChannel(channel.id)).unwrap();
+      } catch (err) {
+        console.error('Error unsubscribing from channel:', err);
+        actionModal.alert({
+          title: 'Unable to unsubscribe',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }
+  };
+
+  const handleRefreshInviteCode = async (channel: Channel) => {
+    const confirmed = await actionModal.confirm({
+      title: 'Refresh Invite Code',
+      message: `Are you sure you want to refresh the invite code for "${channel.name}"? The old invite link will stop working immediately.`,
+      confirmText: 'Refresh',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      try {
+        const result = await dispatch(refreshChannelInviteCode(channel.id)).unwrap();
+        setSelectedChannel((prev) =>
+          prev && prev.id === result.channelId
+            ? { ...prev, inviteCode: result.inviteCode }
+            : prev,
+        );
+      } catch (err) {
+        console.error('Error refreshing invite code:', err);
+        actionModal.alert({
+          title: 'Unable to refresh invite code',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
   };
 
@@ -774,6 +810,7 @@ export function Account() {
           onClose={() => setIsChannelDetailOpen(false)}
           channel={selectedChannel}
           subscribers={selectedChannelSubscribers}
+          onRefreshInviteCode={handleRefreshInviteCode}
         />
       </div>
     </div>

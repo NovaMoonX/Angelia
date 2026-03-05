@@ -8,6 +8,7 @@ import { useAppSelector } from '@/store/hooks';
 import {
   Avatar,
   Badge,
+  Button,
   CopyButton,
   Modal,
   Separator,
@@ -18,6 +19,7 @@ interface ChannelModalProps {
   onClose: () => void;
   channel: Channel | null;
   subscribers?: User[];
+  onRefreshInviteCode?: (channel: Channel) => void;
 }
 
 export function ChannelModal({
@@ -25,6 +27,7 @@ export function ChannelModal({
   onClose,
   channel,
   subscribers = [],
+  onRefreshInviteCode,
 }: ChannelModalProps) {
   const currentUser = useAppSelector((state) => state.users.currentUser);
   if (!channel || !currentUser) return null;
@@ -88,6 +91,15 @@ export function ChannelModal({
               >
                 Copy Invite Link
               </CopyButton>
+              {onRefreshInviteCode && (
+                <Button
+                  variant='tertiary'
+                  className='w-full'
+                  onClick={() => onRefreshInviteCode(channel)}
+                >
+                  Refresh Invite Code
+                </Button>
+              )}
             </div>
           </>
         )}

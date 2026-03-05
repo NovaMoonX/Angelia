@@ -77,8 +77,11 @@ export function InviteAccept() {
 
   const existingRequest = useMemo(() => {
     if (!channelId) return null;
+    // Only block on pending or accepted requests; declined users can re-submit
     const result =
-      outgoingRequests.find((r) => r.channelId === channelId) ?? null;
+      outgoingRequests.find(
+        (r) => r.channelId === channelId && r.status !== 'declined',
+      ) ?? null;
     return result;
   }, [outgoingRequests, channelId]);
 
