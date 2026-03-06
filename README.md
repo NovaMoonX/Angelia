@@ -163,7 +163,7 @@ A privacy-first system for joining channels via URL-based invite links and owner
   - **Clipboard Integration**: One-click copy of shareable invite URL (`/invite/:channelId/:inviteCode`)
   - **Unique Invite Codes**: Each channel has a unique code embedded in the URL
   - **Owner-Only Feature**: Invite section only visible to channel owners
-  - **Refresh Invite Code**: Owners can generate a new invite code at any time (e.g., to stop unwanted requests); the old link immediately becomes invalid
+  - **Refresh Invite Code**: Owners can generate a new invite code at any time (e.g., to stop unwanted requests); the old link immediately becomes invalid. A contextual help icon tooltip next to the button explains when and why to use this feature.
 
 - **For People Joining (via Invite URL)**:
   - **Dedicated Invite Page** (`/invite/:channelId/:inviteCode`): Landing page that shows channel info

@@ -10,6 +10,7 @@ import {
   Badge,
   Button,
   CopyButton,
+  HelpIcon,
   Modal,
   Separator,
 } from '@moondreamsdev/dreamer-ui/components';
@@ -92,13 +93,19 @@ export function ChannelModal({
                 Copy Invite Link
               </CopyButton>
               {onRefreshInviteCode && (
-                <Button
-                  variant='tertiary'
-                  className='w-full'
-                  onClick={() => onRefreshInviteCode(channel)}
-                >
-                  Refresh Invite Code
-                </Button>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant='tertiary'
+                    className='flex-1'
+                    onClick={() => onRefreshInviteCode(channel)}
+                  >
+                    Refresh Invite Code
+                  </Button>
+                  <HelpIcon
+                    message='Generates a brand-new invite link and instantly invalidates the old one. Handy if you shared the link somewhere public or want to stop new requests from coming in via the old link.'
+                    placement='top'
+                  />
+                </div>
               )}
             </div>
           </>
