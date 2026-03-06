@@ -31,7 +31,9 @@ export function InviteAccept() {
   const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
 
   const [channel, setChannel] = useState<Channel | null | undefined>(undefined); // undefined = loading
-  const [channelOwner, setChannelOwner] = useState<User | null | undefined>(undefined);
+  const [channelOwner, setChannelOwner] = useState<User | null | undefined>(
+    undefined,
+  );
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,13 +79,19 @@ export function InviteAccept() {
 
   const existingRequest = useMemo(() => {
     if (!channelId) return null;
-    // Only block on pending or accepted requests; declined users can re-submit
+
+    // Find a request that should block the user from requesting again
     const result =
-      outgoingRequests.find(
-        (r) => r.channelId === channelId && r.status !== 'declined',
-      ) ?? null;
+      outgoingRequests.find((r) => {
+        if (r.channelId !== channelId) return false;
+        if (r.status === 'declined') return false; // Declined users can re-request
+        if (r.status === 'pending') return true; // Block pending requests (waiting for review)
+        if (r.status === 'accepted' && isAlreadySubscribed) return true; // Block if accepted AND still subscribed
+        return false; // Don't block accepted requests if user has unsubscribed
+      }) ?? null;
+
     return result;
-  }, [outgoingRequests, channelId]);
+  }, [outgoingRequests, channelId, isAlreadySubscribed]);
 
   const ownerDisplayName = useMemo(() => {
     if (!channel || !channelOwner) return 'the channel owner';
@@ -101,7 +109,7 @@ export function InviteAccept() {
         title: 'Request sent! The owner will review it shortly.',
         type: 'success',
       });
-      navigate('/feed');
+      setTimeout(() => navigate('/feed'), 1500);
     } catch (err) {
       addToast({
         title:
@@ -162,17 +170,24 @@ export function InviteAccept() {
               </h1>
               <p className='text-foreground/60'>
                 Looks like you're the owner of{' '}
-                <span className='font-semibold'>{channel.name}</span>. You
-                don't need to accept your own invite!
+                <span className='font-semibold'>{channel.name}</span>. You don't
+                need to accept your own invite!
               </p>
             </div>
             <div className='space-y-2'>
-            <Button onClick={() => navigate('/account?tab=my-channels')} className='w-full'>
-              View all channels
-            </Button>
-            <Button variant='tertiary' onClick={() => navigate('/feed')} className='w-full'>
-              Head back to Feed
-            </Button>
+              <Button
+                onClick={() => navigate('/account?tab=my-channels')}
+                className='w-full'
+              >
+                View all channels
+              </Button>
+              <Button
+                variant='tertiary'
+                onClick={() => navigate('/feed')}
+                className='w-full'
+              >
+                Head back to Feed
+              </Button>
             </div>
           </Card>
         </div>

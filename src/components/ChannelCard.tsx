@@ -17,6 +17,7 @@ interface ChannelCardProps {
   onUnsubscribe?: (channel: Channel) => void;
   onClick?: (channel: Channel) => void;
   isOwner?: boolean;
+  isLoading?: boolean;
 }
 
 export function ChannelCard({
@@ -27,6 +28,7 @@ export function ChannelCard({
   onUnsubscribe,
   onClick,
   isOwner = false,
+  isLoading = false,
 }: ChannelCardProps) {
   const handleClick = () => {
     if (onClick) {
@@ -120,8 +122,9 @@ export function ChannelCard({
                 onUnsubscribe(channel);
               }}
               className='text-foreground/60 hover:text-foreground'
+              disabled={isLoading}
             >
-              Unsubscribe
+              {isLoading ? 'Unsubscribing...' : 'Unsubscribe'}
             </Button>
           </div>
         )}

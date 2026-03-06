@@ -347,11 +347,11 @@ export const createJoinRequest = createAsyncThunk(
 export const unsubscribeFromChannel = createAsyncThunk(
   'channels/unsubscribe',
   async (channelId: string, { getState }) => {
-    try {
-      const state = getState() as RootState;
-      const userId = state.users.currentUser?.id;
-      if (!userId) throw new Error('You must be signed in to unsubscribe.');
+    const state = getState() as RootState;
+    const userId = state.users.currentUser?.id;
+    if (!userId) throw new Error('You must be signed in to unsubscribe.');
 
+    try {
       const channelDocRef = doc(db, 'channels', channelId);
 
       await runTransaction(db, async (tx) => {
@@ -385,11 +385,11 @@ export const removeSubscriberFromChannel = createAsyncThunk(
     { channelId, subscriberId }: { channelId: string; subscriberId: string },
     { getState },
   ) => {
-    try {
-      const state = getState() as RootState;
-      const userId = state.users.currentUser?.id;
-      if (!userId) throw new Error('You must be signed in.');
+    const state = getState() as RootState;
+    const userId = state.users.currentUser?.id;
+    if (!userId) throw new Error('You must be signed in.');
 
+    try {
       const channelDocRef = doc(db, 'channels', channelId);
 
       await runTransaction(db, async (tx) => {

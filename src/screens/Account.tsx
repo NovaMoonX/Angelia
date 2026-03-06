@@ -111,13 +111,16 @@ export function Account() {
     'create',
   );
   const [subscriberUsers, setSubscriberUsers] = useState<User[]>([]);
+  const [isUnsubscribing, setIsUnsubscribing] = useState<string | null>(null);
+  const [removingSubscriberId, setRemovingSubscriberId] = useState<
+    string | null
+  >(null);
 
   // Fetch subscriber user profiles from Firestore whenever the selected channel changes
   useEffect(() => {
     let cancelled = false;
 
     if (!selectedChannel || selectedChannel.subscribers.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubscriberUsers([]);
       return;
     }
@@ -297,6 +300,7 @@ export function Account() {
     });
 
     if (confirmed && currentUser) {
+      setIsUnsubscribing(channel.id);
       try {
         const channelName = channel.name;
         await dispatch(unsubscribeFromChannel(channel.id)).unwrap();
@@ -310,6 +314,8 @@ export function Account() {
           title: 'Unable to unsubscribe',
           message: err instanceof Error ? err.message : 'Unknown error',
         });
+      } finally {
+        setIsUnsubscribing(null);
       }
     }
   };
@@ -325,7 +331,14 @@ export function Account() {
 
     if (confirmed) {
       try {
-        await dispatch(refreshChannelInviteCode(channel.id)).unwrap();
+        const result = await dispatch(
+          refreshChannelInviteCode(channel.id),
+        ).unwrap();
+        setSelectedChannel((prev) =>
+          prev && prev.id === result.channelId
+            ? { ...prev, inviteCode: result.inviteCode }
+            : prev,
+        );
         actionModal.alert({
           title: 'Invite Code Refreshed',
           message: 'The invite code has been refreshed successfully.',
@@ -358,10 +371,21 @@ export function Account() {
     });
 
     if (confirmed) {
+      setRemovingSubscriberId(subscriberId);
       try {
         await dispatch(
           removeSubscriberFromChannel({ channelId: channel.id, subscriberId }),
         ).unwrap();
+        setSelectedChannel((prev) =>
+          prev && prev.id === channel.id
+            ? {
+                ...prev,
+                subscribers: prev.subscribers.filter(
+                  (id) => id !== subscriberId,
+                ),
+              }
+            : prev,
+        );
         actionModal.alert({
           title: 'Subscriber Removed',
           message: `${displayName} has been removed from "${channel.name}".`,
@@ -372,6 +396,8 @@ export function Account() {
           title: 'Unable to remove subscriber',
           message: err instanceof Error ? err.message : 'Unknown error',
         });
+      } finally {
+        setRemovingSubscriberId(null);
       }
     }
   };
@@ -401,7 +427,7 @@ export function Account() {
       };
 
       try {
-        await dispatch(createCustomChannel(newChannel)).unwrap()
+        await dispatch(createCustomChannel(newChannel)).unwrap();
       } catch (err) {
         actionModal.alert({
           title: 'Unable to create channel',
@@ -416,7 +442,7 @@ export function Account() {
         color: data.color,
       };
       try {
-        await dispatch(updateCustomChannel(updatedChannel)).unwrap()
+        await dispatch(updateCustomChannel(updatedChannel)).unwrap();
         console.log('Updated channel:', selectedChannel.id, data);
       } catch (err) {
         console.error('Error updating channel:', err);
@@ -658,6 +684,7 @@ export function Account() {
                           onClick={handleViewChannel}
                           onUnsubscribe={handleUnsubscribe}
                           isOwner={false}
+                          isLoading={isUnsubscribing === channel.id}
                         />
                       );
                     })}
@@ -898,6 +925,7 @@ export function Account() {
           subscribers={subscriberUsers}
           onRefreshInviteCode={handleRefreshInviteCode}
           onRemoveSubscriber={handleRemoveSubscriber}
+          removingSubscriberId={removingSubscriberId}
         />
       </div>
     </div>
