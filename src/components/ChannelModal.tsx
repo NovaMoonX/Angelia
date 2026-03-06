@@ -21,6 +21,7 @@ interface ChannelModalProps {
   channel: Channel | null;
   subscribers?: User[];
   onRefreshInviteCode?: (channel: Channel) => void;
+  onRemoveSubscriber?: (channel: Channel, subscriberId: string) => void;
 }
 
 export function ChannelModal({
@@ -29,6 +30,7 @@ export function ChannelModal({
   channel,
   subscribers = [],
   onRefreshInviteCode,
+  onRemoveSubscriber,
 }: ChannelModalProps) {
   const currentUser = useAppSelector((state) => state.users.currentUser);
   if (!channel || !currentUser) return null;
@@ -135,6 +137,16 @@ export function ChannelModal({
                       {subscriber.email}
                     </p>
                   </div>
+                  {isOwner && onRemoveSubscriber && (
+                    <Button
+                      variant='tertiary'
+                      size='sm'
+                      onClick={() => onRemoveSubscriber(channel, subscriber.id)}
+                      aria-label={`Remove ${subscriber.firstName} ${subscriber.lastName}`}
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
               ))
             ) : (

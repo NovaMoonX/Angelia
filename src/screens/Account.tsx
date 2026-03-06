@@ -6,10 +6,12 @@ import {
   NewChannel,
 } from '@/lib/channel';
 import { getUserById, User } from '@/lib/user';
+import { fetchUserById } from '@/lib/user/user.data';
 import {
   createCustomChannel,
   deleteCustomChannel,
   refreshChannelInviteCode,
+  removeSubscriberFromChannel,
   respondToJoinRequest,
   unsubscribeFromChannel,
   updateCustomChannel,
@@ -108,6 +110,30 @@ export function Account() {
   const [channelFormMode, setChannelFormMode] = useState<'create' | 'edit'>(
     'create',
   );
+  const [subscriberUsers, setSubscriberUsers] = useState<User[]>([]);
+
+  // Fetch subscriber user profiles from Firestore whenever the selected channel changes
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedChannel || selectedChannel.subscribers.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSubscriberUsers([]);
+      return;
+    }
+
+    Promise.all(selectedChannel.subscribers.map((id) => fetchUserById(id))).then(
+      (fetched) => {
+        if (cancelled) return;
+        const result = fetched.filter((u): u is User => u !== null);
+        setSubscriberUsers(result);
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedChannel]);
 
   const userOwnedChannels = useMemo(() => {
     if (!currentUser) return [];
@@ -158,18 +184,6 @@ export function Account() {
 
     return result;
   }, [userOwnedChannels]);
-
-  const selectedChannelSubscribers = useMemo(() => {
-    if (!selectedChannel) {
-      return [];
-    }
-
-    const result = selectedChannel.subscribers
-      .map((id) => users.find((user) => user.id === id))
-      .filter((user): user is User => user !== undefined);
-
-    return result;
-  }, [selectedChannel, users]);
 
   const pendingInviteCount = useMemo(() => {
     const result = incomingRequests.filter((r) => r.status === 'pending').length;
@@ -311,6 +325,43 @@ export function Account() {
         console.error('Error refreshing invite code:', err);
         actionModal.alert({
           title: 'Unable to refresh invite code',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }
+  };
+
+  const handleRemoveSubscriber = async (channel: Channel, subscriberId: string) => {
+    const subscriberUser = subscriberUsers.find((u) => u.id === subscriberId);
+    const displayName = subscriberUser
+      ? `${subscriberUser.firstName} ${subscriberUser.lastName}`
+      : 'this person';
+
+    const confirmed = await actionModal.confirm({
+      title: 'Remove Subscriber',
+      message: `Are you sure you want to remove ${displayName} from "${channel.name}"?`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      try {
+        await dispatch(
+          removeSubscriberFromChannel({ channelId: channel.id, subscriberId }),
+        ).unwrap();
+        setSelectedChannel((prev) =>
+          prev && prev.id === channel.id
+            ? {
+                ...prev,
+                subscribers: prev.subscribers.filter((id) => id !== subscriberId),
+              }
+            : prev,
+        );
+      } catch (err) {
+        console.error('Error removing subscriber:', err);
+        actionModal.alert({
+          title: 'Unable to remove subscriber',
           message: err instanceof Error ? err.message : 'Unknown error',
         });
       }
@@ -809,8 +860,9 @@ export function Account() {
           isOpen={isChannelDetailOpen}
           onClose={() => setIsChannelDetailOpen(false)}
           channel={selectedChannel}
-          subscribers={selectedChannelSubscribers}
+          subscribers={subscriberUsers}
           onRefreshInviteCode={handleRefreshInviteCode}
+          onRemoveSubscriber={handleRemoveSubscriber}
         />
       </div>
     </div>

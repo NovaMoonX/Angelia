@@ -57,15 +57,17 @@ export function ChannelCard({
             >
               {channel.name}
             </Badge>
-            <CopyButton
-              textToCopy={inviteUrl || ''}
-              variant='tertiary'
-              size='sm'
-              disabled={!inviteUrl}
-              onClick={e => e.stopPropagation()}
-            >
-              Copy Invite Link
-            </CopyButton>
+            {isOwner && (
+              <CopyButton
+                textToCopy={inviteUrl || ''}
+                variant='tertiary'
+                size='sm'
+                disabled={!inviteUrl}
+                onClick={e => e.stopPropagation()}
+              >
+                Copy Invite Link
+              </CopyButton>
+            )}
           </div>
           <p className='text-foreground/70 line-clamp-1 text-sm'>
             {channel.description || CHANNEL_FALLBACK_DESCRIPTION}
