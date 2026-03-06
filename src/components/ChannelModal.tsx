@@ -8,7 +8,9 @@ import { useAppSelector } from '@/store/hooks';
 import {
   Avatar,
   Badge,
+  Button,
   CopyButton,
+  HelpIcon,
   Modal,
   Separator,
 } from '@moondreamsdev/dreamer-ui/components';
@@ -18,6 +20,9 @@ interface ChannelModalProps {
   onClose: () => void;
   channel: Channel | null;
   subscribers?: User[];
+  onRefreshInviteCode?: (channel: Channel) => void;
+  onRemoveSubscriber?: (channel: Channel, subscriberId: string) => void;
+  removingSubscriberId?: string | null;
 }
 
 export function ChannelModal({
@@ -25,6 +30,9 @@ export function ChannelModal({
   onClose,
   channel,
   subscribers = [],
+  onRefreshInviteCode,
+  onRemoveSubscriber,
+  removingSubscriberId = null,
 }: ChannelModalProps) {
   const currentUser = useAppSelector((state) => state.users.currentUser);
   if (!channel || !currentUser) return null;
@@ -88,6 +96,21 @@ export function ChannelModal({
               >
                 Copy Invite Link
               </CopyButton>
+              {onRefreshInviteCode && (
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant='tertiary'
+                    className='flex-1'
+                    onClick={() => onRefreshInviteCode(channel)}
+                  >
+                    Refresh Invite Code
+                  </Button>
+                  <HelpIcon
+                    message='Generates a brand-new invite link and instantly invalidates the old one. Handy if you shared the link somewhere public or want to stop new requests from coming in via the old link.'
+                    placement='top'
+                  />
+                </div>
+              )}
             </div>
           </>
         )}
@@ -116,6 +139,19 @@ export function ChannelModal({
                       {subscriber.email}
                     </p>
                   </div>
+                  {isOwner && onRemoveSubscriber && (
+                    <Button
+                      variant='tertiary'
+                      size='sm'
+                      onClick={() => onRemoveSubscriber(channel, subscriber.id)}
+                      aria-label={`Remove ${subscriber.firstName} ${subscriber.lastName}`}
+                      disabled={removingSubscriberId === subscriber.id}
+                    >
+                      {removingSubscriberId === subscriber.id
+                        ? 'Removing...'
+                        : 'Remove'}
+                    </Button>
+                  )}
                 </div>
               ))
             ) : (

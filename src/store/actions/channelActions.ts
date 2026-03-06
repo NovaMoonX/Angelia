@@ -342,6 +342,113 @@ export const createJoinRequest = createAsyncThunk(
 );
 
 /**
+ * Remove the current user from a channel's subscribers list.
+ */
+export const unsubscribeFromChannel = createAsyncThunk(
+  'channels/unsubscribe',
+  async (channelId: string, { getState }) => {
+    const state = getState() as RootState;
+    const userId = state.users.currentUser?.id;
+    if (!userId) throw new Error('You must be signed in to unsubscribe.');
+
+    try {
+      const channelDocRef = doc(db, 'channels', channelId);
+
+      await runTransaction(db, async (tx) => {
+        const channelSnap = await tx.get(channelDocRef);
+        if (!channelSnap.exists()) throw new Error('Channel not found.');
+
+        const channel = channelSnap.data() as Channel;
+        if (!channel.subscribers.includes(userId)) {
+          throw new Error('You are not subscribed to this channel.');
+        }
+
+        tx.update(channelDocRef, {
+          subscribers: channel.subscribers.filter((id) => id !== userId),
+        });
+      });
+
+      return channelId;
+    } catch (err) {
+      console.error('Error unsubscribing from channel:', err);
+      throw err;
+    }
+  },
+);
+
+/**
+ * Remove a specific subscriber from a channel. Only the channel owner should call this.
+ */
+export const removeSubscriberFromChannel = createAsyncThunk(
+  'channels/removeSubscriber',
+  async (
+    { channelId, subscriberId }: { channelId: string; subscriberId: string },
+    { getState },
+  ) => {
+    const state = getState() as RootState;
+    const userId = state.users.currentUser?.id;
+    if (!userId) throw new Error('You must be signed in.');
+
+    try {
+      const channelDocRef = doc(db, 'channels', channelId);
+
+      await runTransaction(db, async (tx) => {
+        const channelSnap = await tx.get(channelDocRef);
+        if (!channelSnap.exists()) throw new Error('Channel not found.');
+
+        const channel = channelSnap.data() as Channel;
+        if (channel.ownerId !== userId)
+          throw new Error('Only the channel owner can remove subscribers.');
+        if (!channel.subscribers.includes(subscriberId))
+          throw new Error('This person is not subscribed to the channel.');
+
+        tx.update(channelDocRef, {
+          subscribers: channel.subscribers.filter((id) => id !== subscriberId),
+        });
+      });
+
+      return { channelId, subscriberId };
+    } catch (err) {
+      console.error('Error removing subscriber from channel:', err);
+      throw err;
+    }
+  },
+);
+
+/**
+ * Generate a new invite code for a channel. Only the owner should call this.
+ */
+export const refreshChannelInviteCode = createAsyncThunk(
+  'channels/refreshInviteCode',
+  async (channelId: string, { getState }) => {
+    try {
+      const state = getState() as RootState;
+      const userId = state.users.currentUser?.id;
+      if (!userId) throw new Error('You must be signed in.');
+
+      const newInviteCode = generateId('channelInviteCode');
+      const channelDocRef = doc(db, 'channels', channelId);
+
+      await runTransaction(db, async (tx) => {
+        const channelSnap = await tx.get(channelDocRef);
+        if (!channelSnap.exists()) throw new Error('Channel not found.');
+
+        const channel = channelSnap.data() as Channel;
+        if (channel.ownerId !== userId)
+          throw new Error('Only the channel owner can refresh the invite code.');
+
+        tx.update(channelDocRef, { inviteCode: newInviteCode });
+      });
+
+      return { channelId, inviteCode: newInviteCode };
+    } catch (err) {
+      console.error('Error refreshing channel invite code:', err);
+      throw err;
+    }
+  },
+);
+
+/**
  * Accept or decline a join request. Only the channel owner should call this.
  * When accepted, the requester is added to the channel's subscribers list.
  */

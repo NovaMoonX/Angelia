@@ -140,6 +140,7 @@ A comprehensive interface for creating and managing channels to organize your up
 - **Subscribed Channels Tab**: View all channels you follow from other users
   - Browse channel cards with descriptions
   - Click to view full channel details and subscribers
+  - **Unsubscribe**: Leave any subscribed channel with a confirmation dialog; the channel will no longer appear in your feed
 - **Create/Edit Modal**: FormFactories-powered forms for channel management
   - Required channel name field
   - Optional description field
@@ -162,13 +163,15 @@ A privacy-first system for joining channels via URL-based invite links and owner
   - **Clipboard Integration**: One-click copy of shareable invite URL (`/invite/:channelId/:inviteCode`)
   - **Unique Invite Codes**: Each channel has a unique code embedded in the URL
   - **Owner-Only Feature**: Invite section only visible to channel owners
+  - **Refresh Invite Code**: Owners can generate a new invite code at any time (e.g., to stop unwanted requests); the old link immediately becomes invalid. A contextual help icon tooltip next to the button explains when and why to use this feature.
 
 - **For People Joining (via Invite URL)**:
   - **Dedicated Invite Page** (`/invite/:channelId/:inviteCode`): Landing page that shows channel info
   - **Authentication Required**: Redirects to `/auth` if the user is not signed in
   - **Smart State Handling**:
     - **Already Subscribed**: Friendly "you're already in!" message
-    - **Request Already Sent**: Shows the request status (pending / accepted / declined)
+    - **Pending / Accepted Request**: Shows the request status so you know what's happening
+    - **Declined Request**: Users with a previously declined request can send a new request (they are not permanently blocked)
     - **Invalid Link**: Clear error message with option to return to feed
   - **Identification Prompt**: "Hey, how should [channel owner] know it's really you? 👀"
     - Playful, friendly tone encouraging an identifying message

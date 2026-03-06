@@ -68,6 +68,23 @@ service cloud.firestore {
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.id == resource.data.id
 
+      // Unsubscribe: a subscriber may remove only themselves from the subscribers list.
+      // All other fields must remain unchanged.
+      allow update: if isSubscriber()
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.inviteCode == resource.data.inviteCode
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.color == resource.data.color
+        && request.resource.data.isDaily == resource.data.isDaily
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.markedForDeletionAt == resource.data.markedForDeletionAt
+        && request.resource.data.subscribers.size() == resource.data.subscribers.size() - 1
+        && request.resource.data.subscribers.toSet().hasOnly(resource.data.subscribers.toSet())
+        && !request.resource.data.subscribers.hasAny([request.auth.uid])
+        && resource.data.subscribers.toSet().difference(request.resource.data.subscribers.toSet()).hasOnly([request.auth.uid])
+
       // Deletion: owners may delete their custom (non-daily) channels.
       // Daily channels are system-managed and cannot be deleted by clients.
       allow delete: if isOwner() && resource.data.isDaily == false;
