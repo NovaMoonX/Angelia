@@ -122,13 +122,13 @@ export function Account() {
       return;
     }
 
-    Promise.all(selectedChannel.subscribers.map((id) => fetchUserById(id))).then(
-      (fetched) => {
-        if (cancelled) return;
-        const result = fetched.filter((u): u is User => u !== null);
-        setSubscriberUsers(result);
-      },
-    );
+    Promise.all(
+      selectedChannel.subscribers.map((id) => fetchUserById(id)),
+    ).then((fetched) => {
+      if (cancelled) return;
+      const result = fetched.filter((u): u is User => u !== null);
+      setSubscriberUsers(result);
+    });
 
     return () => {
       cancelled = true;
@@ -186,7 +186,9 @@ export function Account() {
   }, [userOwnedChannels]);
 
   const pendingInviteCount = useMemo(() => {
-    const result = incomingRequests.filter((r) => r.status === 'pending').length;
+    const result = incomingRequests.filter(
+      (r) => r.status === 'pending',
+    ).length;
     return result;
   }, [incomingRequests]);
 
@@ -215,7 +217,10 @@ export function Account() {
       await dispatch(
         updateUserProfile({ uid: currentUser.id, data: formData }),
       ).unwrap();
-      actionModal.alert({ title: 'Success', message: 'Your account has been updated!' });
+      actionModal.alert({
+        title: 'Success',
+        message: 'Your account has been updated!',
+      });
     } catch (err) {
       console.error('Failed to update profile:', err);
       actionModal.alert({
@@ -293,7 +298,12 @@ export function Account() {
 
     if (confirmed && currentUser) {
       try {
+        const channelName = channel.name;
         await dispatch(unsubscribeFromChannel(channel.id)).unwrap();
+        actionModal.alert({
+          title: 'Unsubscribed',
+          message: `You have unsubscribed from "${channelName}".`,
+        });
       } catch (err) {
         console.error('Error unsubscribing from channel:', err);
         actionModal.alert({
@@ -315,12 +325,11 @@ export function Account() {
 
     if (confirmed) {
       try {
-        const result = await dispatch(refreshChannelInviteCode(channel.id)).unwrap();
-        setSelectedChannel((prev) =>
-          prev && prev.id === result.channelId
-            ? { ...prev, inviteCode: result.inviteCode }
-            : prev,
-        );
+        await dispatch(refreshChannelInviteCode(channel.id)).unwrap();
+        actionModal.alert({
+          title: 'Invite Code Refreshed',
+          message: 'The invite code has been refreshed successfully.',
+        });
       } catch (err) {
         console.error('Error refreshing invite code:', err);
         actionModal.alert({
@@ -331,7 +340,10 @@ export function Account() {
     }
   };
 
-  const handleRemoveSubscriber = async (channel: Channel, subscriberId: string) => {
+  const handleRemoveSubscriber = async (
+    channel: Channel,
+    subscriberId: string,
+  ) => {
     const subscriberUser = subscriberUsers.find((u) => u.id === subscriberId);
     const displayName = subscriberUser
       ? `${subscriberUser.firstName} ${subscriberUser.lastName}`
@@ -350,14 +362,10 @@ export function Account() {
         await dispatch(
           removeSubscriberFromChannel({ channelId: channel.id, subscriberId }),
         ).unwrap();
-        setSelectedChannel((prev) =>
-          prev && prev.id === channel.id
-            ? {
-                ...prev,
-                subscribers: prev.subscribers.filter((id) => id !== subscriberId),
-              }
-            : prev,
-        );
+        actionModal.alert({
+          title: 'Subscriber Removed',
+          message: `${displayName} has been removed from "${channel.name}".`,
+        });
       } catch (err) {
         console.error('Error removing subscriber:', err);
         actionModal.alert({
@@ -393,7 +401,7 @@ export function Account() {
       };
 
       try {
-        await dispatch(createCustomChannel(newChannel));
+        await dispatch(createCustomChannel(newChannel)).unwrap()
       } catch (err) {
         actionModal.alert({
           title: 'Unable to create channel',
@@ -408,7 +416,7 @@ export function Account() {
         color: data.color,
       };
       try {
-        await dispatch(updateCustomChannel(updatedChannel));
+        await dispatch(updateCustomChannel(updatedChannel)).unwrap()
         console.log('Updated channel:', selectedChannel.id, data);
       } catch (err) {
         console.error('Error updating channel:', err);
@@ -422,7 +430,9 @@ export function Account() {
 
   const handleAcceptRequest = async (request: ChannelJoinRequest) => {
     try {
-      await dispatch(respondToJoinRequest({ requestId: request.id, accept: true })).unwrap();
+      await dispatch(
+        respondToJoinRequest({ requestId: request.id, accept: true }),
+      ).unwrap();
     } catch (err) {
       actionModal.alert({
         title: 'Unable to accept request',
@@ -433,7 +443,9 @@ export function Account() {
 
   const handleDeclineRequest = async (request: ChannelJoinRequest) => {
     try {
-      await dispatch(respondToJoinRequest({ requestId: request.id, accept: false })).unwrap();
+      await dispatch(
+        respondToJoinRequest({ requestId: request.id, accept: false }),
+      ).unwrap();
     } catch (err) {
       actionModal.alert({
         title: 'Unable to decline request',
@@ -577,9 +589,7 @@ export function Account() {
                       isOwner={true}
                     />
                   </div>
-                  {nonDailyUserChannelCount > 0 && (
-                    <Separator />
-                  )}
+                  {nonDailyUserChannelCount > 0 && <Separator />}
                 </>
               )}
 
@@ -591,21 +601,21 @@ export function Account() {
                       Other Channels
                     </p>
                     <p className='text-foreground/60 text-xs'>
-                      {nonDailyUserChannelCount} / {CUSTOM_CHANNEL_LIMIT} channels
+                      {nonDailyUserChannelCount} / {CUSTOM_CHANNEL_LIMIT}{' '}
+                      channels
                     </p>
                   </div>
                   <div className='space-y-2'>
-                    {nonDailyUserChannels
-                      .map((channel) => (
-                        <ChannelCard
-                          key={channel.id}
-                          channel={channel}
-                          onClick={handleViewChannel}
-                          onEdit={handleEditChannel}
-                          onDelete={handleDeleteChannel}
-                          isOwner={true}
-                        />
-                      ))}
+                    {nonDailyUserChannels.map((channel) => (
+                      <ChannelCard
+                        key={channel.id}
+                        channel={channel}
+                        onClick={handleViewChannel}
+                        onEdit={handleEditChannel}
+                        onDelete={handleDeleteChannel}
+                        isOwner={true}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
@@ -694,27 +704,33 @@ export function Account() {
                     return (
                       <Card
                         key={request.id}
-                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                        className={join(
+                          'p-4',
+                          request.status !== 'pending' && 'opacity-70',
+                        )}
                       >
                         <div className='space-y-3'>
                           <div className='flex items-start gap-3'>
                             {requester && (
                               <Avatar preset={requester.avatar} size='sm' />
                             )}
-                            <div className='flex-1 space-y-1 min-w-0'>
+                            <div className='min-w-0 flex-1 space-y-1'>
                               <div className='flex flex-wrap items-center gap-2'>
                                 <p className='text-foreground text-sm font-medium'>
                                   {requester
                                     ? `${requester.firstName} ${requester.lastName}`
                                     : 'Someone'}
                                 </p>
-                                <span className='text-foreground/40 text-xs'>wants to join</span>
+                                <span className='text-foreground/40 text-xs'>
+                                  wants to join
+                                </span>
                                 {channel && (
                                   <Badge
                                     variant='base'
                                     className='text-xs font-medium'
                                     style={{
-                                      backgroundColor: badgeColors.backgroundColor,
+                                      backgroundColor:
+                                        badgeColors.backgroundColor,
                                       borderColor: badgeColors.backgroundColor,
                                       color: badgeColors.textColor,
                                     }}
@@ -731,11 +747,17 @@ export function Account() {
                                   {getRelativeTime(request.createdAt)}
                                 </p>
                                 {request.status !== 'pending' && (
-                                  <span className={join(
-                                    'text-xs font-medium',
-                                    request.status === 'accepted' ? 'text-green-600' : 'text-destructive',
-                                  )}>
-                                    {request.status === 'accepted' ? 'Accepted' : 'Declined'}
+                                  <span
+                                    className={join(
+                                      'text-xs font-medium',
+                                      request.status === 'accepted'
+                                        ? 'text-green-600'
+                                        : 'text-destructive',
+                                    )}
+                                  >
+                                    {request.status === 'accepted'
+                                      ? 'Accepted'
+                                      : 'Declined'}
                                   </span>
                                 )}
                               </div>
@@ -796,11 +818,16 @@ export function Account() {
                     return (
                       <Card
                         key={request.id}
-                        className={join('p-4', request.status !== 'pending' && 'opacity-70')}
+                        className={join(
+                          'p-4',
+                          request.status !== 'pending' && 'opacity-70',
+                        )}
                       >
                         <div className='space-y-1'>
                           <div className='flex flex-wrap items-center gap-2'>
-                            <span className='text-foreground/60 text-xs'>Requested to join</span>
+                            <span className='text-foreground/60 text-xs'>
+                              Requested to join
+                            </span>
                             {channel ? (
                               <Badge
                                 variant='base'
@@ -814,7 +841,9 @@ export function Account() {
                                 {channel.name}
                               </Badge>
                             ) : (
-                              <span className='text-foreground/60 text-xs'>a channel</span>
+                              <span className='text-foreground/60 text-xs'>
+                                a channel
+                              </span>
                             )}
                           </div>
                           <p className='text-foreground/70 text-sm italic'>
@@ -824,7 +853,12 @@ export function Account() {
                             <p className='text-foreground/40 text-xs'>
                               {getRelativeTime(request.createdAt)}
                             </p>
-                            <span className={join('text-xs font-medium', statusColors[request.status])}>
+                            <span
+                              className={join(
+                                'text-xs font-medium',
+                                statusColors[request.status],
+                              )}
+                            >
                               {statusLabels[request.status]}
                             </span>
                           </div>
@@ -839,7 +873,8 @@ export function Account() {
             {/* Empty State */}
             {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
               <p className='text-foreground/60 py-8 text-center text-sm'>
-                Nothing here yet. Share your channel invite link and join requests will appear here.
+                Nothing here yet. Share your channel invite link and join
+                requests will appear here.
               </p>
             )}
           </Card>
