@@ -87,3 +87,8 @@ export const selectChannelById = createSelector(
   [selectChannelMapById, (_: RootState, channelId: string) => channelId],
   (channelMap, channelId) => channelMap[channelId] || null,
 );
+
+export const selectAllDailyChannels = createSelector(
+  [(state: { channels: ChannelsState }) => state.channels.items],
+  (channels) => channels.filter((ch) => ch.isDaily),
+);

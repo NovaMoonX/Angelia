@@ -1,16 +1,22 @@
 import { AppDispatch } from '@/store';
 import { setChannels } from '@/store/slices/channelsSlice';
 import { setIncomingRequests, setOutgoingRequests } from '@/store/slices/invitesSlice';
-import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { and, collection, doc, getDoc, onSnapshot, or, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Channel } from './channel.types';
 import { ChannelJoinRequest } from './channel.types';
 
-export const subscribeToChannels = () => (dispatch: AppDispatch) => {
-  // Exclude channels marked for deletion
+/** Subscribe to channels the user owns or is subscribed to (excludes deleted channels). */
+export const subscribeToChannels = (uid: string) => (dispatch: AppDispatch) => {
   const q = query(
     collection(db, 'channels'),
-    where('markedForDeletionAt', '==', null),
+    and(
+      where('markedForDeletionAt', '==', null),
+      or(
+        where('ownerId', '==', uid),
+        where('subscribers', 'array-contains', uid),
+      ),
+    ),
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {

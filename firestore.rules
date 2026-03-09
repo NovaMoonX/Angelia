@@ -99,14 +99,20 @@ service cloud.firestore {
         return isSignedIn() && request.auth.uid == request.resource.data.authorId;
       }
 
-      // Only subscribers of the post's channel can read the post
-      function isChannelSubscriber() {
+      // Channel owners and subscribers may read posts in their channel
+      function isChannelMember() {
+        let channel = get(/databases/$(database)/documents/channels/$(resource.data.channelId));
         return isSignedIn() &&
           exists(/databases/$(database)/documents/channels/$(resource.data.channelId)) &&
-          (get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.subscribers is list) &&
-          (request.auth.uid in get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.subscribers);
+          (
+            channel.data.ownerId == request.auth.uid
+            || (
+              (channel.data.subscribers is list) &&
+              (request.auth.uid in channel.data.subscribers)
+            )
+          );
       }
-      allow read: if isAuthor() || isChannelSubscriber();
+      allow read: if isAuthor() || isChannelMember();
 
       // Only the author can create a post for themselves
       allow create: if isAuthorOnCreate();
@@ -150,11 +156,10 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Default: authenticated users may read other collections, but writes are
-    // prohibited unless explicitly allowed above. This prevents accidental
-    // open-write rules in development.
+    // Default: deny all reads and writes not explicitly allowed above.
+    // This prevents accidental open-read rules from exposing private data.
     match /{document=**} {
-      allow read: if isSignedIn();
+      allow read: if false;
       allow write: if false;
     }
   }

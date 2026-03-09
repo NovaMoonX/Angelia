@@ -1,4 +1,4 @@
-import { selectChannelMapById } from '@/store/slices/channelsSlice';
+import { selectAllDailyChannels, selectChannelMapById } from '@/store/slices/channelsSlice';
 import { BellIcon } from '@components/BellIcon';
 import { PostCard } from '@components/PostCard';
 import { SkeletonPostCard } from '@components/SkeletonPostCard';
@@ -26,7 +26,8 @@ export function Feed() {
 
   const posts = useAppSelector((state) => state.posts.items);
   const channels = useAppSelector((state) => state.channels.items);
-  const channelMapById = useAppSelector(selectChannelMapById)
+  const channelMapById = useAppSelector(selectChannelMapById);
+  const allDailyChannels = useAppSelector(selectAllDailyChannels);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const incomingRequests = useAppSelector((state) => state.invites.incoming);
 
@@ -245,7 +246,7 @@ export function Feed() {
 
   const channelOptions = [
     { text: 'All Channels', value: 'all' },
-    { text: 'Daily Updates', value: 'daily' },
+    { text: `Daily channels (${allDailyChannels.length})`, value: 'daily' },
     ...channels
       .filter((channel) => !channel.isDaily)
       .map((channel) => ({
