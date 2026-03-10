@@ -15,6 +15,7 @@ export const mockCurrentUser: User = {
     dailyChannelCreated: true,
   },
   customChannelCount: 2,
+  fcmToken: null,
 };
 
 // Mock users database
@@ -34,6 +35,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: true,
     },
     customChannelCount: 1,
+    fcmToken: null,
   },
   {
     id: 'user2',
@@ -49,6 +51,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: true,
     },
     customChannelCount: 0,
+    fcmToken: null,
   },
   {
     id: 'user3',
@@ -64,6 +67,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: true,
     },
     customChannelCount: 3,
+    fcmToken: null,
   },
   {
     id: 'user4',
@@ -79,6 +83,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: true,
     },
     customChannelCount: 2,
+    fcmToken: null,
   },
   {
     id: 'user5',
@@ -94,6 +99,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: false,
     },
     customChannelCount: 1,
+    fcmToken: null,
   },
   {
     id: 'user6',
@@ -109,6 +115,7 @@ export const mockUsers: User[] = [
       dailyChannelCreated: true,
     },
     customChannelCount: 0,
+    fcmToken: null,
   },
 ];
 

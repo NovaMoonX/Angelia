@@ -21,6 +21,8 @@ import { ChannelFormModal } from '@components/ChannelFormModal';
 import { ChannelModal } from '@components/ChannelModal';
 import { useAuth } from '@hooks/useAuth';
 import { getRelativeTime } from '@lib/timeUtils';
+import { AppNotification, markAllNotificationsRead, markNotificationRead } from '@lib/notification';
+import { markAllAsRead, markAsRead } from '@store/slices/notificationsSlice';
 import {
   Avatar,
   Badge,
@@ -64,6 +66,7 @@ export function Account() {
   const users = useAppSelector((state) => state.users.users);
   const incomingRequests = useAppSelector((state) => state.invites.incoming);
   const outgoingRequests = useAppSelector((state) => state.invites.outgoing);
+  const appNotifications = useAppSelector((state) => state.notifications.items);
 
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') || '';
@@ -194,6 +197,22 @@ export function Account() {
     ).length;
     return result;
   }, [incomingRequests]);
+
+  const unreadAppNotificationCount = useMemo(() => {
+    const result = appNotifications.filter((n) => !n.read).length;
+    return result;
+  }, [appNotifications]);
+
+  const totalNotificationCount = useMemo(() => {
+    const result = pendingInviteCount + unreadAppNotificationCount;
+    return result;
+  }, [pendingInviteCount, unreadAppNotificationCount]);
+
+  const handleMarkAllNotificationsRead = async () => {
+    if (unreadAppNotificationCount === 0) return;
+    dispatch(markAllAsRead());
+    await markAllNotificationsRead(appNotifications);
+  };
 
   const formattedJoinDate = useMemo(() => {
     if (!currentUser?.joinedAt) return 'N/A';
@@ -701,19 +720,90 @@ export function Account() {
 
         {/* Notifications Section - Separate Card */}
         <div className='space-y-4' ref={notificationsRef}>
-          <div>
-            <h2 className='text-foreground text-2xl font-semibold'>
-              Notifications
-              {pendingInviteCount > 0 && (
-                <span className='text-foreground/60 ml-2 text-xl'>
-                  ({pendingInviteCount})
-                </span>
-              )}
-            </h2>
-            <p className='text-foreground/60 mt-1 text-sm'>
-              Manage join requests for your channels
-            </p>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h2 className='text-foreground text-2xl font-semibold'>
+                Notifications
+                {totalNotificationCount > 0 && (
+                  <span className='text-foreground/60 ml-2 text-xl'>
+                    ({totalNotificationCount})
+                  </span>
+                )}
+              </h2>
+              <p className='text-foreground/60 mt-1 text-sm'>
+                Stay on top of what's happening with your family
+              </p>
+            </div>
+            {unreadAppNotificationCount > 0 && (
+              <Button
+                variant='secondary'
+                size='sm'
+                onClick={handleMarkAllNotificationsRead}
+              >
+                Mark all as read
+              </Button>
+            )}
           </div>
+
+          {/* App notifications (new posts, comments, etc.) */}
+          {appNotifications.length > 0 && (
+            <Card className='space-y-2 p-6'>
+              <p className='text-foreground/80 text-sm font-medium'>
+                Updates ({appNotifications.length})
+              </p>
+              <div className='space-y-2'>
+                {appNotifications.map((notification: AppNotification) => (
+                  <Link
+                    key={notification.id}
+                    to={notification.link}
+                    className={join(
+                      'flex items-start gap-3 rounded-lg p-3 transition-colors',
+                      notification.read
+                        ? 'hover:bg-foreground/5'
+                        : 'bg-primary/5 hover:bg-primary/10',
+                    )}
+                    onClick={() => {
+                      if (!notification.read) {
+                        dispatch(markAsRead(notification.id));
+                        // Fire-and-forget Firestore update; optimistic Redux state
+                        // already provides immediate UI feedback.
+                        markNotificationRead(notification.id).catch((err) => {
+                          console.error('Failed to mark notification as read:', err);
+                        });
+                      }
+                    }}
+                  >
+                    {/* Unread dot */}
+                    <span
+                      className={join(
+                        'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                        notification.read ? 'bg-transparent' : 'bg-primary',
+                      )}
+                      aria-hidden='true'
+                    />
+                    <div className='min-w-0 flex-1 space-y-0.5'>
+                      <p
+                        className={join(
+                          'text-sm',
+                          notification.read
+                            ? 'text-foreground/80'
+                            : 'text-foreground font-medium',
+                        )}
+                      >
+                        {notification.title}
+                      </p>
+                      <p className='text-foreground/60 text-xs'>
+                        {notification.body}
+                      </p>
+                      <p className='text-foreground/40 text-xs'>
+                        {getRelativeTime(notification.createdAt)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card className='space-y-4 p-6'>
             {/* Incoming join requests (for channels I own) */}

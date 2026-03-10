@@ -30,6 +30,7 @@ export function Feed() {
   const allDailyChannels = useAppSelector(selectAllDailyChannels);
   const currentUser = useAppSelector((state) => state.users.currentUser);
   const incomingRequests = useAppSelector((state) => state.invites.incoming);
+  const notifications = useAppSelector((state) => state.notifications.items);
 
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
@@ -279,6 +280,13 @@ export function Feed() {
     return incomingRequests.some((r) => r.status === 'pending');
   }, [incomingRequests]);
 
+  const unreadNotificationCount = useMemo(() => {
+    const pendingInvites = incomingRequests.filter((r) => r.status === 'pending').length;
+    const unreadAppNotifications = notifications.filter((n) => !n.read).length;
+    const result = pendingInvites + unreadAppNotifications;
+    return result;
+  }, [incomingRequests, notifications]);
+
   const saveScrollPosition = () => {
     const scrollPosition = window.scrollY;
     // Store in sessionStorage as backup
@@ -335,6 +343,7 @@ export function Feed() {
               >
                 <BellIcon
                   hasNotification={hasPendingInvites}
+                  unreadCount={unreadNotificationCount}
                   className='text-foreground'
                 />
               </Link>

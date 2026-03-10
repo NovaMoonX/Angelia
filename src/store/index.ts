@@ -4,6 +4,7 @@ import postsReducer from './slices/postsSlice';
 import channelsReducer from './slices/channelsSlice';
 import usersReducer from './slices/usersSlice';
 import invitesReducer from './slices/invitesSlice';
+import notificationsReducer from './slices/notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     channels: channelsReducer,
     users: usersReducer,
     invites: invitesReducer,
+    notifications: notificationsReducer,
   },
   devTools: {
     name: 'Angelia Store Instance',

@@ -47,6 +47,7 @@ export const createUserProfile = createAsyncThunk(
         dailyChannelCreated: false,
       },
       customChannelCount: 0,
+      fcmToken: null,
     };
     try {
       // Save user profile to Firestore

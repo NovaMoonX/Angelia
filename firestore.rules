@@ -167,6 +167,28 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Notifications collection
+    // Cloud Functions (Admin SDK) create and delete notifications; clients can
+    // only read and mark their own notifications as read.
+    match /notifications/{notificationId} {
+      // Users may read only their own notifications.
+      allow read: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+
+      // Users may mark their own notifications as read (update `read` field only).
+      // All other fields must remain unchanged.
+      allow update: if isSignedIn()
+        && resource.data.recipientId == request.auth.uid
+        && request.resource.data.recipientId == resource.data.recipientId
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.body == resource.data.body
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.link == resource.data.link;
+
+      // Creation and deletion are handled by Cloud Functions only.
+      allow create, delete: if false;
+    }
+
     // Default: deny all reads and writes not explicitly allowed above.
     // This prevents accidental open-read rules from exposing private data.
     match /{document=**} {
