@@ -127,34 +127,43 @@ async function createNotification(
 
   try {
     const response = await messaging.sendEachForMulticast(message);
-    // Remove stale tokens from user documents.
+    // Remove stale tokens from user documents (best-effort, outside any transaction).
+    const staleTokens: string[] = [];
     response.responses.forEach((resp, idx) => {
       if (
         !resp.success &&
         resp.error?.code === 'messaging/registration-token-not-registered'
       ) {
-        const token = message.tokens[idx];
-        // Attempt to clean up the invalid token.
-        db.runTransaction(async (tx) => {
-          const usersSnap = await db
-            .collection('users')
-            .where('fcmToken', '==', token)
-            .get();
-          usersSnap.docs.forEach((doc) => {
-            tx.update(doc.ref, { fcmToken: null });
-          });
-        }).catch(() => {
-          // Best-effort cleanup – ignore errors.
-        });
+        staleTokens.push(message.tokens[idx]);
       }
     });
+
+    if (staleTokens.length > 0) {
+      Promise.all(
+        staleTokens.map(async (token) => {
+          try {
+            const usersSnap = await db
+              .collection('users')
+              .where('fcmToken', '==', token)
+              .get();
+            const batch = db.batch();
+            usersSnap.docs.forEach((doc) => {
+              batch.update(doc.ref, { fcmToken: null });
+            });
+            await batch.commit();
+          } catch {
+            // Best-effort cleanup – ignore errors.
+          }
+        }),
+      ).catch(() => {});
+    }
   } catch (error) {
     console.error('[FCM] Failed to send multicast message:', error);
   }
 }
 
 /** Generate a unique notification document ID. */
-function notificationId(prefix: string, ...parts: string[]): string {
+function generateNotificationId(prefix: string, ...parts: string[]): string {
   return [prefix, ...parts].join('_').replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
@@ -178,7 +187,7 @@ export const onNewJoinRequest = onDocumentCreated(
     if (!owner || !requester || !channel) return;
 
     const requesterName = `${requester.firstName} ${requester.lastName}`.trim();
-    const nId = notificationId('jreq', request.id, owner.id);
+    const nId = generateNotificationId('jreq', request.id, owner.id);
 
     await createNotification(
       nId,
@@ -227,7 +236,7 @@ export const onJoinRequestResponse = onDocumentUpdated(
 
     if (!requester || !channel) return;
 
-    const nId = notificationId('jres', after.id, requester.id);
+    const nId = generateNotificationId('jres', after.id, requester.id);
 
     await createNotification(
       nId,
@@ -287,7 +296,7 @@ export const onPostReady = onDocumentUpdated(
           const recipient = await getUser(uid);
           if (!recipient) return;
 
-          const nId = notificationId('post', event.params.postId, uid);
+          const nId = generateNotificationId('post', event.params.postId, uid);
           const preview =
             after.text.length > 80 ? `${after.text.slice(0, 77)}…` : after.text;
 
@@ -354,7 +363,7 @@ export const onPostReady = onDocumentUpdated(
         const recipient = uid === after.authorId ? author : await getUser(uid);
         if (!recipient) return;
 
-        const nId = notificationId(
+        const nId = generateNotificationId(
           'cmt',
           event.params.postId,
           newComment.id,

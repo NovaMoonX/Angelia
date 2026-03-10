@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@store/hooks';
 import { subscribeToNotifications } from '@lib/notification';
 import { markAsRead } from '@store/slices/notificationsSlice';
@@ -13,18 +13,13 @@ import { markNotificationRead } from '@lib/notification';
  */
 export function useNotifications(uid: string | null) {
   const dispatch = useAppDispatch();
-  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!uid) return;
 
     const unsubscribe = dispatch(subscribeToNotifications(uid));
-    unsubscribeRef.current = unsubscribe;
 
-    return () => {
-      unsubscribe();
-      unsubscribeRef.current = null;
-    };
+    return unsubscribe;
   }, [uid, dispatch]);
 
   const handleMarkAsRead = async (notificationId: string) => {

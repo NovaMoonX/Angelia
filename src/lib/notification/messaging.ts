@@ -5,6 +5,9 @@ import { app, db } from '../firebase';
 // The VAPID key (Web Push certificate public key) for the Firebase project.
 // Generate this in the Firebase console → Project Settings → Cloud Messaging →
 // Web Push certificates.
+// Note: this is a Vite compile-time constant injected at build time, so it is
+// safe to read once at module load – it will always reflect the value set
+// in the environment at the time the bundle was built.
 const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined;
 
 /**

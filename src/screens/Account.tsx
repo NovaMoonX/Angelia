@@ -765,7 +765,11 @@ export function Account() {
                     onClick={() => {
                       if (!notification.read) {
                         dispatch(markAsRead(notification.id));
-                        markNotificationRead(notification.id);
+                        // Fire-and-forget Firestore update; optimistic Redux state
+                        // already provides immediate UI feedback.
+                        markNotificationRead(notification.id).catch((err) => {
+                          console.error('Failed to mark notification as read:', err);
+                        });
                       }
                     }}
                   >

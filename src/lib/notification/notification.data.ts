@@ -27,7 +27,7 @@ export const subscribeToNotifications =
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifications = snapshot.docs.map(
-        (d) => d.data() as AppNotification,
+        (d) => ({ id: d.id, ...d.data() } as AppNotification),
       );
       dispatch(setNotifications(notifications));
     });
