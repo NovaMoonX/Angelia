@@ -22,14 +22,19 @@ service firebase.storage {
         ? firestore.get(/databases/(default)/documents/channels/$(channelId))
         : null;
     }
-    function isChannelSubscriber(postId) {
+    function isChannelMember(postId) {
       let post = getPost(postId);
       let channel = post != null ? getChannel(post.data.channelId) : null;
       return post != null && channel != null &&
         (channel.data.markedForDeletionAt == null) &&
-        (channel.data.subscribers != null) &&
-        (channel.data.subscribers is list) &&
-        (request.auth.uid in channel.data.subscribers);
+        (
+          channel.data.ownerId == request.auth.uid
+          || (
+            (channel.data.subscribers != null) &&
+            (channel.data.subscribers is list) &&
+            (request.auth.uid in channel.data.subscribers)
+          )
+        );
     }
     // Allow users to upload/read/delete post media based on post status and access
     match /posts/{postId}/{mediaFile} {
@@ -38,7 +43,7 @@ service firebase.storage {
       // - if post is 'ready', author or channel subscriber can read
       allow read: if isSignedIn() && getPost(postId) != null && (
         (getPost(postId).data.status == 'uploading' && isAuthor(postId)) ||
-        (getPost(postId).data.status == 'ready' && (isAuthor(postId) || isChannelSubscriber(postId)))
+        (getPost(postId).data.status == 'ready' && (isAuthor(postId) || isChannelMember(postId)))
       );
       // Only allow writing if post is 'uploading' and user is author
       allow write: if isSignedIn() && getPost(postId) != null && getPost(postId).data.status == 'uploading' && isAuthor(postId);
