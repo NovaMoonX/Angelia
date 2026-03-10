@@ -10,14 +10,37 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/users/$(uid));
     }
 
-    // Users collection - users can read and write their own profile
+    // Helper: check if the requesting user is a member (owner or subscriber) of a channel.
+    // Accepts a channelId so the same logic can be reused across different match blocks.
+    function isChannelMember(channelId) {
+      let channel = get(/databases/$(database)/documents/channels/$(channelId));
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/channels/$(channelId)) &&
+        (
+          channel.data.ownerId == request.auth.uid
+          || (
+            (channel.data.subscribers is list) &&
+            (request.auth.uid in channel.data.subscribers)
+          )
+        );
+    }
+
+    // Users collection
     match /users/{userId} {
-      // Anyone authenticated can read user profiles (for displaying names, avatars, etc.)
+      // A user can always read their own profile.
+      allow get: if isSignedIn() && request.auth.uid == userId;
+
+      // Channel members need to read each other's profiles to display post author
+      // names and avatars (populated via subscribeToChannelUsers). Firestore rules
+      // cannot perform collection queries to find shared channels without a known
+      // channelId, so we permit any authenticated user to read user profiles.
+      // Access scoping is enforced at the data layer: subscribeToChannelUsers only
+      // requests the IDs of owners/subscribers from the requester's accessible channels.
       allow read: if isSignedIn();
-      
+
       // Users can only write to their own profile
       allow create, update: if isSignedIn() && request.auth.uid == userId;
-      
+
       // Prevent deletion of user profiles
       allow delete: if false;
     }
@@ -100,19 +123,7 @@ service cloud.firestore {
       }
 
       // Channel owners and subscribers may read posts in their channel
-      function isChannelMember() {
-        let channel = get(/databases/$(database)/documents/channels/$(resource.data.channelId));
-        return isSignedIn() &&
-          exists(/databases/$(database)/documents/channels/$(resource.data.channelId)) &&
-          (
-            channel.data.ownerId == request.auth.uid
-            || (
-              (channel.data.subscribers is list) &&
-              (request.auth.uid in channel.data.subscribers)
-            )
-          );
-      }
-      allow read: if isAuthor() || isChannelMember();
+      allow read: if isAuthor() || isChannelMember(resource.data.channelId);
 
       // Only the author can create a post for themselves
       allow create: if isAuthorOnCreate();
