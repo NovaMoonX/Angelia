@@ -180,13 +180,19 @@ A privacy-first system for joining channels via URL-based invite links and owner
 
 ### 🔔 Notifications & Join Request Management
 
-A clear notification system for tracking who wants to join your channels and the status of your own requests:
+A real-time, push-enabled notification system using Firebase Cloud Messaging (FCM) that keeps family members informed about what's happening across channels — even when the app is in the background.
+
+#### In-App Notifications
 
 - **Bell Icon with Badge**: Located in the Feed header next to the user avatar
-  - Shows a red notification dot when there are pending incoming join requests
+  - Shows a red numeric badge when there are unread notifications (join requests + app notifications combined)
   - Clicking navigates to the Notifications section on the Account page
 
 - **Notifications Section** (Account page):
+  - **Updates**: Activity notifications for new posts, new comments, accepted requests
+    - Unread notifications highlighted with a primary-color dot and bold text
+    - Clicking a notification navigates to the relevant content and marks it as read
+    - **Mark All as Read** button when there are unread notifications
   - **Incoming Requests** (for channel owners):
     - Shows all pending requests from people who want to join your channels
     - Each card displays: requester avatar & name, channel badge, their identification message, and time sent
@@ -196,9 +202,32 @@ A clear notification system for tracking who wants to join your channels and the
     - Shows all join requests you have submitted
     - Displays the channel, your identification message, and current status
     - Status labels: "Pending review", "Accepted", "Declined"
-  - **Empty State**: "Nothing here yet. Share your channel invite link and join requests will appear here."
 
+#### Push Notifications (Background)
 
+The app uses Firebase Cloud Messaging (FCM) to deliver push notifications when the app is backgrounded or closed. This follows web and PWA best practices:
+
+- **Service Worker** (`firebase-messaging-sw.js`): Receives and displays background push notifications
+- **Permission Request**: On first sign-in, the app asks for notification permission
+- **FCM Token**: Stored in the user's Firestore document; Cloud Functions use it to target the right device
+- **Notification click**: Tapping a push notification opens the app directly to the relevant content
+
+#### Notification Types
+
+| Type | Trigger | Recipient |
+|------|---------|-----------|
+| `channel_request` | Someone submits a join request | Channel owner |
+| `request_accepted` | Owner accepts a join request | The requester |
+| `new_post` | A post is published in a channel | All channel subscribers (except author) |
+| `new_comment` | Someone adds a comment to a post | Post author + conversation enrollees (except commenter) |
+
+#### Cloud Functions
+
+Notifications are created and pushed by Firebase Cloud Functions (in `functions/`), which are triggered by Firestore document changes:
+
+- `onNewJoinRequest` — triggered on `channelJoinRequests` creation
+- `onJoinRequestResponse` — triggered on `channelJoinRequests` update (status → `accepted`)
+- `onPostReady` — triggered on `posts` update (status → `ready`) and on new comments
 
 - **Data Model**: `ChannelJoinRequest` interface tracks:
   - Channel ID and channel owner ID (for efficient querying)
@@ -213,6 +242,22 @@ A clear notification system for tracking who wants to join your channels and the
   - Clear action buttons with primary/secondary styling
   - Visual hierarchy with count badges and sections
 
+#### PWA Setup
+
+- **Web App Manifest** (`public/manifest.json`): Enables installation on mobile and desktop
+- **Theme Color**: Indigo (`#4f46e5`) for a consistent browser chrome experience
+- **Apple Web App**: Meta tags for full-screen iOS web app support
+
+#### Environment Variables Required
+
+Add these to your `.env` file to enable push notifications:
+
+```
+VITE_FIREBASE_VAPID_KEY=your_web_push_certificate_public_key
+```
+
+Generate the VAPID key in the Firebase Console → Project Settings → Cloud Messaging → Web Push certificates.
+
 ### 🎨 Design & Visual Aesthetic
 
 - **Warm, Domestic Accent Color**: Amber tones create an intentional, calm atmosphere (not high-engagement)
@@ -226,6 +271,7 @@ A clear notification system for tracking who wants to join your channels and the
 - [TailwindCSS](https://tailwindcss.com/)
 - [Dreamer UI](https://www.npmjs.com/package/@moondreamsdev/dreamer-ui)
 - [React Router](https://reactrouter.com/)
+- [Firebase](https://firebase.google.com/) (Auth, Firestore, Storage, Cloud Functions, Cloud Messaging)
 
 ## Getting Started
 

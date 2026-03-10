@@ -3,9 +3,12 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 interface BellIconProps {
   className?: string;
   hasNotification?: boolean;
+  unreadCount?: number;
 }
 
-export function BellIcon({ className, hasNotification = false }: BellIconProps) {
+export function BellIcon({ className, hasNotification = false, unreadCount = 0 }: BellIconProps) {
+  const showBadge = hasNotification || unreadCount > 0;
+
   return (
     <div className='relative inline-flex'>
       <svg
@@ -22,11 +25,20 @@ export function BellIcon({ className, hasNotification = false }: BellIconProps) 
         <path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' />
         <path d='M13.73 21a2 2 0 0 1-3.46 0' />
       </svg>
-      {hasNotification && (
-        <span
-          className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background'
-          aria-label='Has unread notifications'
-        />
+      {showBadge && (
+        unreadCount > 0 ? (
+          <span
+            className='absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-background flex items-center justify-center px-0.5'
+            aria-label={`${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`}
+          >
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        ) : (
+          <span
+            className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background'
+            aria-label='Has unread notifications'
+          />
+        )
       )}
     </div>
   );

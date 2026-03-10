@@ -14,7 +14,9 @@ export interface User {
     dailyChannelCreated: boolean;
   },
   customChannelCount: number;
+  /** FCM registration token for push notifications. Null when not registered. */
+  fcmToken: string | null;
 }
 
-export type NewUser = Omit<User,'joinedAt' | 'accountProgress' | 'customChannelCount'>
+export type NewUser = Omit<User,'joinedAt' | 'accountProgress' | 'customChannelCount' | 'fcmToken'>
 export type UpdateUserProfileData = Pick<User, 'firstName' | 'lastName' | 'funFact' | 'avatar'>;

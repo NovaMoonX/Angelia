@@ -6,6 +6,7 @@ import {
   persistentMultipleTabManager
 } from 'firebase/firestore';
 import { getStorage } from "firebase/storage";
+import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -27,3 +28,13 @@ export const db = initializeFirestore(app, {
   ),
 });
 export const storage = getStorage(app);
+
+// Firebase Cloud Messaging – only available in supported browsers.
+// Use `getMessaging(app)` anywhere you need messaging; this export
+// provides a convenience accessor that gracefully returns null when the
+// browser does not support the Push API.
+export const getFirebaseMessaging = async () => {
+  const supported = await isMessagingSupported();
+  if (!supported) return null;
+  return getMessaging(app);
+};

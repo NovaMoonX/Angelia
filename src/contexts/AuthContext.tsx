@@ -18,6 +18,11 @@ import {
 } from '@/store/actions/userActions';
 import { User } from '@/lib/user';
 import { ensureDailyChannelExists } from '@/store/actions/channelActions';
+import {
+  registerMessagingServiceWorker,
+  requestAndSaveFcmToken,
+} from '@lib/notification';
+import { subscribeToNotifications } from '@lib/notification';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -78,6 +83,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return unsubscribe;
   }, [dispatch]);
+
+  // Subscribe to real-time notifications once the user is known.
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    const uid = firebaseUser.uid;
+    const unsubscribe = dispatch(subscribeToNotifications(uid));
+    return unsubscribe;
+  }, [firebaseUser, dispatch]);
+
+  // Initialise Firebase Cloud Messaging once the user is authenticated.
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const swRegistration = await registerMessagingServiceWorker();
+      if (cancelled || !swRegistration) return;
+
+      await requestAndSaveFcmToken(firebaseUser.uid, swRegistration);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [firebaseUser]);
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(
